@@ -20,8 +20,10 @@ include_directories(${INCLUDE_DIRECTORIES})
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 ${Boost_LIBRARY_DIRS}
-${BAT_LIBRARY_DIR}
-${CUBA_LIBRARY_DIR}
+#${BAT_LIBRARY_DIR}
+#${CUBA_LIBRARY_DIR}
+#${CUBA_LIBRARY_STATIC}
+#${BAT_LIBRARIES_SHARED} 
 ) 
 
 link_directories(${LINK_DIRECTORIES})
@@ -40,7 +42,10 @@ Set(LINKDEF OscAnalysisLinkDef.h)
 Set(LIBRARY_NAME OscillationAnalysis)
 
   Set(DEPENDENCIES 
-  BATmodels BATmtf BAT cuba)
+    ${CUBA_LIBRARY_STATIC}
+    ${BAT_LIBRARIES_SHARED}
+  #BATmodels BATmtf BAT cuba
+)
 
 
 
