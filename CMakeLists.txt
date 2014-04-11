@@ -94,6 +94,10 @@ find_package(RuleChecker)
 find_package(IWYU)
 find_package(ZeroMQ)
 find_package(Protobuf)
+# added for bayesian analysis
+find_package(cuba)
+find_package(BAT COMPONENTS models mtf mvc)
+
 if(PROTOBUF_FOUND)
   Message("-- Protobuf found --")
   add_definitions(-DPROTOBUF)
