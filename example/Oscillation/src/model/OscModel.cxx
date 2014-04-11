@@ -1,0 +1,110 @@
+//
+//  OscModel.cpp
+//  batTuto1
+//
+//  Created by Nicolas Winckler on 2/20/14.
+//  Copyright (c) 2014 Nicolas Winckler. All rights reserved.
+//
+
+#include "OscModel.h"
+
+
+// ---------------------------------------------------------
+OscModel::OscModel() : BCModel(), ftmin(0.0), ftmax(0.0), fSampleMean(0.0)
+{
+    // default constructor
+    DefineParameters();
+}
+
+// ---------------------------------------------------------
+OscModel::~OscModel()
+// default destructor
+{
+}
+
+// ---------------------------------------------------------
+void OscModel::DefineParameters()
+{
+    // Add parameters to your model here.
+    // You can then use them in the methods below by calling the
+    // parameters.at(i) or parameters[i], where i is the index
+    // of the parameter. The indices increase from 0 according to the
+    // order of adding the parameters.
+    
+    // Allowed range for R_B is [0, 2]
+    AddParameter("lambda", 0.0, 0.01);
+    AddParameter("amp", -0.5,0.5);
+    AddParameter("omega", 0.0,7.0);
+    AddParameter("phi", -4.0, 4.0);
+    
+}
+
+// ---------------------------------------------------------
+double OscModel::LogLikelihood(const std::vector<double> &parameters)
+{
+    // This methods returns the logarithm of the conditional probability
+    // p(data|parameters). This is where you have to define your model.
+    
+    double logprob = 0.;
+    
+    // get parameter values
+    double lambda = parameters.at(0);
+    double amp = parameters.at(1);
+    double omega = parameters.at(2);
+    double phi = parameters.at(3);
+    
+    
+    //calculate the normalization factor analytically
+    double part0=TMath::Exp(-lambda*ftmin )-TMath::Exp(-lambda*ftmax);
+    double factor=lambda*amp/(omega*omega+lambda*lambda);
+    double part1a=(omega*TMath::Sin(omega*ftmax+phi)-lambda*TMath::Cos(omega*ftmax+phi))*TMath::Exp(-lambda*ftmax);
+    double part1b=(omega*TMath::Sin(omega*ftmin+phi)-lambda*TMath::Cos(omega*ftmin+phi))*TMath::Exp(-lambda*ftmin);
+    double AnalyticIntegral=(part0+factor*(part1a-part1b))/lambda;      // normalisation factor of the pdf M1
+	
+    for (int i = 0; i < GetNDataPoints(); ++i)
+    {
+        // get data
+        double t      = GetDataPoint(i)->GetValue(0);
+        
+        // calculate Sum log(1+a cos(wt+phi))
+        double coswt=TMath::Cos(omega*t+phi);
+        logprob += log(1+amp*coswt);                                    //cos statistics
+    }
+    // update likelihood
+    logprob += GetNDataPoints()*log(AnalyticIntegral);                  //cos normalization term
+    logprob += GetNDataPoints()*(log(lambda)-lambda*fSampleMean);       //pure exponential term
+    
+    return logprob;
+}
+
+// ---------------------------------------------------------
+double OscModel::LogAPrioriProbability(const std::vector<double> &parameters)
+{
+    // This method returns the logarithm of the prior probability for the
+    // parameters p(parameters).
+    double logprob = 0.0;
+    
+    // normalize flat prior with parameter ranges
+    for (unsigned int i = 0; i < GetNParameters(); i++)
+        logprob -= log(GetParameter(i)->GetRangeWidth());
+    
+    return 0.0;
+}
+// ---------------------------------------------------------
+
+void OscModel::SetDataSet(BCDataSet* dataset, double unit)
+{
+    BCModel::SetDataSet(dataset);
+    double sum=0.0;
+    for (int i = 0; i < GetNDataPoints(); ++i)
+        sum+=GetDataPoint(i)->GetValue(0);
+    fSampleMean=unit*sum/((double)GetNDataPoints());
+}
+
+
+
+ClassImp(OscModel)
+
+
+
+
