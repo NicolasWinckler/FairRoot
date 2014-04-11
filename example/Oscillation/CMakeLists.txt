@@ -9,10 +9,10 @@ ${ROOT_INCLUDE_DIR}
 ${ZMQ_INCLUDE_DIR}
 ${CUBA_INCLUDE_DIR}
 ${BAT_INCLUDE_DIR}
-${CMAKE_SOURCE_DIR}/Oscillation/src
-${CMAKE_SOURCE_DIR}/Oscillation/src/model
-${CMAKE_SOURCE_DIR}/Oscillation/src/macro
-${CMAKE_SOURCE_DIR}/Oscillation/src/data
+${CMAKE_SOURCE_DIR}/example/Oscillation/src
+${CMAKE_SOURCE_DIR}/example/Oscillation/src/model
+${CMAKE_SOURCE_DIR}/example/Oscillation/src/macro
+${CMAKE_SOURCE_DIR}/example/Oscillation/src/data
 )
 
 include_directories(${INCLUDE_DIRECTORIES})
@@ -36,24 +36,19 @@ Set(SRCS
 )
 
 
-#Set(LINKDEF OscAnalysisLinkDef.h)
+Set(LINKDEF OscAnalysisLinkDef.h)
 Set(LIBRARY_NAME OscillationAnalysis)
 
-If (Boost_FOUND)
   Set(DEPENDENCIES 
   BATmodels BATmtf BAT cuba)
 
-  message(STATUS "dependencies are ")
-Else(Boost_FOUND)
-message(ERROR "ERROR - Boost, BAT, or cuba libraries not found")
-EndIf (Boost_FOUND)
 
 
 GENERATE_LIBRARY()
 
 
 If (Boost_FOUND)
-  Set(Exe_Names Do_BAT_OSC)
+  Set(Exe_Names runoscillation)
 
   set(Exe_Source
     src/macro/runOscAnalysis.cxx

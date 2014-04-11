@@ -42,7 +42,7 @@ public:
     void Run();
     void RunTuto1();
 	void GetBayesFactor(string filename);
-    //ClassDef(Analysis,1);
+    ClassDef(Analysis,1);
 };
 
 

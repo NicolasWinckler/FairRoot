@@ -154,7 +154,7 @@ void Analysis::RunTuto1( )
     BCLog::CloseLog();
 }
 
-//ClassImp(Analysis)
+ClassImp(Analysis)
 
 
 
