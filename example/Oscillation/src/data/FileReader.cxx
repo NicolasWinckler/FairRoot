@@ -113,7 +113,7 @@ bool FileReader::is_number(const string& s)
     return is_a_number;
 }
 
-ClassImp(FileReader)
+//ClassImp(FileReader)
 
 
 

@@ -623,4 +623,4 @@ SidsDataSet & SidsDataSet::operator + ( SidsDataSet & sidsDataSet)
 }
 
 
-ClassImp(sidsDataSet)
+//ClassImp(sidsDataSet)

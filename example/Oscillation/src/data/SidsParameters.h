@@ -32,7 +32,7 @@ class SidsParameters : public FileReader
     map<string, string> fParameterNames;
     vector<string> fKeyValues;
     vector<string> fKeyNames;
-    ClassDef(SidsParameters,1);
+//    ClassDef(SidsParameters,1);
 };
 
 

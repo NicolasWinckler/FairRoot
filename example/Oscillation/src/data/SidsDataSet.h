@@ -77,7 +77,7 @@ class SidsDataSet : public BCDataSet, public FileReader
     string branchname;
     BCDataVector *fBCDataVector;
     
-    ClassDef(sidsDataSet,1);
+//    ClassDef(sidsDataSet,1);
 };
 
 

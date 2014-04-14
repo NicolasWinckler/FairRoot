@@ -83,4 +83,4 @@ double CountingExp::LogAPrioriProbability(const std::vector<double> &parameters)
 }
 // ---------------------------------------------------------
 
-ClassImp(CountingExp)
+//ClassImp(CountingExp)

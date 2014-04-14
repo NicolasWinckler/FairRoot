@@ -66,9 +66,12 @@ void Analysis::GetBayesFactor( string filename)
     ECData->ReadDataFromFileTxt(configPar);
     
     /// Set Model M0
+    ExpModel* M0 = new ExpModel(configPar);
+    M0->SetDataSet(ECData);
+    BCLog::OutSummary("Model M0 created");
     
     /// Set Model M1
-    OscModel* M1 = new OscModel();
+    OscModel* M1 = new OscModel(configPar);
     M1->SetDataSet(ECData);
     BCLog::OutSummary("Model M1 created");
     
@@ -154,7 +157,7 @@ void Analysis::RunTuto1( )
     BCLog::CloseLog();
 }
 
-ClassImp(Analysis)
+//ClassImp(Analysis)
 
 
 

@@ -27,7 +27,7 @@ class CountingExp : public BCModel
       double LogAPrioriProbability(const std::vector<double> &parameters);
       double LogLikelihood(const std::vector<double> &parameters);
       // void MCMCIterationInterface();
-      ClassDef(CountingExp,1);
+//      ClassDef(CountingExp,1);
 };
 // ---------------------------------------------------------
 

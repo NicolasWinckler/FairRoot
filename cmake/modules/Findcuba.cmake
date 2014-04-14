@@ -1,6 +1,6 @@
 message(STATUS "Looking for CUBA...")
 
-set(HEADERS cuba.h)
+set(_HEADERS cuba.h)
 
 set(SEARCH_DIRS /usr/local/lib /usr/local/include)
 
@@ -12,7 +12,7 @@ endIf (APPLE)
 
 set(LIBCUBA_STATIC libcuba.a)
 
-find_path(CUBA_INCLUDE_DIR NAMES ${HEADERS} 
+find_path(CUBA_INCLUDE_DIR NAMES ${_HEADERS} 
   PATHS ${SEARCH_DIRS}
   DOC   "Path to CUBA include header files."
 )

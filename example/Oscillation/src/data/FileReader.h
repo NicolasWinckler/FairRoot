@@ -49,7 +49,7 @@ class FileReader
     protected :
     vector< vector<string> > fFileContent;
     vector< vector<double> > fRawData;
-    ClassDef(FileReader,1);
+//    ClassDef(FileReader,1);
 };
 
 

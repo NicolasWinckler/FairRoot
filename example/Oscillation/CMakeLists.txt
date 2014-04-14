@@ -9,6 +9,7 @@ ${ROOT_INCLUDE_DIR}
 ${ZMQ_INCLUDE_DIR}
 ${CUBA_INCLUDE_DIR}
 ${BAT_INCLUDE_DIR}
+${CMAKE_SOURCE_DIR}/example/Oscillation
 ${CMAKE_SOURCE_DIR}/example/Oscillation/src
 ${CMAKE_SOURCE_DIR}/example/Oscillation/src/model
 ${CMAKE_SOURCE_DIR}/example/Oscillation/src/macro
@@ -28,12 +29,13 @@ ${Boost_LIBRARY_DIRS}
 
 link_directories(${LINK_DIRECTORIES})
 
-Set(SRCS
+Set(NO_DICT_SRCS
   src/data/FileReader.cxx
   src/data/SidsDataSet.cxx
   src/data/SidsParameters.cxx
   src/model/CountingExp.cxx
   src/model/OscModel.cxx
+  src/model/ExpModel.cxx
   src/macro/Analysis.cxx
 )
 
@@ -44,9 +46,13 @@ Set(LIBRARY_NAME OscillationAnalysis)
   Set(DEPENDENCIES 
     ${CUBA_LIBRARY_STATIC}
     ${BAT_LIBRARIES_SHARED}
-  #BATmodels BATmtf BAT cuba
+    #Proof GeomPainter Geom VMC EG MathCore Physics 
+    Matrix Tree Hist RIO Cint Core
+    Minuit RooFitCore RooFit RooStats Foam MathMore
+    #Tree Hist RIO Cint Core
+    #BATmodels BATmtf BAT cuba
 )
-
+message(STATUS "BAT_LIBRARIES_SHARED (2nd call) is = ${BAT_LIBRARIES_SHARED}")
 
 
 GENERATE_LIBRARY()

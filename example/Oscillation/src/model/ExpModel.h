@@ -1,13 +1,13 @@
 //
-//  OscModel.h
-//  batTuto1
+//  ExpModel.h
+//  BC2014Oscv0.0
 //
-//  Created by Nicolas Winckler on 2/20/14.
+//  Created by Nicolas Winckler on 3/9/14.
 //  Copyright (c) 2014 Nicolas Winckler. All rights reserved.
 //
 
-#ifndef __batTuto1__OscModel__
-#define __batTuto1__OscModel__
+#ifndef __BC2014Oscv0_0__ExpModel__
+#define __BC2014Oscv0_0__ExpModel__
 
 #include <iostream>
 
@@ -21,14 +21,13 @@
 #include "SidsParameters.h"
 
 
-class OscModel : public BCModel
+class ExpModel : public BCModel
 {
-    public:
+public:
     
-	//OscModel ( );
-    OscModel();
-    OscModel(SidsParameters Sidspar);
-    ~OscModel ( );
+    ExpModel();
+    ExpModel(SidsParameters Sidspar);
+    ~ExpModel ( );
     
     // Methods to overload
     void DefineParameters();
@@ -43,8 +42,10 @@ class OscModel : public BCModel
     double ftmin;
     double ftmax;
     double fSampleMean;
-//    ClassDef(OscModel,1);
+    
 };
 
 
-#endif /* defined(__batTuto1__OscModel__) */
+
+
+#endif /* defined(__BC2014Oscv0_0__ExpModel__) */

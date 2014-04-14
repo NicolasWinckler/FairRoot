@@ -24,6 +24,7 @@
 #include <BAT/BCDataPoint.h>
 #include "CountingExp.h"
 #include "OscModel.h"
+#include "ExpModel.h"
 
 #include "SidsParameters.h"
 #include "SidsDataSet.h"
@@ -42,7 +43,7 @@ public:
     void Run();
     void RunTuto1();
 	void GetBayesFactor(string filename);
-    ClassDef(Analysis,1);
+    //ClassDef(Analysis,1);
 };
 
 

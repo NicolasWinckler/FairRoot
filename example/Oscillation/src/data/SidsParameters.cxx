@@ -116,6 +116,6 @@ string SidsParameters::GetName(string key)
     return name;
 }
 
-ClassImp(SidsParameters)
+//ClassImp(SidsParameters)
 
 
