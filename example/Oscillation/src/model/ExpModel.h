@@ -31,7 +31,6 @@ public:
     
     // Methods to overload
     void DefineParameters();
-    double LogAPrioriProbability(const std::vector<double> &parameters);
     double LogLikelihood(const std::vector<double> &parameters);
     // void MCMCIterationInterface();
     

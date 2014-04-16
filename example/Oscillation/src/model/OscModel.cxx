@@ -21,6 +21,7 @@ OscModel::OscModel(SidsParameters Sidspar) : BCModel(), fSampleMean(0.0)
 {
     ftmin=Sidspar.GetValue("tmin");
     ftmax=Sidspar.GetValue("tmax");
+    DefineParameters();
 }
 
 // ---------------------------------------------------------
@@ -40,9 +41,9 @@ void OscModel::DefineParameters()
     
     // Allowed range for R_B is [0, 2]
     AddParameter("lambda", 0.0, 0.01);
-    AddParameter("amp", -0.5,0.5);
+    AddParameter("amp", -0.4,0.4);
     AddParameter("omega", 0.0,7.0);
-    AddParameter("phi", -4.0, 4.0);
+    AddParameter("phi", -3.14, 3.14);
     
 }
 
@@ -68,35 +69,24 @@ double OscModel::LogLikelihood(const std::vector<double> &parameters)
     double part1b=(omega*TMath::Sin(omega*ftmin+phi)-lambda*TMath::Cos(omega*ftmin+phi))*TMath::Exp(-lambda*ftmin);
     double AnalyticIntegral=(part0+factor*(part1a-part1b))/lambda;      // normalisation factor of the pdf M1
 	
+    //std::cout << " GetNDataPoints() = " << BCModel::GetNDataPoints() << std::endl;
+    std::cout << " fDataSet->GetNDataPoints(); b = " << fDataSet->GetNDataPoints() << std::endl;
     for (int i = 0; i < GetNDataPoints(); ++i)
     {
         // get data
-        double t      = GetDataPoint(i)->GetValue(0);
-        
+        double t = GetDataPoint(i)->GetValue(0);
+            //std::cout << " GetDataPoint(i)->GetValue(0) = " << GetDataPoint(i)->GetValue(0) << std::endl;
+
         // calculate Sum log(1+a cos(wt+phi))
         double coswt=TMath::Cos(omega*t+phi);
         logprob += log(1+amp*coswt);                                    //cos statistics
     }
     // update likelihood
-    logprob += GetNDataPoints()*log(AnalyticIntegral);                  //cos normalization term
-    logprob += GetNDataPoints()*(log(lambda)-lambda*fSampleMean);       //pure exponential term
+    logprob -= GetNDataPoints()*(log(AnalyticIntegral)+lambda*fSampleMean);
     
     return logprob;
 }
 
-// ---------------------------------------------------------
-double OscModel::LogAPrioriProbability(const std::vector<double> &parameters)
-{
-    // This method returns the logarithm of the prior probability for the
-    // parameters p(parameters).
-    double logprob = 0.0;
-    
-    // normalize flat prior with parameter ranges
-    for (unsigned int i = 0; i < GetNParameters(); i++)
-        logprob -= log(GetParameter(i)->GetRangeWidth());
-    
-    return 0.0;
-}
 // ---------------------------------------------------------
 
 void OscModel::SetDataSet(BCDataSet* dataset, double unit)
@@ -106,6 +96,8 @@ void OscModel::SetDataSet(BCDataSet* dataset, double unit)
     for (int i = 0; i < GetNDataPoints(); ++i)
         sum+=GetDataPoint(i)->GetValue(0);
     fSampleMean=unit*sum/((double)GetNDataPoints());
+    std::cout << " GetNDataPoints() a = " << BCModel::GetNDataPoints() << std::endl;
+    std::cout << " fDataSet->GetNDataPoints(); b = " << fDataSet->GetNDataPoints() << std::endl;
 }
 
 

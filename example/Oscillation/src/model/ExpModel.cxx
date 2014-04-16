@@ -20,6 +20,7 @@ ExpModel::ExpModel(SidsParameters Sidspar) : BCModel(), fSampleMean(0.0)
 {
     ftmin=Sidspar.GetValue("tmin");
     ftmax=Sidspar.GetValue("tmax");
+    DefineParameters();
 }
 
 
@@ -56,25 +57,14 @@ double ExpModel::LogLikelihood(const std::vector<double> &parameters)
     
     //calculate the normalization factor analytically
     double part0=TMath::Exp(-lambda*ftmin )-TMath::Exp(-lambda*ftmax);
-	
-    logprob = GetNDataPoints()*(log(lambda)-lambda*fSampleMean-log(part0));
+    double AnalyticIntegral=part0/lambda;
+    
+    logprob -= GetNDataPoints()*(log(AnalyticIntegral)+lambda*fSampleMean);
     
     return logprob;
 }
 
-// ---------------------------------------------------------
-double ExpModel::LogAPrioriProbability(const std::vector<double> &parameters)
-{
-    // This method returns the logarithm of the prior probability for the
-    // parameters p(parameters).
-    double logprob = 0.0;
-    
-    // normalize flat prior with parameter ranges
-    for (unsigned int i = 0; i < GetNParameters(); i++)
-        logprob -= log(GetParameter(i)->GetRangeWidth());
-    
-    return 0.0;
-}
+
 // ---------------------------------------------------------
 
 void ExpModel::SetDataSet(BCDataSet* dataset, double unit)

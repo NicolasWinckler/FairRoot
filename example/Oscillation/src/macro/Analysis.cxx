@@ -62,19 +62,62 @@ void Analysis::GetBayesFactor( string filename)
     BCLog::SetLogLevel(BCLog::detail);
     
     /// Set Data
-    SidsDataSet* ECData = new SidsDataSet();
-    ECData->ReadDataFromFileTxt(configPar);
+    //SidsDataSet* ECData = new SidsDataSet();
+    BCDataSet* ECData = new BCDataSet();
+    //ECData->ReadDataFromFileTxt(configPar);
+    
+    double Xvar=51;
+    std::vector<double> data1;
+    std::vector<double> data2;
+    data1.push_back(Xvar);
+    data2.push_back(Xvar);
+    ECData->AddDataPoint(new BCDataPoint(data1));
+    ECData->AddDataPoint(new BCDataPoint(data1));
     
     /// Set Model M0
     ExpModel* M0 = new ExpModel(configPar);
     M0->SetDataSet(ECData);
     BCLog::OutSummary("Model M0 created");
+    M0->SetPriorConstant(0);
+    M0->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
     
     /// Set Model M1
     OscModel* M1 = new OscModel(configPar);
     M1->SetDataSet(ECData);
     BCLog::OutSummary("Model M1 created");
+    M1->SetPriorConstant(0);
+    M1->SetPriorConstant(1);
+    M1->SetPriorDelta(2, 0.88);
+    M1->SetPriorDelta(3, 2.4);
+    M1->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
     
+    M1->Normalize();
+    
+    // run MCMC and marginalize posterior wrt. all parameters
+    // and all combinations of two parameters
+    //M1->MarginalizeAll();
+    
+    /*
+   // ----------------------------------------------------
+   // set up model manager
+   // ----------------------------------------------------
+
+   BCModelManager * modelman = new BCModelManager();
+   modelman->AddModel(M0,0.5);
+   modelman->AddModel(M1,0.5);
+
+   
+   //modelman->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
+   modelman->SetIntegrationMethod(BCIntegrate::kIntCuba);
+   
+   // Calculates the normalization of the likelihood for each model
+   modelman->Integrate();
+
+   // compare models
+   double bayesFact01 = modelman->BayesFactor(0,1);
+
+   std::cout << std::endl << "Bayes Factor P(D|M0)/P(D|M1) = " << bayesFact01 << std::endl;
+    */
 }
 
 

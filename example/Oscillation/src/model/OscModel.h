@@ -19,20 +19,18 @@
 #include "TMath.h"
 #include <cmath>
 #include "SidsParameters.h"
-
+#include "BCDataSet.h"
 
 class OscModel : public BCModel
 {
     public:
     
-	//OscModel ( );
     OscModel();
     OscModel(SidsParameters Sidspar);
-    ~OscModel ( );
+    ~OscModel();
     
     // Methods to overload
     void DefineParameters();
-    double LogAPrioriProbability(const std::vector<double> &parameters);
     double LogLikelihood(const std::vector<double> &parameters);
     // void MCMCIterationInterface();
     

@@ -20,8 +20,9 @@
 #include <BAT/BCAux.h>
 #include <BAT/BCDataSet.h>
 #include <BAT/BCSummaryTool.h>
-
+#include <BAT/BCModelManager.h>
 #include <BAT/BCDataPoint.h>
+
 #include "CountingExp.h"
 #include "OscModel.h"
 #include "ExpModel.h"
