@@ -34,7 +34,7 @@ class OscModel : public BCModel
     double LogLikelihood(const std::vector<double> &parameters);
     // void MCMCIterationInterface();
     
-    void SetDataSet(BCDataSet* dataset, double unit=1);
+    void SetDataSet2(BCDataSet* dataset, double unit=1);
     
     private :
     

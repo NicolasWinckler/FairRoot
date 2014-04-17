@@ -10,7 +10,7 @@
 
 
 // ---------------------------------------------------------
-OscModel::OscModel() : BCModel(), ftmin(0.0), ftmax(0.0), fSampleMean(0.0)
+OscModel::OscModel() : BCModel("OscModel"), ftmin(0.0), ftmax(0.0), fSampleMean(0.0)
 {
     // default constructor
     DefineParameters();
@@ -40,11 +40,14 @@ void OscModel::DefineParameters()
     // order of adding the parameters.
     
     // Allowed range for R_B is [0, 2]
-    AddParameter("lambda", 0.0, 0.01);
-    AddParameter("amp", -0.4,0.4);
-    AddParameter("omega", 0.0,7.0);
-    AddParameter("phi", -3.14, 3.14);
-    
+    AddParameter("lambda0", 0.008, 0.020,"#lambda_{1}");
+    AddParameter("amp", -0.25,0.25,"#a_{1}");
+    AddParameter("omega", 0.0,7.0,"#omega_{1}");
+    AddParameter("phi", -3.14, 3.14,"#phi_{1}");
+    GetParameter(0)->SetNbins(400);//lambda
+    GetParameter(1)->SetNbins(400);//a
+    GetParameter(2)->SetNbins(600);//omega
+    GetParameter(3)->SetNbins(400);//phi
 }
 
 // ---------------------------------------------------------
@@ -70,7 +73,7 @@ double OscModel::LogLikelihood(const std::vector<double> &parameters)
     double AnalyticIntegral=(part0+factor*(part1a-part1b))/lambda;      // normalisation factor of the pdf M1
 	
     //std::cout << " GetNDataPoints() = " << BCModel::GetNDataPoints() << std::endl;
-    std::cout << " fDataSet->GetNDataPoints(); b = " << fDataSet->GetNDataPoints() << std::endl;
+    //std::cout << " fDataSet->GetNDataPoints(); b = " << fDataSet->GetNDataPoints() << std::endl;
     for (int i = 0; i < GetNDataPoints(); ++i)
     {
         // get data
@@ -89,7 +92,7 @@ double OscModel::LogLikelihood(const std::vector<double> &parameters)
 
 // ---------------------------------------------------------
 
-void OscModel::SetDataSet(BCDataSet* dataset, double unit)
+void OscModel::SetDataSet2(BCDataSet* dataset, double unit)
 {
     BCModel::SetDataSet(dataset);
     double sum=0.0;

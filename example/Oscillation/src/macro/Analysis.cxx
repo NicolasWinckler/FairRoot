@@ -62,42 +62,41 @@ void Analysis::GetBayesFactor( string filename)
     BCLog::SetLogLevel(BCLog::detail);
     
     /// Set Data
-    //SidsDataSet* ECData = new SidsDataSet();
-    BCDataSet* ECData = new BCDataSet();
-    //ECData->ReadDataFromFileTxt(configPar);
-    
-    double Xvar=51;
-    std::vector<double> data1;
-    std::vector<double> data2;
-    data1.push_back(Xvar);
-    data2.push_back(Xvar);
-    ECData->AddDataPoint(new BCDataPoint(data1));
-    ECData->AddDataPoint(new BCDataPoint(data1));
-    
+    SidsDataSet* ECData = new SidsDataSet();
+    //BCDataSet* ECData = new BCDataSet();
+    ECData->ReadDataFromFileTxt(configPar);
+  
     /// Set Model M0
     ExpModel* M0 = new ExpModel(configPar);
-    M0->SetDataSet(ECData);
+    M0->SetDataSet2(ECData);
     BCLog::OutSummary("Model M0 created");
     M0->SetPriorConstant(0);
-    M0->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
-    
+    BCSummaryTool * summaryM0 = new BCSummaryTool(M0);
+        // M0->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
+    M0->MCMCSetPrecision(BCEngineMCMC::kHigh);
     /// Set Model M1
     OscModel* M1 = new OscModel(configPar);
-    M1->SetDataSet(ECData);
+    M1->SetDataSet2(ECData);
     BCLog::OutSummary("Model M1 created");
     M1->SetPriorConstant(0);
     M1->SetPriorConstant(1);
-    M1->SetPriorDelta(2, 0.88);
-    M1->SetPriorDelta(3, 2.4);
-    M1->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
-    
-    M1->Normalize();
+    M1->SetPriorConstant(2);
+    M1->SetPriorConstant(3);
+    M1->MCMCSetPrecision(BCEngineMCMC::kHigh);
+    //M1->SetPriorDelta(2, 0.88);
+    //M1->SetPriorDelta(3, 2.4);
+    BCSummaryTool * summaryM1 = new BCSummaryTool(M1);
+    //M1->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
+    std::cout<<M0->GetNDataPoints()<<" "<<M1->GetNDataPoints()<<std::endl;
+    //M1->Normalize();
+    //M0->Normalize();
     
     // run MCMC and marginalize posterior wrt. all parameters
     // and all combinations of two parameters
     //M1->MarginalizeAll();
+    //M0->MarginalizeAll();
     
-    /*
+    
    // ----------------------------------------------------
    // set up model manager
    // ----------------------------------------------------
@@ -107,17 +106,29 @@ void Analysis::GetBayesFactor( string filename)
    modelman->AddModel(M1,0.5);
 
    
-   //modelman->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
+   modelman->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
    modelman->SetIntegrationMethod(BCIntegrate::kIntCuba);
+   modelman->SetDataSet(ECData);
    
    // Calculates the normalization of the likelihood for each model
    modelman->Integrate();
-
+   modelman->MarginalizeAll();
    // compare models
    double bayesFact01 = modelman->BayesFactor(0,1);
 
    std::cout << std::endl << "Bayes Factor P(D|M0)/P(D|M1) = " << bayesFact01 << std::endl;
-    */
+    //
+   
+   //modelman->PrintResults();//"testMy_results.txt");
+   //modelman->PrintSummary("testresult.txt");
+   
+   M0->PrintAllMarginalized("CIposteriorM0_notNormalized.pdf");
+   M1->PrintAllMarginalized("CIposteriorM1_notNormalized.pdf");
+
+   summaryM0->PrintKnowledgeUpdatePlots("priorposteriorM0_notNormalized.pdf");
+   summaryM1->PrintKnowledgeUpdatePlots("priorposteriorM1_notNormalized.pdf");
+
+   
 }
 
 

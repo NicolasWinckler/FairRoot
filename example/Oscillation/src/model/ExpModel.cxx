@@ -9,14 +9,14 @@
 #include "ExpModel.h"
 
 // ---------------------------------------------------------
-ExpModel::ExpModel() : BCModel(), ftmin(0.0), ftmax(0.0), fSampleMean(0.0)
+ExpModel::ExpModel() : BCModel("ExpModel"), ftmin(0.0), ftmax(0.0), fSampleMean(0.0)
 {
     // default constructor
     DefineParameters();
 }
 
 
-ExpModel::ExpModel(SidsParameters Sidspar) : BCModel(), fSampleMean(0.0)
+ExpModel::ExpModel(SidsParameters Sidspar) : BCModel("ExpModel"), fSampleMean(0.0)
 {
     ftmin=Sidspar.GetValue("tmin");
     ftmax=Sidspar.GetValue("tmax");
@@ -40,7 +40,8 @@ void ExpModel::DefineParameters()
     // order of adding the parameters.
     
     // Allowed range for R_B is [0, 2]
-    AddParameter("lambda", 0.0, 0.01);
+    AddParameter("lambda0", 0.008, 0.020,"#lambda_{0}");
+    GetParameter(0)->SetNbins(400);
     
 }
 
@@ -67,7 +68,7 @@ double ExpModel::LogLikelihood(const std::vector<double> &parameters)
 
 // ---------------------------------------------------------
 
-void ExpModel::SetDataSet(BCDataSet* dataset, double unit)
+void ExpModel::SetDataSet2(BCDataSet* dataset, double unit)
 {
     BCModel::SetDataSet(dataset);
     double sum=0.0;
