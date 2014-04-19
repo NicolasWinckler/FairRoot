@@ -21,9 +21,6 @@
 #include <BAT/BCModelManager.h>
 #include <BAT/BCDataPoint.h>
 
-#include "CountingExp.h"
-#include "OscModel.h"
-#include "ExpModel.h"
 
 #include "SidsParameters.h"
 #include "SidsDataSet.h"
@@ -39,12 +36,8 @@ class Analysis
 public:
     
     
-	Analysis();
-    ~Analysis();
-    void Run();
-    void RunTuto1();
-    void GetBayesFactor(string filename);
-    void Test(string filename);
+    Analysis();
+    virtual ~Analysis();
     string get_date();
     string get_prefix(SidsParameters Sidspar);
 protected:

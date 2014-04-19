@@ -21,10 +21,6 @@ include_directories(${INCLUDE_DIRECTORIES})
 set(LINK_DIRECTORIES
 ${ROOT_LIBRARY_DIR}
 ${Boost_LIBRARY_DIRS}
-#${BAT_LIBRARY_DIR}
-#${CUBA_LIBRARY_DIR}
-#${CUBA_LIBRARY_STATIC}
-#${BAT_LIBRARIES_SHARED} 
 ) 
 
 link_directories(${LINK_DIRECTORIES})
@@ -37,19 +33,19 @@ Set(NO_DICT_SRCS
   src/model/OscModel.cxx
   src/model/ExpModel.cxx
   src/macro/Analysis.cxx
+  src/macro/OscillationAnalysis.cxx
+  src/macro/IsomerAnalysis.cxx
 )
 
 
 Set(LINKDEF OscAnalysisLinkDef.h)
-Set(LIBRARY_NAME OscillationAnalysis)
+Set(LIBRARY_NAME BayesianAnalysis)
 
   Set(DEPENDENCIES 
     ${CUBA_LIBRARY_STATIC}
     ${BAT_LIBRARIES_SHARED}
-    #Proof GeomPainter Geom VMC EG MathCore Physics 
     Matrix Tree Hist RIO Cint Core
     Minuit RooFitCore RooFit RooStats Foam MathMore
-    #Tree Hist RIO Cint Core
     #BATmodels BATmtf BAT cuba
 )
 message(STATUS "BAT_LIBRARIES_SHARED (2nd call) is = ${BAT_LIBRARIES_SHARED}")
@@ -59,10 +55,11 @@ GENERATE_LIBRARY()
 
 
 If (Boost_FOUND)
-  Set(Exe_Names runoscillation)
+  Set(Exe_Names runoscillation runisomer)
 
   set(Exe_Source
     src/macro/runOscAnalysis.cxx
+    src/macro/runIsomerAnalysis.cxx
     )
 
   List(LENGTH Exe_Names _length)
@@ -73,7 +70,7 @@ If (Boost_FOUND)
     List(GET Exe_Source ${_file} _src)
     Set(EXE_NAME ${_name})
     Set(SRCS ${_src})
-    Set(DEPENDENCIES OscillationAnalysis)
+    Set(DEPENDENCIES BayesianAnalysis)
     GENERATE_EXECUTABLE()
   EndForEach(_file RANGE 0 ${_length})
 EndIf (Boost_FOUND)
