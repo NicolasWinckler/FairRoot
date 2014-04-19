@@ -7,7 +7,8 @@ int main()
     string filename=wkspDir+"configfile142Pm60_4k_PBEC_2010.txt";
     Analysis myAnalysis;
     
-    myAnalysis.GetBayesFactor(filename);
+    //myAnalysis.GetBayesFactor(filename);
     //myAnalysis.RunTuto1( );
+    myAnalysis.Test(filename);
     return 0;
 }

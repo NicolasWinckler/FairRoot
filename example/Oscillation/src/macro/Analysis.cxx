@@ -8,9 +8,50 @@
 
 #include "Analysis.h"
 
+
+#define MAX_DATE 20
+
 Analysis::Analysis ( )
 {
-	
+    
+    /// Set configuration of the analysis from configuration file
+    
+    // define field value names that are in configfile
+    
+    // analysis range
+    fvalfield.push_back("tmin");
+    fvalfield.push_back("tmax");
+    fvalfield.push_back("toffset");
+    fvalfield.push_back("tunit");
+    
+    // parameter ranges
+    fvalfield.push_back("lambdamin");
+    fvalfield.push_back("lambdamax");
+    fvalfield.push_back("amin");
+    fvalfield.push_back("amax");
+    fvalfield.push_back("omegamin");
+    fvalfield.push_back("omegamax");
+    fvalfield.push_back("phimin");
+    fvalfield.push_back("phimax");
+    
+    // parameter binning
+    fvalfield.push_back("BinLambda");
+    fvalfield.push_back("BinAmp");
+    fvalfield.push_back("BinOmega");
+    fvalfield.push_back("BinPhi");
+    
+    // define field char names that are in configfile
+    fcharfield.push_back("DataName");
+    fcharfield.push_back("DataPathName");
+    fcharfield.push_back("OutPutDirectory");
+    fcharfield.push_back("LogFileName");
+    fcharfield.push_back("OutputPostpdfsM0");
+    fcharfield.push_back("OutputPostpdfsM1");
+    fcharfield.push_back("OutputSummaryM0");
+    fcharfield.push_back("OutputSummaryM1");
+    
+    fcharfield.push_back("MCMCPrecision");
+    
 }
 
 
@@ -39,78 +80,107 @@ void Analysis::GetBayesFactor( string filename)
     
     // set nicer style for drawing than the ROOT default
     BCAux::SetStyle();
-    /// Set configuration of the analysis from configuration file
-    // define field value names that are in configfile
-    vector <string> valfield;
-    valfield.push_back("tmin");
-    valfield.push_back("tmax");
-    valfield.push_back("toffset");
-    valfield.push_back("tunit");
-    // define field char names that are in configfile
-    vector <string> charfield;
-    charfield.push_back("DataName");
-    charfield.push_back("DataPathName");
-    charfield.push_back("LogFileName");
+    
     // initialize the configpar
-    SidsParameters configPar(valfield,charfield);
+    SidsParameters configPar(fvalfield,fcharfield);
     // load values from file
     configPar.SetExperimentalParameter(filename,true);
     
-    // open log file
-    string LogFileName=configPar.GetName("LogFileName");
-    BCLog::OpenLog(LogFileName.c_str());
+    // ----------------------------------------------------
+    // define output file names and open log file
+    // ----------------------------------------------------
+    string prefixOutputName=get_prefix(configPar);
+    string file_postpdfsM0=prefixOutputName + configPar.GetName("OutputPostpdfsM0");
+    string file_postpdfsM1=prefixOutputName + configPar.GetName("OutputPostpdfsM1");
+    string file_summaryM0=prefixOutputName + configPar.GetName("OutputSummaryM0");
+    string file_summaryM1=prefixOutputName + configPar.GetName("OutputSummaryM1");
+    string file_log=prefixOutputName + configPar.GetName("LogFileName");
+    
+    BCLog::OpenLog(file_log.c_str());
     BCLog::SetLogLevel(BCLog::detail);
     
-    /// Set Data
+    // ----------------------------------------------------
+    /// Load Data and other variables
+    // ----------------------------------------------------
     SidsDataSet* ECData = new SidsDataSet();
-    //BCDataSet* ECData = new BCDataSet();
     ECData->ReadDataFromFileTxt(configPar);
-  
+    string MCMCPrecision=configPar.GetName("MCMCPrecision");
+    
+    // ----------------------------------------------------
     /// Set Model M0
+    // ----------------------------------------------------
     ExpModel* M0 = new ExpModel(configPar);
-    M0->SetDataSet2(ECData);
-    BCLog::OutSummary("Model M0 created");
+    M0->SetMyDataSet(ECData);
     M0->SetPriorConstant(0);
+    M0->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
+    
+    if(MCMCPrecision=="Low")      M0->MCMCSetPrecision(BCEngineMCMC::kLow);
+    if(MCMCPrecision=="Medium")   M0->MCMCSetPrecision(BCEngineMCMC::kMedium);
+    if(MCMCPrecision=="High")     M0->MCMCSetPrecision(BCEngineMCMC::kHigh);
+    if(MCMCPrecision=="VeryHigh") M0->MCMCSetPrecision(BCEngineMCMC::kVeryHigh);
+    
     BCSummaryTool * summaryM0 = new BCSummaryTool(M0);
-        // M0->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
-    M0->MCMCSetPrecision(BCEngineMCMC::kHigh);
+    BCLog::OutSummary("Model M0 created");
+    
+    // ----------------------------------------------------
     /// Set Model M1
+    // ----------------------------------------------------
     OscModel* M1 = new OscModel(configPar);
-    M1->SetDataSet2(ECData);
-    BCLog::OutSummary("Model M1 created");
+    M1->SetMyDataSet(ECData);
+    
     M1->SetPriorConstant(0);
     M1->SetPriorConstant(1);
     M1->SetPriorConstant(2);
     M1->SetPriorConstant(3);
-    M1->MCMCSetPrecision(BCEngineMCMC::kHigh);
     //M1->SetPriorDelta(2, 0.88);
     //M1->SetPriorDelta(3, 2.4);
+    M1->SetIntegrationMethod(BCIntegrate::kIntCuba);
+    M1->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
+    
+    //M1->SetCubaIntegrationMethod(BCIntegrate::kCubaVegas);
+    if(MCMCPrecision=="Low")      M1->MCMCSetPrecision(BCEngineMCMC::kLow);
+    if(MCMCPrecision=="Medium")   M1->MCMCSetPrecision(BCEngineMCMC::kMedium);
+    if(MCMCPrecision=="High")     M1->MCMCSetPrecision(BCEngineMCMC::kHigh);
+    if(MCMCPrecision=="VeryHigh") M1->MCMCSetPrecision(BCEngineMCMC::kVeryHigh);
+    
     BCSummaryTool * summaryM1 = new BCSummaryTool(M1);
-    //M1->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
-    std::cout<<M0->GetNDataPoints()<<" "<<M1->GetNDataPoints()<<std::endl;
-    //M1->Normalize();
-    //M0->Normalize();
+    BCLog::OutSummary("Model M1 created");
+    
+    BCLog::OutSummary("Normalize M0 and M1");
+    M1->Normalize();
+    M0->Normalize();
+    
+    
+    double integral0=M0->GetIntegral();
+    double integral1=M1->GetIntegral();
+    std::cout << "integral0 --------> " << integral0 << std::endl;
+    std::cout << "integral1 --------> " << integral1 << std::endl;
     
     // run MCMC and marginalize posterior wrt. all parameters
     // and all combinations of two parameters
-    //M1->MarginalizeAll();
-    //M0->MarginalizeAll();
+    BCLog::OutSummary("Marginalize M0 and M1");
+    M1->MarginalizeAll();
+    M0->MarginalizeAll();
+    
     
     
    // ----------------------------------------------------
    // set up model manager
-   // ----------------------------------------------------
+   // ----------------------------------------------------   
 
    BCModelManager * modelman = new BCModelManager();
+   modelman->SetDataSet(ECData);
    modelman->AddModel(M0,0.5);
    modelman->AddModel(M1,0.5);
 
    
    modelman->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
    modelman->SetIntegrationMethod(BCIntegrate::kIntCuba);
-   modelman->SetDataSet(ECData);
+   
    
    // Calculates the normalization of the likelihood for each model
+   //modelman->GetModel(0)->Integrate();
+   //modelman->GetModel(1)->Integrate();
    modelman->Integrate();
    modelman->MarginalizeAll();
    // compare models
@@ -121,16 +191,134 @@ void Analysis::GetBayesFactor( string filename)
    
    //modelman->PrintResults();//"testMy_results.txt");
    //modelman->PrintSummary("testresult.txt");
+  
    
-   M0->PrintAllMarginalized("CIposteriorM0_notNormalized.pdf");
-   M1->PrintAllMarginalized("CIposteriorM1_notNormalized.pdf");
+   /// write output
+   
+   
+   M0->PrintAllMarginalized(file_postpdfsM0.c_str());
+   M1->PrintAllMarginalized(file_postpdfsM1.c_str());
 
-   summaryM0->PrintKnowledgeUpdatePlots("priorposteriorM0_notNormalized.pdf");
-   summaryM1->PrintKnowledgeUpdatePlots("priorposteriorM1_notNormalized.pdf");
+   summaryM0->PrintKnowledgeUpdatePlots(file_summaryM0.c_str());
+   summaryM1->PrintKnowledgeUpdatePlots(file_summaryM1.c_str());
 
    
 }
 
+
+////////////////////////////////////////////////////////////////// TEST
+
+
+
+void Analysis::Test( string filename)
+{
+    
+    // set nicer style for drawing than the ROOT default
+    BCAux::SetStyle();
+    
+    // initialize the configpar
+    SidsParameters configPar(fvalfield,fcharfield);
+    // load values from file
+    configPar.SetExperimentalParameter(filename,true);
+    
+    // ----------------------------------------------------
+    // define output file names and open log file
+    // ----------------------------------------------------
+    string prefixOutputName=get_prefix(configPar);
+    string file_postpdfsM0=prefixOutputName + configPar.GetName("OutputPostpdfsM0");
+    string file_postpdfsM1=prefixOutputName + configPar.GetName("OutputPostpdfsM1");
+    string file_summaryM0=prefixOutputName + configPar.GetName("OutputSummaryM0");
+    string file_summaryM1=prefixOutputName + configPar.GetName("OutputSummaryM1");
+    string file_log=prefixOutputName + configPar.GetName("LogFileName");
+    
+    BCLog::OpenLog(file_log.c_str());
+    BCLog::SetLogLevel(BCLog::detail);
+    
+    // ----------------------------------------------------
+    /// Load Data and other variables
+    // ----------------------------------------------------
+    SidsDataSet* ECData = new SidsDataSet();
+    ECData->ReadDataFromFileTxt(configPar);
+    string MCMCPrecision=configPar.GetName("MCMCPrecision");
+    
+    // ----------------------------------------------------
+    /// Set Model M0
+    // ----------------------------------------------------
+    ExpModel* M0 = new ExpModel(configPar);
+    M0->SetMyDataSet(ECData);
+    M0->SetPriorConstant(0);
+    M0->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
+    
+    if(MCMCPrecision=="Low")      M0->MCMCSetPrecision(BCEngineMCMC::kLow);
+    if(MCMCPrecision=="Medium")   M0->MCMCSetPrecision(BCEngineMCMC::kMedium);
+    if(MCMCPrecision=="High")     M0->MCMCSetPrecision(BCEngineMCMC::kHigh);
+    if(MCMCPrecision=="VeryHigh") M0->MCMCSetPrecision(BCEngineMCMC::kVeryHigh);
+    
+    BCSummaryTool * summaryM0 = new BCSummaryTool(M0);
+    BCLog::OutSummary("Model M0 created");
+    
+    // ----------------------------------------------------
+    /// Set Model M1
+    // ----------------------------------------------------
+    OscModel* M1 = new OscModel(configPar);
+    M1->SetMyDataSet(ECData);
+    
+    M1->SetPriorConstant(0);
+    M1->SetPriorConstant(1);
+    M1->SetPriorConstant(2);
+    M1->SetPriorConstant(3);
+    //M1->SetPriorDelta(2, 0.88);
+    //M1->SetPriorDelta(3, 2.4);
+    BCLog::OutSummary("******************* Set integration and marginalization method for M1 *******************");
+    M1->SetIntegrationMethod(BCIntegrate::kIntCuba);
+    M1->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
+    //M1->SetNIterationsMin(1000000);
+    //M1->SetNIterationsMax(10000000);
+    //M1->SetCubaIntegrationMethod(BCIntegrate::kCubaVegas);
+    if(MCMCPrecision=="Low")      M1->MCMCSetPrecision(BCEngineMCMC::kLow);
+    if(MCMCPrecision=="Medium")   M1->MCMCSetPrecision(BCEngineMCMC::kMedium);
+    if(MCMCPrecision=="High")     M1->MCMCSetPrecision(BCEngineMCMC::kHigh);
+    if(MCMCPrecision=="VeryHigh") M1->MCMCSetPrecision(BCEngineMCMC::kVeryHigh);
+    
+    BCSummaryTool * summaryM1 = new BCSummaryTool(M1);
+    BCLog::OutSummary("Model M1 created");
+    
+    BCLog::OutSummary("******************* Normalize M0 and M1 *******************");
+
+    BCLog::OutSummary("");
+    M1->Normalize();
+    M0->Normalize();
+    
+    
+    double integral0=M0->GetIntegral();
+    double integral1=M1->GetIntegral();
+    std::cout << "integral0 --------> " << integral0 << std::endl;
+    std::cout << "integral1 --------> " << integral1 << std::endl;
+    
+    // run MCMC and marginalize posterior wrt. all parameters
+    // and all combinations of two parameters
+    BCLog::OutSummary("******************* Marginalize M0 and M1 *******************");
+    M1->MarginalizeAll();
+    M0->MarginalizeAll();
+    
+    
+    
+   // ----------------------------------------------------
+   // set up model manager
+   // ----------------------------------------------------
+
+   //M0->Integrate();
+   //M1->Integrate();
+   integral0=M0->GetIntegral();
+   integral1=M1->GetIntegral();
+   std::cout << "integral0 --------> " << integral0 << std::endl;
+   std::cout << "integral1 --------> " << integral1 << std::endl;
+   
+   
+}
+
+
+////////////////////////////////////////////////////////////////// Tuto
 
 
 
@@ -160,7 +348,7 @@ void Analysis::RunTuto1( )
     
     BCLog::OutSummary("Test model created");
     
-    //m->SetIntegrationMethod(BCIntegrate::kIntCuba);
+    m->SetIntegrationMethod(BCIntegrate::kIntCuba);
     m->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
     
     //m->SetMarginalizationMethod(BCIntegrate::kMargDefault);
@@ -221,5 +409,37 @@ void Analysis::RunTuto1( )
 
 
 
+
+
+string Analysis::get_date()
+{
+   time_t now;
+   char the_date[100];
+
+   the_date[0] = '\0';
+
+   now = time(NULL);
+
+   if (now != -1)
+   {
+      strftime(the_date, 100, "%Y%m%d_%H%M%S_", gmtime(&now));
+   }
+
+   return string(the_date);
+}
+
+
+string Analysis::get_prefix(SidsParameters Sidspar)
+{
+   
+   string strdate="run"+get_date();
+   string prefix=Sidspar.GetName("OutPutDirectory") + strdate;
+   prefix+=Sidspar.GetName("DataName");
+   prefix+="_";
+   prefix+="MCMCPrecision";
+   prefix+=Sidspar.GetName("MCMCPrecision");
+   prefix+="_";
+   return prefix;
+}
 
 

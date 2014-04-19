@@ -68,7 +68,7 @@ double ExpModel::LogLikelihood(const std::vector<double> &parameters)
 
 // ---------------------------------------------------------
 
-void ExpModel::SetDataSet2(BCDataSet* dataset, double unit)
+void ExpModel::SetMyDataSet(BCDataSet* dataset, double unit)
 {
     BCModel::SetDataSet(dataset);
     double sum=0.0;

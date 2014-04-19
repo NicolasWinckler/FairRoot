@@ -34,7 +34,7 @@ public:
     double LogLikelihood(const std::vector<double> &parameters);
     // void MCMCIterationInterface();
     
-    void SetDataSet2(BCDataSet* dataset, double unit=1);
+    void SetMyDataSet(BCDataSet* dataset, double unit=1);
     
     private :
     

@@ -31,10 +31,11 @@ class OscModel : public BCModel
     
     // Methods to overload
     void DefineParameters();
+    void DefineParameters(SidsParameters Sidspar);
     double LogLikelihood(const std::vector<double> &parameters);
     // void MCMCIterationInterface();
     
-    void SetDataSet2(BCDataSet* dataset, double unit=1);
+    void SetMyDataSet(BCDataSet* dataset, double unit=1);
     
     private :
     

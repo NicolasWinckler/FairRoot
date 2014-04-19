@@ -10,11 +10,9 @@
 #define __batTuto1__Analysis__
 
 #include <iostream>
-
-
-
 #include <string>
 #include <vector>
+#include <time.h>
 
 #include <BAT/BCLog.h>
 #include <BAT/BCAux.h>
@@ -30,6 +28,8 @@
 #include "SidsParameters.h"
 #include "SidsDataSet.h"
 
+
+
 /**
  * class TXTDATA
  */
@@ -43,7 +43,16 @@ public:
     ~Analysis();
     void Run();
     void RunTuto1();
-	void GetBayesFactor(string filename);
+    void GetBayesFactor(string filename);
+    void Test(string filename);
+    string get_date();
+    string get_prefix(SidsParameters Sidspar);
+protected:
+    
+    vector <string> fcharfield;
+    vector <string> fvalfield;
+    
+        
     //ClassDef(Analysis,1);
 };
 

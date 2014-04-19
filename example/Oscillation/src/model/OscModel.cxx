@@ -17,11 +17,9 @@ OscModel::OscModel() : BCModel("OscModel"), ftmin(0.0), ftmax(0.0), fSampleMean(
 }
 
 
-OscModel::OscModel(SidsParameters Sidspar) : BCModel(), fSampleMean(0.0)
+OscModel::OscModel(SidsParameters Sidspar) : BCModel("OscModel"), fSampleMean(0.0)
 {
-    ftmin=Sidspar.GetValue("tmin");
-    ftmax=Sidspar.GetValue("tmax");
-    DefineParameters();
+    DefineParameters(Sidspar);
 }
 
 // ---------------------------------------------------------
@@ -29,6 +27,29 @@ OscModel::~OscModel()
 // default destructor
 {
 }
+
+// ---------------------------------------------------------
+void OscModel::DefineParameters(SidsParameters Sidspar)
+{
+    // Add parameters to your model here.
+    // You can then use them in the methods below by calling the
+    // parameters.at(i) or parameters[i], where i is the index
+    // of the parameter. The indices increase from 0 according to the
+    // order of adding the parameters.
+    
+    ftmin=Sidspar.GetValue("tmin");
+    ftmax=Sidspar.GetValue("tmax");
+    AddParameter("lambda1", Sidspar.GetValue("lambdamin"), Sidspar.GetValue("lambdamax"),"#lambda");
+    AddParameter("amp", Sidspar.GetValue("amin"), Sidspar.GetValue("amax"),"a");
+    AddParameter("omega", Sidspar.GetValue("omegamin"), Sidspar.GetValue("omegamax"),"#omega");
+    AddParameter("phi", Sidspar.GetValue("phimin"), Sidspar.GetValue("phimax"),"#phi");
+    GetParameter(0)->SetNbins((int)Sidspar.GetValue("BinLambda"));//lambda
+    GetParameter(1)->SetNbins((int)Sidspar.GetValue("BinAmp"));//a
+    GetParameter(2)->SetNbins((int)Sidspar.GetValue("BinOmega"));//omega
+    GetParameter(3)->SetNbins((int)Sidspar.GetValue("BinPhi"));//phi
+}
+
+
 
 // ---------------------------------------------------------
 void OscModel::DefineParameters()
@@ -39,15 +60,14 @@ void OscModel::DefineParameters()
     // of the parameter. The indices increase from 0 according to the
     // order of adding the parameters.
     
-    // Allowed range for R_B is [0, 2]
-    AddParameter("lambda0", 0.008, 0.020,"#lambda_{1}");
-    AddParameter("amp", -0.25,0.25,"#a_{1}");
-    AddParameter("omega", 0.0,7.0,"#omega_{1}");
-    AddParameter("phi", -3.14, 3.14,"#phi_{1}");
-    GetParameter(0)->SetNbins(400);//lambda
-    GetParameter(1)->SetNbins(400);//a
-    GetParameter(2)->SetNbins(600);//omega
-    GetParameter(3)->SetNbins(400);//phi
+    AddParameter("lambda1", 0.008, 0.020,"#lambda");
+    AddParameter("amp", -0.25,0.25,"a");
+    AddParameter("omega", 0.0,7.0,"#omega");
+    AddParameter("phi", -3.14, 3.14,"#phi");
+    GetParameter(0)->SetNbins(200);//lambda
+    GetParameter(1)->SetNbins(200);//a
+    GetParameter(2)->SetNbins(200);//omega
+    GetParameter(3)->SetNbins(200);//phi
 }
 
 // ---------------------------------------------------------
@@ -92,15 +112,15 @@ double OscModel::LogLikelihood(const std::vector<double> &parameters)
 
 // ---------------------------------------------------------
 
-void OscModel::SetDataSet2(BCDataSet* dataset, double unit)
+void OscModel::SetMyDataSet(BCDataSet* dataset, double unit)
 {
     BCModel::SetDataSet(dataset);
     double sum=0.0;
     for (int i = 0; i < GetNDataPoints(); ++i)
         sum+=GetDataPoint(i)->GetValue(0);
     fSampleMean=unit*sum/((double)GetNDataPoints());
-    std::cout << " GetNDataPoints() a = " << BCModel::GetNDataPoints() << std::endl;
-    std::cout << " fDataSet->GetNDataPoints(); b = " << fDataSet->GetNDataPoints() << std::endl;
+    std::cout << " Number of Data Points = " << BCModel::GetNDataPoints() << std::endl;
+    std::cout << " Sample mean = " << fSampleMean << std::endl;
 }
 
 
