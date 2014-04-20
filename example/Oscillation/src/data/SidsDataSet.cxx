@@ -42,10 +42,10 @@ int SidsDataSet::FillTreeFromFileTxt(SidsParameters Sidspar)
 
     string DataName=Sidspar.GetName("DataName");
     string filename=Sidspar.GetName("DataPathName");
-	double t0=Sidspar.GetValue("tmin");
-	double tf=Sidspar.GetValue("tmax");
-	double xunit=Sidspar.GetValue("tunit");             // minimum difference between 2 events
-	double XvarOffset=Sidspar.GetValue("toffset");      //0.5*xunit;// to center in the middle of a bin
+	double x0=Sidspar.GetValue("xmin");
+	double xf=Sidspar.GetValue("xmax");
+	double xunit=Sidspar.GetValue("xunit");             // minimum difference between 2 events
+	double XvarOffset=Sidspar.GetValue("xoffset");      //0.5*xunit;// to center in the middle of a bin
 	double Xvar;                                        //random variable
     /////////////////////////////////////////////////////////////////////////
 	/// Tokenize file content and convert string cells into double cells
@@ -72,7 +72,7 @@ int SidsDataSet::FillTreeFromFileTxt(SidsParameters Sidspar)
         for(unsigned int j(0); j<fRawData[i].size();++j)
         {
             Xvar=xunit*fRawData[i][j]-XvarOffset;
-            if(Xvar>=t0-XvarOffset && Xvar<=tf-XvarOffset)
+            if(Xvar>=x0-XvarOffset && Xvar<=xf-XvarOffset)
                 fTree->Fill();		// fill Tree if Xvar is in defined range
         }
     //fTree->StartViewer();
@@ -95,10 +95,10 @@ int SidsDataSet::ReadDataFromFileTxt(SidsParameters Sidspar)
     
     string DataName=Sidspar.GetName("DataName");
     string filename=Sidspar.GetName("DataPathName");
-	double t0=Sidspar.GetValue("tmin");
-	double tf=Sidspar.GetValue("tmax");
-	double xunit=Sidspar.GetValue("tunit");             // minimum difference between 2 events
-	double XvarOffset=Sidspar.GetValue("toffset");      //0.5*xunit;// to center in the middle of a bin
+	double x0=Sidspar.GetValue("xmin");
+	double xf=Sidspar.GetValue("xmax");
+	double xunit=Sidspar.GetValue("xunit");             // minimum difference between 2 events
+	double XvarOffset=Sidspar.GetValue("xoffset");      //0.5*xunit;// to center in the middle of a bin
 	double Xvar;                                        //random variable
     /////////////////////////////////////////////////////////////////////////
 	/// Tokenize file content and convert string cells into double cells
@@ -140,7 +140,7 @@ int SidsDataSet::ReadDataFromFileTxt(SidsParameters Sidspar)
             
             Xvar=xunit*fRawData[i][j]-XvarOffset;
             
-            if(Xvar>=t0-XvarOffset && Xvar<=tf-XvarOffset)
+            if(Xvar>=x0-XvarOffset && Xvar<=xf-XvarOffset)
             {
                 std::vector<double> data;//to comply to the standard BAT dataset
                 data.push_back(Xvar);// put other pushback if other variables e.g. (x,y,z,t)

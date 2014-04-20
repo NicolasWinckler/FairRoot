@@ -32,6 +32,8 @@ Set(NO_DICT_SRCS
   src/model/CountingExp.cxx
   src/model/OscModel.cxx
   src/model/ExpModel.cxx
+  src/model/OneGaussModel.cxx
+  src/model/TwoGaussModel.cxx
   src/macro/Analysis.cxx
   src/macro/OscillationAnalysis.cxx
   src/macro/IsomerAnalysis.cxx

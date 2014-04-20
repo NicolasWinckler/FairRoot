@@ -13,10 +13,10 @@ OscillationAnalysis::OscillationAnalysis() : Analysis()
     // define field value names that are in configfile
     
     // analysis range
-    fvalfield.push_back("tmin");
-    fvalfield.push_back("tmax");
+    fvalfield.push_back("xmin");
+    fvalfield.push_back("xmax");
     fvalfield.push_back("toffset");
-    fvalfield.push_back("tunit");
+    fvalfield.push_back("xunit");
     
     // parameter ranges
     fvalfield.push_back("lambdamin");

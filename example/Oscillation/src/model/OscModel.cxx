@@ -10,7 +10,7 @@
 
 
 // ---------------------------------------------------------
-OscModel::OscModel() : BCModel("OscModel"), ftmin(0.0), ftmax(0.0), fSampleMean(0.0)
+OscModel::OscModel() : BCModel("OscModel"), fxmin(0.0), fxmax(0.0), fSampleMean(0.0)
 {
     // default constructor
     DefineParameters();
@@ -37,8 +37,8 @@ void OscModel::DefineParameters(SidsParameters Sidspar)
     // of the parameter. The indices increase from 0 according to the
     // order of adding the parameters.
     
-    ftmin=Sidspar.GetValue("tmin");
-    ftmax=Sidspar.GetValue("tmax");
+    fxmin=Sidspar.GetValue("xmin");
+    fxmax=Sidspar.GetValue("xmax");
     AddParameter("lambda1", Sidspar.GetValue("lambdamin"), Sidspar.GetValue("lambdamax"),"#lambda");
     AddParameter("amp", Sidspar.GetValue("amin"), Sidspar.GetValue("amax"),"a");
     AddParameter("omega", Sidspar.GetValue("omegamin"), Sidspar.GetValue("omegamax"),"#omega");
@@ -86,10 +86,10 @@ double OscModel::LogLikelihood(const std::vector<double> &parameters)
     
     
     //calculate the normalization factor analytically
-    double part0=TMath::Exp(-lambda*ftmin )-TMath::Exp(-lambda*ftmax);
+    double part0=TMath::Exp(-lambda*fxmin )-TMath::Exp(-lambda*fxmax);
     double factor=lambda*amp/(omega*omega+lambda*lambda);
-    double part1a=(omega*TMath::Sin(omega*ftmax+phi)-lambda*TMath::Cos(omega*ftmax+phi))*TMath::Exp(-lambda*ftmax);
-    double part1b=(omega*TMath::Sin(omega*ftmin+phi)-lambda*TMath::Cos(omega*ftmin+phi))*TMath::Exp(-lambda*ftmin);
+    double part1a=(omega*TMath::Sin(omega*fxmax+phi)-lambda*TMath::Cos(omega*fxmax+phi))*TMath::Exp(-lambda*fxmax);
+    double part1b=(omega*TMath::Sin(omega*fxmin+phi)-lambda*TMath::Cos(omega*fxmin+phi))*TMath::Exp(-lambda*fxmin);
     double AnalyticIntegral=(part0+factor*(part1a-part1b))/lambda;      // normalisation factor of the pdf M1
 	
     //std::cout << " GetNDataPoints() = " << BCModel::GetNDataPoints() << std::endl;

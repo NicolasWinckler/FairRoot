@@ -1,12 +1,13 @@
 /* 
- * File:   TwoGaussModel.h
+ * File:   OneGaussModel.h
  * Author: winckler
  *
- * Created on April 20, 2014, 1:09 AM
+ * Created on April 20, 2014, 2:55 AM
  */
 
-#ifndef TWOGAUSSMODEL_H
-#define	TWOGAUSSMODEL_H
+#ifndef ONEGAUSSMODEL_H
+#define	ONEGAUSSMODEL_H
+
 
 #include <iostream>
 
@@ -20,14 +21,12 @@
 #include "SidsParameters.h"
 #include "BCDataSet.h"
 
-
-class TwoGaussModel : public BCModel
+class OneGaussModel : public BCModel
 {
 public:
-    
-    TwoGaussModel();
-    TwoGaussModel(SidsParameters Sidspar);
-    virtual ~TwoGaussModel ( );
+    OneGaussModel();
+    OneGaussModel(SidsParameters Sidspar);
+    virtual ~OneGaussModel();
     
     // Methods to overload
     void DefineParameters();
@@ -42,9 +41,8 @@ public:
     double fxmin;
     double fxmax;
     double fSampleMean;
-    
+
 };
 
-
-#endif	/* TWOGAUSSMODEL_H */
+#endif	/* ONEGAUSSMODEL_H */
 

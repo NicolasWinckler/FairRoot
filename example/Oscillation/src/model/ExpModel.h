@@ -38,8 +38,8 @@ public:
     
     private :
     
-    double ftmin;
-    double ftmax;
+    double fxmin;
+    double fxmax;
     double fSampleMean;
     
 };

@@ -9,7 +9,7 @@
 #include "ExpModel.h"
 
 // ---------------------------------------------------------
-ExpModel::ExpModel() : BCModel("ExpModel"), ftmin(0.0), ftmax(0.0), fSampleMean(0.0)
+ExpModel::ExpModel() : BCModel("ExpModel"), fxmin(0.0), fxmax(0.0), fSampleMean(0.0)
 {
     // default constructor
     DefineParameters();
@@ -18,8 +18,8 @@ ExpModel::ExpModel() : BCModel("ExpModel"), ftmin(0.0), ftmax(0.0), fSampleMean(
 
 ExpModel::ExpModel(SidsParameters Sidspar) : BCModel("ExpModel"), fSampleMean(0.0)
 {
-    ftmin=Sidspar.GetValue("tmin");
-    ftmax=Sidspar.GetValue("tmax");
+    fxmin=Sidspar.GetValue("xmin");
+    fxmax=Sidspar.GetValue("xmax");
     DefineParameters();
 }
 
@@ -57,7 +57,7 @@ double ExpModel::LogLikelihood(const std::vector<double> &parameters)
     double lambda = parameters.at(0);
     
     //calculate the normalization factor analytically
-    double part0=TMath::Exp(-lambda*ftmin )-TMath::Exp(-lambda*ftmax);
+    double part0=TMath::Exp(-lambda*fxmin )-TMath::Exp(-lambda*fxmax);
     double AnalyticIntegral=part0/lambda;
     
     logprob -= GetNDataPoints()*(log(AnalyticIntegral)+lambda*fSampleMean);

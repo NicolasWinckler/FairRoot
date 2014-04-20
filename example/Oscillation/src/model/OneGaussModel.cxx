@@ -1,28 +1,28 @@
 /* 
- * File:   TwoGaussModel.cxx
+ * File:   OneGaussModel.cxx
  * Author: winckler
  * 
- * Created on April 20, 2014, 1:09 AM
+ * Created on April 20, 2014, 2:55 AM
  */
 
-#include "TwoGaussModel.h"
+#include "OneGaussModel.h"
 
 // ---------------------------------------------------------
-TwoGaussModel::TwoGaussModel() : BCModel("TwoGaussModel"), fxmin(0.0), fxmax(0.0), fSampleMean(0.0)
+OneGaussModel::OneGaussModel() : BCModel("OneGaussModel"), fxmin(0.0), fxmax(0.0), fSampleMean(0.0)
 {
     // default constructor
     DefineParameters();
 }
 
 
-TwoGaussModel::TwoGaussModel(SidsParameters Sidspar) : BCModel("TwoGaussModel"), fSampleMean(0.0)
+OneGaussModel::OneGaussModel(SidsParameters Sidspar) : BCModel("OneGaussModel"), fSampleMean(0.0)
 {
     DefineParameters(Sidspar);
 }
 
 
 // ---------------------------------------------------------
-TwoGaussModel::~TwoGaussModel()
+OneGaussModel::~OneGaussModel()
 // default destructor
 {
 }
@@ -30,7 +30,7 @@ TwoGaussModel::~TwoGaussModel()
 // ---------------------------------------------------------
 
 
-void TwoGaussModel::DefineParameters(SidsParameters Sidspar)
+void OneGaussModel::DefineParameters(SidsParameters Sidspar)
 {
     // Add parameters to your model here.
     // You can then use them in the methods below by calling the
@@ -40,26 +40,19 @@ void TwoGaussModel::DefineParameters(SidsParameters Sidspar)
     
     fxmin=Sidspar.GetValue("xmin");
     fxmax=Sidspar.GetValue("xmax");
-    AddParameter("mu0", Sidspar.GetValue("mu0min"), Sidspar.GetValue("mu0max"),"#mu_{0}");
-    AddParameter("mu1", Sidspar.GetValue("mu1min"), Sidspar.GetValue("mu1max"),"#mu_{1}");
-    AddParameter("sigma0", Sidspar.GetValue("sigma0min"), Sidspar.GetValue("sigma0max"),"#sigma_{0}");
-    AddParameter("sigma1", Sidspar.GetValue("sigma1min"), Sidspar.GetValue("sigma1max"),"#sigma_{1}");
-    AddParameter("weight0", Sidspar.GetValue("weight0min"), Sidspar.GetValue("weight0max"),"w_{0}");
-    //AddParameter("weight1", Sidspar.GetValue("weight1min"), Sidspar.GetValue("weight1max"),"w_{1}");
+    AddParameter("mu00", Sidspar.GetValue("mu0min"), Sidspar.GetValue("mu0max"),"#mu_{0}");
+    AddParameter("sigma00", Sidspar.GetValue("sigma0min"), Sidspar.GetValue("sigma0max"),"#sigma_{0}");
     
     
     GetParameter(0)->SetNbins((int)Sidspar.GetValue("BinMu0"));
-    GetParameter(1)->SetNbins((int)Sidspar.GetValue("BinMu1"));
-    GetParameter(2)->SetNbins((int)Sidspar.GetValue("BinSigma0"));
-    GetParameter(3)->SetNbins((int)Sidspar.GetValue("BinSigma1"));
-    GetParameter(4)->SetNbins((int)Sidspar.GetValue("BinWeight0"));
+    GetParameter(1)->SetNbins((int)Sidspar.GetValue("BinSigma0"));
     //GetParameter(5)->SetNbins((int)Sidspar.GetValue("BinWeight1"));
 }
 
 
 
 // ---------------------------------------------------------
-double TwoGaussModel::LogLikelihood(const std::vector<double> &parameters)
+double OneGaussModel::LogLikelihood(const std::vector<double> &parameters)
 {
     // This methods returns the logarithm of the conditional probability
     // p(data|parameters). This is where you have to define your model.
@@ -68,10 +61,7 @@ double TwoGaussModel::LogLikelihood(const std::vector<double> &parameters)
     
     // get parameter values
     double mu0 = parameters.at(0);
-    double mu1 = parameters.at(1);
-    double sigma0 = parameters.at(2);
-    double sigma1 = parameters.at(3);
-    double w0 = parameters.at(4);
+    double sigma0 = parameters.at(1);
     //double w1 = parameters.at(0);
     
     
@@ -81,9 +71,8 @@ double TwoGaussModel::LogLikelihood(const std::vector<double> &parameters)
         // get data
         double x = GetDataPoint(i)->GetValue(0);
         Double_t gauss0=TMath::Gaus(x,mu0, sigma0,kTRUE);
-        Double_t gauss1=TMath::Gaus(x,mu1, sigma1,kTRUE);
     
-        logprob+=log(w0*gauss0+(1-w0)*gauss1);
+        logprob+=log(gauss0);
     }
     
     
@@ -94,7 +83,7 @@ double TwoGaussModel::LogLikelihood(const std::vector<double> &parameters)
 
 // ---------------------------------------------------------
 
-void TwoGaussModel::SetMyDataSet(BCDataSet* dataset, double unit)
+void OneGaussModel::SetMyDataSet(BCDataSet* dataset, double unit)
 {
     BCModel::SetDataSet(dataset);
     double sum=0.0;

@@ -9,8 +9,9 @@
 #define	ISOMERANALYSIS_H
 
 #include "Analysis.h"
-#include "OscModel.h"
-#include "ExpModel.h"
+#include "OneGaussModel.h"
+#include "TwoGaussModel.h"
+#include "TH1D.h"
 
 class IsomerAnalysis : public Analysis
 {
@@ -20,6 +21,7 @@ public:
     virtual ~IsomerAnalysis();
     
     void MarginalizeAllVariables( string filename);
+    void SaveDataHistogram( string filename, BCDataSet* data);
 
     
 private:
