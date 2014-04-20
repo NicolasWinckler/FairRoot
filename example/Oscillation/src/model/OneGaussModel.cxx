@@ -15,7 +15,7 @@ OneGaussModel::OneGaussModel() : BCModel("OneGaussModel"), fxmin(0.0), fxmax(0.0
 }
 
 
-OneGaussModel::OneGaussModel(SidsParameters Sidspar) : BCModel("OneGaussModel"), fSampleMean(0.0)
+OneGaussModel::OneGaussModel(SidsParameters* Sidspar) : BCModel("OneGaussModel"), fSampleMean(0.0)
 {
     DefineParameters(Sidspar);
 }
@@ -30,7 +30,7 @@ OneGaussModel::~OneGaussModel()
 // ---------------------------------------------------------
 
 
-void OneGaussModel::DefineParameters(SidsParameters Sidspar)
+void OneGaussModel::DefineParameters(SidsParameters* Sidspar)
 {
     // Add parameters to your model here.
     // You can then use them in the methods below by calling the
@@ -38,15 +38,15 @@ void OneGaussModel::DefineParameters(SidsParameters Sidspar)
     // of the parameter. The indices increase from 0 according to the
     // order of adding the parameters.
     
-    fxmin=Sidspar.GetValue("xmin");
-    fxmax=Sidspar.GetValue("xmax");
-    AddParameter("mu00", Sidspar.GetValue("mu0min"), Sidspar.GetValue("mu0max"),"#mu_{0}");
-    AddParameter("sigma00", Sidspar.GetValue("sigma0min"), Sidspar.GetValue("sigma0max"),"#sigma_{0}");
+    fxmin=Sidspar->GetValue("xmin");
+    fxmax=Sidspar->GetValue("xmax");
+    AddParameter("mu00", Sidspar->GetValue("mu0min"), Sidspar->GetValue("mu0max"),"#mu_{0}");
+    AddParameter("sigma00", Sidspar->GetValue("sigma0min"), Sidspar->GetValue("sigma0max"),"#sigma_{0}");
     
     
-    GetParameter(0)->SetNbins((int)Sidspar.GetValue("BinMu0"));
-    GetParameter(1)->SetNbins((int)Sidspar.GetValue("BinSigma0"));
-    //GetParameter(5)->SetNbins((int)Sidspar.GetValue("BinWeight1"));
+    GetParameter(0)->SetNbins((int)Sidspar->GetValue("BinMu0"));
+    GetParameter(1)->SetNbins((int)Sidspar->GetValue("BinSigma0"));
+    //GetParameter(5)->SetNbins((int)Sidspar->GetValue("BinWeight1"));
 }
 
 

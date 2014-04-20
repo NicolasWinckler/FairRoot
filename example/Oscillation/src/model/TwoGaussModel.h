@@ -26,12 +26,12 @@ class TwoGaussModel : public BCModel
 public:
     
     TwoGaussModel();
-    TwoGaussModel(SidsParameters Sidspar);
+    TwoGaussModel(SidsParameters* Sidspar);
     virtual ~TwoGaussModel ( );
     
     // Methods to overload
     void DefineParameters();
-    void DefineParameters(SidsParameters Sidspar);
+    void DefineParameters(SidsParameters* Sidspar);
     double LogLikelihood(const std::vector<double> &parameters);
     // void MCMCIterationInterface();
     

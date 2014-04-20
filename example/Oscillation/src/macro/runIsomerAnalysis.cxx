@@ -5,9 +5,13 @@ int main()
 {
     string wkspDir("/Users/winckler/fair/FairRoot/example/Oscillation/workspace/");
     string filename=wkspDir+"configfile52Co_isomer.txt";
-    IsomerAnalysis myAnalysis;
+    IsomerAnalysis* myAnalysis = new IsomerAnalysis(filename);
     
-    myAnalysis.MarginalizeAllVariables(filename);
+    myAnalysis->RunAnalysis();
+    
+    
+    
+    delete myAnalysis;
     return 0;
 }
 

@@ -88,11 +88,11 @@ int SidsParameters::SetExperimentalParameter(string filename, bool print)
             
             std::map<string,string>::iterator itn = fParameterNames.begin();
             for (itn=fParameterNames.begin(); itn!=fParameterNames.end(); ++itn)
-                cout << itn->first << "\t => " << itn->second << '\n';
+                cout << itn->first << "\t \t \t => " << itn->second << '\n';
             
             std::map<string,double>::iterator itv = fParameterValues.begin();
             for (itv=fParameterValues.begin(); itv!=fParameterValues.end(); ++itv)
-                cout << itv->first << "\t \t => " << itv->second << '\n';
+                cout << itv->first << "\t \t \t \t => " << itv->second << '\n';
         }
     }
     return 0;
@@ -116,6 +116,29 @@ string SidsParameters::GetName(string key)
     return name;
 }
 
+
+int SidsParameters::PrintToBCLog()
+{
+    BCLog::OutSummary("The experimental parameter set have the following field values:");
+    
+    std::map<string,string>::iterator itn = fParameterNames.begin();
+    for (itn=fParameterNames.begin(); itn!=fParameterNames.end(); ++itn)
+    {
+        std::ostringstream bufferc;
+        bufferc << itn->first << "\t \t \t => " << itn->second;
+        BCLog::OutSummary(bufferc.str().c_str());
+    }
+    
+    
+    std::map<string,double>::iterator itv = fParameterValues.begin();
+    for (itv=fParameterValues.begin(); itv!=fParameterValues.end(); ++itv)
+    {
+        std::ostringstream bufferv;
+        bufferv << itv->first << "\t \t \t  => " << itv->second;
+        BCLog::OutSummary(bufferv.str().c_str());
+    }
+    return 0;
+}
 //ClassImp(SidsParameters)
 
 

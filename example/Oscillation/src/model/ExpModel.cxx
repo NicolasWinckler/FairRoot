@@ -16,10 +16,10 @@ ExpModel::ExpModel() : BCModel("ExpModel"), fxmin(0.0), fxmax(0.0), fSampleMean(
 }
 
 
-ExpModel::ExpModel(SidsParameters Sidspar) : BCModel("ExpModel"), fSampleMean(0.0)
+ExpModel::ExpModel(SidsParameters* Sidspar) : BCModel("ExpModel"), fSampleMean(0.0)
 {
-    fxmin=Sidspar.GetValue("xmin");
-    fxmax=Sidspar.GetValue("xmax");
+    fxmin=Sidspar->GetValue("xmin");
+    fxmax=Sidspar->GetValue("xmax");
     DefineParameters();
 }
 

@@ -25,12 +25,12 @@ class OneGaussModel : public BCModel
 {
 public:
     OneGaussModel();
-    OneGaussModel(SidsParameters Sidspar);
+    OneGaussModel(SidsParameters* Sidspar);
     virtual ~OneGaussModel();
     
     // Methods to overload
     void DefineParameters();
-    void DefineParameters(SidsParameters Sidspar);
+    void DefineParameters(SidsParameters* Sidspar);
     double LogLikelihood(const std::vector<double> &parameters);
     // void MCMCIterationInterface();
     

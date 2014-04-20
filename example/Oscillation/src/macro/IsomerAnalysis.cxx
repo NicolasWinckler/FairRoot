@@ -11,7 +11,211 @@ IsomerAnalysis::IsomerAnalysis() : Analysis()
 {
     
     // define field value names that are in configfile
+    InitField();
     
+}
+IsomerAnalysis::IsomerAnalysis(string filename) : Analysis()
+{
+    
+    // define field value names that are in configfile
+    InitField();
+    fConfiguration->SetExperimentalParameter(filename);
+    //*
+    // ----------------------------------------------------
+    // define output file names and open log file
+    // ----------------------------------------------------
+    string prefixOutputName=get_prefix(fConfiguration);
+    string file_postpdfsM0=prefixOutputName + fConfiguration->GetName("OutputPostpdfsM0");
+    string file_postpdfsM1=prefixOutputName + fConfiguration->GetName("OutputPostpdfsM1");
+    string file_summaryM0=prefixOutputName + fConfiguration->GetName("OutputSummaryM0");
+    string file_summaryM1=prefixOutputName + fConfiguration->GetName("OutputSummaryM1");
+    string file_log=prefixOutputName + fConfiguration->GetName("LogFileName");
+    string file_summaryModelSelection=prefixOutputName + "SummaryModelSelection.txt";
+    //string file_histroot=prefixOutputName+"histo_52Co_IMS_Data.root";
+    fOutPutNames["MargeM0"]=file_postpdfsM0;
+    fOutPutNames["MargeM1"]=file_postpdfsM1;
+    fOutPutNames["SummaryM0"]=file_summaryM0;
+    fOutPutNames["SummaryM1"]=file_summaryM1;
+    fOutPutNames["Log"]=file_log;
+    fOutPutNames["ModelSelection"]=file_summaryModelSelection;
+
+    // ----------------------------------------------------
+    /// Load Data and other variables
+    // ----------------------------------------------------
+    fDataSet = new SidsDataSet();
+    fDataSet->ReadDataFromFileTxt(fConfiguration); 
+    
+}
+
+IsomerAnalysis::~IsomerAnalysis() 
+{
+    delete fM0;
+    delete fM1;
+    delete fConfiguration;
+    delete fDataSet;
+}
+
+
+
+void IsomerAnalysis::RunAnalysis()
+{
+    
+    // set nicer style for drawing than the ROOT default
+    BCAux::SetStyle();
+    
+    
+    BCLog::OpenLog(fOutPutNames["Log"].c_str());
+    BCLog::SetLogLevel(BCLog::detail);
+    fConfiguration->PrintToBCLog();
+    
+    
+    
+    
+    // ----------------------------------------------------
+    /// Set Model M0
+    // ----------------------------------------------------
+    //OneGaussModel* M0 = new OneGaussModel(fConfiguration);
+    fM0 = new OneGaussModel(fConfiguration);
+    fM0->SetMyDataSet(fDataSet);
+    SetM0Prior();
+    SetModelOption(fM0,fConfiguration);
+    BCSummaryTool * summaryM0 = new BCSummaryTool(fM0);
+    BCLog::OutSummary("Model M0 created");
+    
+    // ----------------------------------------------------
+    /// Set Model M1
+    // ----------------------------------------------------
+    //TwoGaussModel* M1 = new TwoGaussModel(fConfiguration);
+    fM1 = new TwoGaussModel(fConfiguration);
+    fM1->SetMyDataSet(fDataSet);
+    SetM1Prior();    
+    SetModelOption(fM1,fConfiguration);
+    
+    BCSummaryTool * summaryM1 = new BCSummaryTool(fM1);
+    BCLog::OutSummary("Model M1 created");
+    
+    bool MarginalizeDirectlyM0M1=false;
+    if(MarginalizeDirectlyM0M1)
+    {
+        // ----------------------------------------------------
+        /// Normalize M0 and M1
+        // ----------------------------------------------------
+
+        BCLog::OutSummary("******************* Normalize M0 *******************");
+        fM0->Normalize();
+        BCLog::OutSummary("******************* Normalize M1 *******************");
+        fM1->Normalize();
+
+        // ----------------------------------------------------
+        /// Normalize M0 and M1
+        // ----------------------------------------------------
+        // run MCMC and marginalize posterior wrt. all parameters
+        // and all combinations of two parameters
+
+        BCLog::OutSummary("******************* Marginalize M0 *******************");
+        fM0->MarginalizeAll();
+        BCLog::OutSummary("******************* Marginalize M1 *******************");
+        fM1->MarginalizeAll();
+
+    }
+
+   /////////////////////////////////////////////////////////////////////////////////
+   // ----------------------------------------------------
+   // set up model manager
+   // ----------------------------------------------------
+
+   //M0->Integrate();
+   //M1->Integrate();
+   
+
+   BCModelManager * modelman = new BCModelManager();
+   modelman->SetDataSet(fDataSet);
+   modelman->AddModel(fM0,0.5);
+   modelman->AddModel(fM1,0.5);
+
+   
+   modelman->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
+   modelman->SetIntegrationMethod(BCIntegrate::kIntCuba);
+   
+   // Calculates the normalization of the likelihood for each model
+   //modelman->GetModel(0)->Integrate();
+   //modelman->GetModel(1)->Integrate();
+   modelman->Integrate();
+   modelman->MarginalizeAll();
+   // compare models
+   
+   double bayesFact01 = modelman->BayesFactor(0,1);
+   std::ostringstream buffer;
+   buffer<<"Bayes Factor B01 = P(D|M0)/P(D|M1) = " << bayesFact01;
+   BCLog::OutSummary(buffer.str().c_str());
+
+   
+   // ----------------------------------------------------
+   // write output
+   // ----------------------------------------------------
+   modelman->PrintModelComparisonSummary();
+   
+   modelman->PrintModelComparisonSummary(fOutPutNames["ModelSelection"].c_str());
+   
+   bool printmarginalizedPdf=false;
+   if(printmarginalizedPdf)
+   {
+        BCLog::OutSummary("******************* Write output (marginalized pdf) *******************");
+
+        //modelman->PrintResults();//"testMy_results.txt");
+        //modelman->PrintSummary("testresult.txt");
+
+        fM0->PrintAllMarginalized(fOutPutNames["MargeM0"].c_str());
+        fM1->PrintAllMarginalized(fOutPutNames["MargeM1"].c_str());
+
+        summaryM0->PrintKnowledgeUpdatePlots(fOutPutNames["SummaryM0"].c_str());
+        summaryM1->PrintKnowledgeUpdatePlots(fOutPutNames["SummaryM1"].c_str());
+   }
+   
+   // */
+}
+
+
+
+
+
+
+
+void IsomerAnalysis::SetM0Prior()
+{
+    fM0->SetPriorConstant(0);
+    fM0->SetPriorConstant(1);
+}
+
+
+void IsomerAnalysis::SetM1Prior()
+{
+    fM1->SetPriorConstant(0);
+    fM1->SetPriorConstant(1);
+    fM1->SetPriorConstant(2);
+    fM1->SetPriorConstant(3);
+    fM1->SetPriorConstant(4);
+}
+
+void IsomerAnalysis::SaveDataHistogram( string filename, BCDataSet* Data)
+{
+    TFile fileHisto(filename.c_str(), "new");
+    TH1D h1("h52Co", "histogram of the 52Co IMS-Data", 100, 609.05, 609.07);
+    
+    for(unsigned int i=0; i < Data->GetNDataPoints(); ++i)
+    {
+        double xi = Data->GetDataPoint(i)->GetValue(0);
+        //std::cout<<"xi="<<xi<<std::endl;
+        h1.Fill(xi);
+    }
+    h1.Write();
+    fileHisto.Close();
+}
+
+
+int IsomerAnalysis::InitField()
+{
+    // define field value names that are in configfile
     // analysis range
     fvalfield.push_back("xmin");
     fvalfield.push_back("xmax");
@@ -45,185 +249,6 @@ IsomerAnalysis::IsomerAnalysis() : Analysis()
     fcharfield.push_back("OutputPostpdfsM1");
     fcharfield.push_back("OutputSummaryM0");
     fcharfield.push_back("OutputSummaryM1");
+    
+    fConfiguration = new SidsParameters(fvalfield,fcharfield);
 }
-
-IsomerAnalysis::~IsomerAnalysis() {
-}
-
-
-void IsomerAnalysis::MarginalizeAllVariables( string filename)
-{
-    
-    // set nicer style for drawing than the ROOT default
-    BCAux::SetStyle();
-    
-    // initialize the configpar
-    SidsParameters configPar(fvalfield,fcharfield);
-    // load values from file
-    configPar.SetExperimentalParameter(filename,true);
-    
-    // ----------------------------------------------------
-    // define output file names and open log file
-    // ----------------------------------------------------
-    string prefixOutputName=get_prefix(configPar);
-    string file_postpdfsM0=prefixOutputName + configPar.GetName("OutputPostpdfsM0");
-    string file_postpdfsM1=prefixOutputName + configPar.GetName("OutputPostpdfsM1");
-    string file_summaryM0=prefixOutputName + configPar.GetName("OutputSummaryM0");
-    string file_summaryM1=prefixOutputName + configPar.GetName("OutputSummaryM1");
-    string file_log=prefixOutputName + configPar.GetName("LogFileName");
-    string file_histroot=prefixOutputName+"histo_52Co_IMS_Data.root";
-    
-    BCLog::OpenLog(file_log.c_str());
-    BCLog::SetLogLevel(BCLog::detail);
-    
-    // ----------------------------------------------------
-    /// Load Data and other variables
-    // ----------------------------------------------------
-    SidsDataSet* ECData = new SidsDataSet();
-    ECData->ReadDataFromFileTxt(configPar);
-    string MCMCPrecision=configPar.GetName("MCMCPrecision");
-    
-    
-    
-    //*
-    // ----------------------------------------------------
-    /// Set Model M0
-    // ----------------------------------------------------
-    OneGaussModel* M0 = new OneGaussModel(configPar);
-    M0->SetMyDataSet(ECData);
-    M0->SetPriorConstant(0);
-    M0->SetPriorConstant(1);
-    
-    
-    //M0->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
-    //if(MCMCPrecision=="Low")      M0->MCMCSetPrecision(BCEngineMCMC::kLow);
-    //if(MCMCPrecision=="Medium")   M0->MCMCSetPrecision(BCEngineMCMC::kMedium);
-    //if(MCMCPrecision=="High")     M0->MCMCSetPrecision(BCEngineMCMC::kHigh);
-    //if(MCMCPrecision=="VeryHigh") M0->MCMCSetPrecision(BCEngineMCMC::kVeryHigh);
-    
-    SetModelOption(M0,configPar);
-    BCSummaryTool * summaryM0 = new BCSummaryTool(M0);
-    BCLog::OutSummary("Model M0 created");
-    
-    // ----------------------------------------------------
-    /// Set Model M1
-    // ----------------------------------------------------
-    TwoGaussModel* M1 = new TwoGaussModel(configPar);
-    M1->SetMyDataSet(ECData);
-    
-    M1->SetPriorConstant(0);
-    M1->SetPriorConstant(1);
-    M1->SetPriorConstant(2);
-    M1->SetPriorConstant(3);
-    M1->SetPriorConstant(4);
-    
-    BCLog::OutSummary("******************* Set integration and marginalization method for M1 *******************");
-    //M1->SetIntegrationMethod(BCIntegrate::kIntCuba);
-    //M1->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
-    //M1->SetNIterationsMin(1000000);
-    //M1->SetNIterationsMax(10000000);
-    //M1->SetCubaIntegrationMethod(BCIntegrate::kCubaVegas);
-    //if(MCMCPrecision=="Low")      M1->MCMCSetPrecision(BCEngineMCMC::kLow);
-    //if(MCMCPrecision=="Medium")   M1->MCMCSetPrecision(BCEngineMCMC::kMedium);
-    //if(MCMCPrecision=="High")     M1->MCMCSetPrecision(BCEngineMCMC::kHigh);
-    //if(MCMCPrecision=="VeryHigh") M1->MCMCSetPrecision(BCEngineMCMC::kVeryHigh);
-    
-    SetModelOption(M1,configPar);
-    
-    BCSummaryTool * summaryM1 = new BCSummaryTool(M1);
-    BCLog::OutSummary("Model M1 created");
-    
-    BCLog::OutSummary("******************* Normalize M0 and M1 *******************");
-
-    BCLog::OutSummary("");
-    M0->Normalize();
-    M1->Normalize();
-    
-    
-    
-    double integral0=M0->GetIntegral();
-    double integral1=M1->GetIntegral();
-    std::cout << "integral0 --------> " << integral0 << std::endl;
-    std::cout << "integral1 --------> " << integral1 << std::endl;
-    
-    // run MCMC and marginalize posterior wrt. all parameters
-    // and all combinations of two parameters
-    BCLog::OutSummary("******************* Marginalize M0 and M1 *******************");
-    M0->MarginalizeAll();
-    M1->MarginalizeAll();
-    
-    
-    
-    
-   // ----------------------------------------------------
-   // set up model manager
-   // ----------------------------------------------------
-
-   //M0->Integrate();
-   //M1->Integrate();
-   integral0=M0->GetIntegral();
-   integral1=M1->GetIntegral();
-   std::cout << "integral0 --------> " << integral0 << std::endl;
-   std::cout << "integral1 --------> " << integral1 << std::endl;
-   
-    
-   // ----------------------------------------------------
-   // set up model manager
-   // ----------------------------------------------------   
-
-   BCModelManager * modelman = new BCModelManager();
-   modelman->SetDataSet(ECData);
-   modelman->AddModel(M0,0.5);
-   modelman->AddModel(M1,0.5);
-
-   
-   modelman->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
-   modelman->SetIntegrationMethod(BCIntegrate::kIntCuba);
-   
-   
-   // Calculates the normalization of the likelihood for each model
-   //modelman->GetModel(0)->Integrate();
-   //modelman->GetModel(1)->Integrate();
-   modelman->Integrate();
-   modelman->MarginalizeAll();
-   // compare models
-   double bayesFact01 = modelman->BayesFactor(0,1);
-
-   std::cout << std::endl << "Bayes Factor P(D|M0)/P(D|M1) = " << bayesFact01 << std::endl;
-    //
-   
-   //modelman->PrintResults();//"testMy_results.txt");
-   //modelman->PrintSummary("testresult.txt");
-  
-   
-   /// write output
-   
-   
-   M0->PrintAllMarginalized(file_postpdfsM0.c_str());
-   M1->PrintAllMarginalized(file_postpdfsM1.c_str());
-
-   summaryM0->PrintKnowledgeUpdatePlots(file_summaryM0.c_str());
-   summaryM1->PrintKnowledgeUpdatePlots(file_summaryM1.c_str());
-
-   
-   // */
-}
-
-
-
-
-void IsomerAnalysis::SaveDataHistogram( string filename, BCDataSet* Data)
-{
-    TFile fileHisto(filename.c_str(), "new");
-    TH1D h1("h52Co", "histogram of the 52Co IMS-Data", 100, 609.05, 609.07);
-    
-    for(unsigned int i=0; i < Data->GetNDataPoints(); ++i)
-    {
-        double xi = Data->GetDataPoint(i)->GetValue(0);
-        //std::cout<<"xi="<<xi<<std::endl;
-        h1.Fill(xi);
-    }
-    h1.Write();
-    fileHisto.Close();
-}
-

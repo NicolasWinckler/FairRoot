@@ -15,7 +15,7 @@ TwoGaussModel::TwoGaussModel() : BCModel("TwoGaussModel"), fxmin(0.0), fxmax(0.0
 }
 
 
-TwoGaussModel::TwoGaussModel(SidsParameters Sidspar) : BCModel("TwoGaussModel"), fSampleMean(0.0)
+TwoGaussModel::TwoGaussModel(SidsParameters* Sidspar) : BCModel("TwoGaussModel"), fSampleMean(0.0)
 {
     DefineParameters(Sidspar);
 }
@@ -30,7 +30,7 @@ TwoGaussModel::~TwoGaussModel()
 // ---------------------------------------------------------
 
 
-void TwoGaussModel::DefineParameters(SidsParameters Sidspar)
+void TwoGaussModel::DefineParameters(SidsParameters* Sidspar)
 {
     // Add parameters to your model here.
     // You can then use them in the methods below by calling the
@@ -38,22 +38,22 @@ void TwoGaussModel::DefineParameters(SidsParameters Sidspar)
     // of the parameter. The indices increase from 0 according to the
     // order of adding the parameters.
     
-    fxmin=Sidspar.GetValue("xmin");
-    fxmax=Sidspar.GetValue("xmax");
-    AddParameter("mu0", Sidspar.GetValue("mu0min"), Sidspar.GetValue("mu0max"),"#mu_{0}");
-    AddParameter("mu1", Sidspar.GetValue("mu1min"), Sidspar.GetValue("mu1max"),"#mu_{1}");
-    AddParameter("sigma0", Sidspar.GetValue("sigma0min"), Sidspar.GetValue("sigma0max"),"#sigma_{0}");
-    AddParameter("sigma1", Sidspar.GetValue("sigma1min"), Sidspar.GetValue("sigma1max"),"#sigma_{1}");
-    AddParameter("weight0", Sidspar.GetValue("weight0min"), Sidspar.GetValue("weight0max"),"w_{0}");
-    //AddParameter("weight1", Sidspar.GetValue("weight1min"), Sidspar.GetValue("weight1max"),"w_{1}");
+    fxmin=Sidspar->GetValue("xmin");
+    fxmax=Sidspar->GetValue("xmax");
+    AddParameter("mu0", Sidspar->GetValue("mu0min"), Sidspar->GetValue("mu0max"),"#mu_{0}");
+    AddParameter("mu1", Sidspar->GetValue("mu1min"), Sidspar->GetValue("mu1max"),"#mu_{1}");
+    AddParameter("sigma0", Sidspar->GetValue("sigma0min"), Sidspar->GetValue("sigma0max"),"#sigma_{0}");
+    AddParameter("sigma1", Sidspar->GetValue("sigma1min"), Sidspar->GetValue("sigma1max"),"#sigma_{1}");
+    AddParameter("weight0", Sidspar->GetValue("weight0min"), Sidspar->GetValue("weight0max"),"w_{0}");
+    //AddParameter("weight1", Sidspar->GetValue("weight1min"), Sidspar->GetValue("weight1max"),"w_{1}");
     
     
-    GetParameter(0)->SetNbins((int)Sidspar.GetValue("BinMu0"));
-    GetParameter(1)->SetNbins((int)Sidspar.GetValue("BinMu1"));
-    GetParameter(2)->SetNbins((int)Sidspar.GetValue("BinSigma0"));
-    GetParameter(3)->SetNbins((int)Sidspar.GetValue("BinSigma1"));
-    GetParameter(4)->SetNbins((int)Sidspar.GetValue("BinWeight0"));
-    //GetParameter(5)->SetNbins((int)Sidspar.GetValue("BinWeight1"));
+    GetParameter(0)->SetNbins((int)Sidspar->GetValue("BinMu0"));
+    GetParameter(1)->SetNbins((int)Sidspar->GetValue("BinMu1"));
+    GetParameter(2)->SetNbins((int)Sidspar->GetValue("BinSigma0"));
+    GetParameter(3)->SetNbins((int)Sidspar->GetValue("BinSigma1"));
+    GetParameter(4)->SetNbins((int)Sidspar->GetValue("BinWeight0"));
+    //GetParameter(5)->SetNbins((int)Sidspar->GetValue("BinWeight1"));
 }
 
 

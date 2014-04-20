@@ -45,8 +45,8 @@ class SidsDataSet : public BCDataSet, public FileReader
    
     virtual ~SidsDataSet();
     
-    int FillTreeFromFileTxt(SidsParameters Sidspar);//my stuff
-    int ReadDataFromFileTxt(SidsParameters Sidspar);//my stuff
+    int FillTreeFromFileTxt(SidsParameters* Sidspar);//my stuff
+    int ReadDataFromFileTxt(SidsParameters* Sidspar);//my stuff
     
     
     private :

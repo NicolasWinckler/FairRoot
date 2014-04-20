@@ -12,6 +12,7 @@
 #include <iostream>
 #include "FileReader.h"
 #include <map>
+#include <BAT/BCLog.h>
 
 class SidsParameters : public FileReader
 {
@@ -25,6 +26,7 @@ class SidsParameters : public FileReader
     int SetExperimentalParameter(string filename, bool print=false);
     double GetValue(string key);
     string GetName(string key);
+    int PrintToBCLog();
     
     private :
     

@@ -34,17 +34,17 @@ Analysis::~Analysis ( )
 
 
 
-void Analysis::SetModelOption(BCModel* model, SidsParameters Sidspar)
+void Analysis::SetModelOption(BCModel* model, SidsParameters* Sidspar)
 {
-    //string IntegrationMethod=Sidspar.GetName("IntegrationMethod");
+    //string IntegrationMethod=Sidspar->GetName("IntegrationMethod");
     //if(IntegrationMethod=="Cuba") model->SetIntegrationMethod(BCIntegrate::kIntCuba); 
     model->SetIntegrationMethod(BCIntegrate::kIntCuba); 
     
-    //string MarginalizationMethod=Sidspar.GetName("MarginalizationMethod");
+    //string MarginalizationMethod=Sidspar->GetName("MarginalizationMethod");
     //if(IntegrationMethod=="Metropolis") model->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
     model->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
     
-    string MCMCPrecision=Sidspar.GetName("MCMCPrecision");
+    string MCMCPrecision=Sidspar->GetName("MCMCPrecision");
     if(MCMCPrecision=="Low")      model->MCMCSetPrecision(BCEngineMCMC::kLow);
     if(MCMCPrecision=="Medium")   model->MCMCSetPrecision(BCEngineMCMC::kMedium);
     if(MCMCPrecision=="High")     model->MCMCSetPrecision(BCEngineMCMC::kHigh);
@@ -72,15 +72,15 @@ string Analysis::get_date()
 }
 
 
-string Analysis::get_prefix(SidsParameters Sidspar)
+string Analysis::get_prefix(SidsParameters* Sidspar)
 {
    
    string strdate="run"+get_date();
-   string prefix=Sidspar.GetName("OutPutDirectory") + strdate;
-   prefix+=Sidspar.GetName("DataName");
+   string prefix=Sidspar->GetName("OutPutDirectory") + strdate;
+   prefix+=Sidspar->GetName("DataName");
    prefix+="_";
    prefix+="MCMCPrecision";
-   prefix+=Sidspar.GetName("MCMCPrecision");
+   prefix+=Sidspar->GetName("MCMCPrecision");
    prefix+="_";
    return prefix;
 }

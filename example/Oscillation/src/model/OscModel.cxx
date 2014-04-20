@@ -17,7 +17,7 @@ OscModel::OscModel() : BCModel("OscModel"), fxmin(0.0), fxmax(0.0), fSampleMean(
 }
 
 
-OscModel::OscModel(SidsParameters Sidspar) : BCModel("OscModel"), fSampleMean(0.0)
+OscModel::OscModel(SidsParameters* Sidspar) : BCModel("OscModel"), fSampleMean(0.0)
 {
     DefineParameters(Sidspar);
 }
@@ -29,7 +29,7 @@ OscModel::~OscModel()
 }
 
 // ---------------------------------------------------------
-void OscModel::DefineParameters(SidsParameters Sidspar)
+void OscModel::DefineParameters(SidsParameters* Sidspar)
 {
     // Add parameters to your model here.
     // You can then use them in the methods below by calling the
@@ -37,16 +37,16 @@ void OscModel::DefineParameters(SidsParameters Sidspar)
     // of the parameter. The indices increase from 0 according to the
     // order of adding the parameters.
     
-    fxmin=Sidspar.GetValue("xmin");
-    fxmax=Sidspar.GetValue("xmax");
-    AddParameter("lambda1", Sidspar.GetValue("lambdamin"), Sidspar.GetValue("lambdamax"),"#lambda");
-    AddParameter("amp", Sidspar.GetValue("amin"), Sidspar.GetValue("amax"),"a");
-    AddParameter("omega", Sidspar.GetValue("omegamin"), Sidspar.GetValue("omegamax"),"#omega");
-    AddParameter("phi", Sidspar.GetValue("phimin"), Sidspar.GetValue("phimax"),"#phi");
-    GetParameter(0)->SetNbins((int)Sidspar.GetValue("BinLambda"));//lambda
-    GetParameter(1)->SetNbins((int)Sidspar.GetValue("BinAmp"));//a
-    GetParameter(2)->SetNbins((int)Sidspar.GetValue("BinOmega"));//omega
-    GetParameter(3)->SetNbins((int)Sidspar.GetValue("BinPhi"));//phi
+    fxmin=Sidspar->GetValue("xmin");
+    fxmax=Sidspar->GetValue("xmax");
+    AddParameter("lambda1", Sidspar->GetValue("lambdamin"), Sidspar->GetValue("lambdamax"),"#lambda");
+    AddParameter("amp", Sidspar->GetValue("amin"), Sidspar->GetValue("amax"),"a");
+    AddParameter("omega", Sidspar->GetValue("omegamin"), Sidspar->GetValue("omegamax"),"#omega");
+    AddParameter("phi", Sidspar->GetValue("phimin"), Sidspar->GetValue("phimax"),"#phi");
+    GetParameter(0)->SetNbins((int)Sidspar->GetValue("BinLambda"));//lambda
+    GetParameter(1)->SetNbins((int)Sidspar->GetValue("BinAmp"));//a
+    GetParameter(2)->SetNbins((int)Sidspar->GetValue("BinOmega"));//omega
+    GetParameter(3)->SetNbins((int)Sidspar->GetValue("BinPhi"));//phi
 }
 
 

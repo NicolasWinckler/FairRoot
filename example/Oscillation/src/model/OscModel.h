@@ -26,12 +26,12 @@ class OscModel : public BCModel
     public:
     
     OscModel();
-    OscModel(SidsParameters Sidspar);
+    OscModel(SidsParameters* Sidspar);
     ~OscModel();
     
     // Methods to overload
     void DefineParameters();
-    void DefineParameters(SidsParameters Sidspar);
+    void DefineParameters(SidsParameters* Sidspar);
     double LogLikelihood(const std::vector<double> &parameters);
     // void MCMCIterationInterface();
     

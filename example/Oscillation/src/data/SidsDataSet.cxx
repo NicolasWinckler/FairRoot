@@ -32,7 +32,7 @@ SidsDataSet::~SidsDataSet()
 
 
 // ---------------------------------------------------------
-int SidsDataSet::FillTreeFromFileTxt(SidsParameters Sidspar)
+int SidsDataSet::FillTreeFromFileTxt(SidsParameters *Sidspar)
 {
 	
     
@@ -40,12 +40,12 @@ int SidsDataSet::FillTreeFromFileTxt(SidsParameters Sidspar)
 	/// Get experimental parameter
     /////////////////////////////////////////////////////////////////////////
 
-    string DataName=Sidspar.GetName("DataName");
-    string filename=Sidspar.GetName("DataPathName");
-	double x0=Sidspar.GetValue("xmin");
-	double xf=Sidspar.GetValue("xmax");
-	double xunit=Sidspar.GetValue("xunit");             // minimum difference between 2 events
-	double XvarOffset=Sidspar.GetValue("xoffset");      //0.5*xunit;// to center in the middle of a bin
+    string DataName=Sidspar->GetName("DataName");
+    string filename=Sidspar->GetName("DataPathName");
+	double x0=Sidspar->GetValue("xmin");
+	double xf=Sidspar->GetValue("xmax");
+	double xunit=Sidspar->GetValue("xunit");             // minimum difference between 2 events
+	double XvarOffset=Sidspar->GetValue("xoffset");      //0.5*xunit;// to center in the middle of a bin
 	double Xvar;                                        //random variable
     /////////////////////////////////////////////////////////////////////////
 	/// Tokenize file content and convert string cells into double cells
@@ -85,7 +85,7 @@ int SidsDataSet::FillTreeFromFileTxt(SidsParameters Sidspar)
 
 
 
-int SidsDataSet::ReadDataFromFileTxt(SidsParameters Sidspar)
+int SidsDataSet::ReadDataFromFileTxt(SidsParameters* Sidspar)
 {
 	
     
@@ -93,12 +93,12 @@ int SidsDataSet::ReadDataFromFileTxt(SidsParameters Sidspar)
 	/// Get experimental parameter
     /////////////////////////////////////////////////////////////////////////
     
-    string DataName=Sidspar.GetName("DataName");
-    string filename=Sidspar.GetName("DataPathName");
-	double x0=Sidspar.GetValue("xmin");
-	double xf=Sidspar.GetValue("xmax");
-	double xunit=Sidspar.GetValue("xunit");             // minimum difference between 2 events
-	double XvarOffset=Sidspar.GetValue("xoffset");      //0.5*xunit;// to center in the middle of a bin
+    string DataName=Sidspar->GetName("DataName");
+    string filename=Sidspar->GetName("DataPathName");
+	double x0=Sidspar->GetValue("xmin");
+	double xf=Sidspar->GetValue("xmax");
+	double xunit=Sidspar->GetValue("xunit");             // minimum difference between 2 events
+	double XvarOffset=Sidspar->GetValue("xoffset");      //0.5*xunit;// to center in the middle of a bin
 	double Xvar;                                        //random variable
     /////////////////////////////////////////////////////////////////////////
 	/// Tokenize file content and convert string cells into double cells
@@ -119,7 +119,6 @@ int SidsDataSet::ReadDataFromFileTxt(SidsParameters Sidspar)
         BCLog::OutDetail("SidsDataSet::ReadDataFromFileTxt : Overwrite existing data.");
     }
     
-    std::cout << " GetNDataPoints() = " << GetNDataPoints() << std::endl;
     // create temporary vector with data and assign some zeros.
     
     
@@ -153,7 +152,6 @@ int SidsDataSet::ReadDataFromFileTxt(SidsParameters Sidspar)
         }
     //fTree->StartViewer();
     fTree->ResetBranchAddresses();
-	std::cout << " GetNDataPoints() 2 = " << GetNDataPoints() << std::endl;
     return 0;
 }
 

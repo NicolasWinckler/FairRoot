@@ -26,7 +26,7 @@ class ExpModel : public BCModel
 public:
     
     ExpModel();
-    ExpModel(SidsParameters Sidspar);
+    ExpModel(SidsParameters* Sidspar);
     ~ExpModel ( );
     
     // Methods to overload

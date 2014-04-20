@@ -75,19 +75,20 @@ void OscillationAnalysis::GetBayesFactor( string filename)
     BCAux::SetStyle();
     
     // initialize the configpar
-    SidsParameters configPar(fvalfield,fcharfield);
+    //SidsParameters configPar(fvalfield,fcharfield);
+    SidsParameters* configPar = new SidsParameters(fvalfield,fcharfield);
     // load values from file
-    configPar.SetExperimentalParameter(filename,true);
+    configPar->SetExperimentalParameter(filename,true);
     
     // ----------------------------------------------------
     // define output file names and open log file
     // ----------------------------------------------------
     string prefixOutputName=get_prefix(configPar);
-    string file_postpdfsM0=prefixOutputName + configPar.GetName("OutputPostpdfsM0");
-    string file_postpdfsM1=prefixOutputName + configPar.GetName("OutputPostpdfsM1");
-    string file_summaryM0=prefixOutputName + configPar.GetName("OutputSummaryM0");
-    string file_summaryM1=prefixOutputName + configPar.GetName("OutputSummaryM1");
-    string file_log=prefixOutputName + configPar.GetName("LogFileName");
+    string file_postpdfsM0=prefixOutputName + configPar->GetName("OutputPostpdfsM0");
+    string file_postpdfsM1=prefixOutputName + configPar->GetName("OutputPostpdfsM1");
+    string file_summaryM0=prefixOutputName + configPar->GetName("OutputSummaryM0");
+    string file_summaryM1=prefixOutputName + configPar->GetName("OutputSummaryM1");
+    string file_log=prefixOutputName + configPar->GetName("LogFileName");
     
     BCLog::OpenLog(file_log.c_str());
     BCLog::SetLogLevel(BCLog::detail);
@@ -97,7 +98,7 @@ void OscillationAnalysis::GetBayesFactor( string filename)
     // ----------------------------------------------------
     SidsDataSet* ECData = new SidsDataSet();
     ECData->ReadDataFromFileTxt(configPar);
-    string MCMCPrecision=configPar.GetName("MCMCPrecision");
+    string MCMCPrecision=configPar->GetName("MCMCPrecision");
     
     // ----------------------------------------------------
     /// Set Model M0
@@ -210,19 +211,19 @@ void OscillationAnalysis::Test( string filename)
     BCAux::SetStyle();
     
     // initialize the configpar
-    SidsParameters configPar(fvalfield,fcharfield);
+    SidsParameters* configPar = new SidsParameters(fvalfield,fcharfield);
     // load values from file
-    configPar.SetExperimentalParameter(filename,true);
+    configPar->SetExperimentalParameter(filename,true);
     
     // ----------------------------------------------------
     // define output file names and open log file
     // ----------------------------------------------------
     string prefixOutputName=get_prefix(configPar);
-    string file_postpdfsM0=prefixOutputName + configPar.GetName("OutputPostpdfsM0");
-    string file_postpdfsM1=prefixOutputName + configPar.GetName("OutputPostpdfsM1");
-    string file_summaryM0=prefixOutputName + configPar.GetName("OutputSummaryM0");
-    string file_summaryM1=prefixOutputName + configPar.GetName("OutputSummaryM1");
-    string file_log=prefixOutputName + configPar.GetName("LogFileName");
+    string file_postpdfsM0=prefixOutputName + configPar->GetName("OutputPostpdfsM0");
+    string file_postpdfsM1=prefixOutputName + configPar->GetName("OutputPostpdfsM1");
+    string file_summaryM0=prefixOutputName + configPar->GetName("OutputSummaryM0");
+    string file_summaryM1=prefixOutputName + configPar->GetName("OutputSummaryM1");
+    string file_log=prefixOutputName + configPar->GetName("LogFileName");
     
     BCLog::OpenLog(file_log.c_str());
     BCLog::SetLogLevel(BCLog::detail);
@@ -232,7 +233,7 @@ void OscillationAnalysis::Test( string filename)
     // ----------------------------------------------------
     SidsDataSet* ECData = new SidsDataSet();
     ECData->ReadDataFromFileTxt(configPar);
-    string MCMCPrecision=configPar.GetName("MCMCPrecision");
+    string MCMCPrecision=configPar->GetName("MCMCPrecision");
     
     // ----------------------------------------------------
     /// Set Model M0
