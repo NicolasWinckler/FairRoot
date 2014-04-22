@@ -11,7 +11,6 @@
 
 #include "Analysis.h"
 
-#include "CountingExp.h"
 #include "OscModel.h"
 #include "ExpModel.h"
 
@@ -20,14 +19,25 @@ class OscillationAnalysis : public Analysis
 {
 public:
     OscillationAnalysis();
+    OscillationAnalysis(string filename);
     virtual ~OscillationAnalysis();
+    void RunAnalysis();
+    void SetM0Prior();
+    void SetM1Prior();
+    
+    
     void Run();
-    void RunTuto1();
-    void GetBayesFactor(string filename);
-    void Test(string filename);
+    
 private:
-
+    int InitField();
+    ExpModel* fM0;
+    OscModel* fM1;
+    SidsParameters* fConfiguration;
+    SidsDataSet* fDataSet;
+    map<string, string> fOutPutNames;
 };
+
+
 
 #endif	/* OSCILLATIONANALYSIS_H */
 

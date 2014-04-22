@@ -14,6 +14,7 @@ IsomerAnalysis::IsomerAnalysis() : Analysis()
     InitField();
     
 }
+
 IsomerAnalysis::IsomerAnalysis(string filename) : Analysis()
 {
     
@@ -39,11 +40,39 @@ IsomerAnalysis::IsomerAnalysis(string filename) : Analysis()
     fOutPutNames["Log"]=file_log;
     fOutPutNames["ModelSelection"]=file_summaryModelSelection;
 
+    // set nicer style for drawing than the ROOT default
+    BCAux::SetStyle();
+    
+    
+    BCLog::OpenLog(fOutPutNames["Log"].c_str());
+    BCLog::SetLogLevel(BCLog::detail);
+    fConfiguration->PrintToBCLog();
+    
     // ----------------------------------------------------
     /// Load Data and other variables
     // ----------------------------------------------------
     fDataSet = new SidsDataSet();
     fDataSet->ReadDataFromFileTxt(fConfiguration); 
+    
+    // ----------------------------------------------------
+    /// Set Model M0
+    // ----------------------------------------------------
+    fM0 = new OneGaussModel(fConfiguration);
+    fM0->SetMyDataSet(fDataSet);
+    SetM0Prior();
+    SetModelOption(fM0,fConfiguration);
+
+    BCLog::OutSummary("Model M0 created");
+    
+    // ----------------------------------------------------
+    /// Set Model M1
+    // ----------------------------------------------------
+    fM1 = new TwoGaussModel(fConfiguration);
+    fM1->SetMyDataSet(fDataSet);
+    SetM1Prior();    
+    SetModelOption(fM1,fConfiguration);
+    
+    BCLog::OutSummary("Model M1 created");
     
 }
 
@@ -60,39 +89,8 @@ IsomerAnalysis::~IsomerAnalysis()
 void IsomerAnalysis::RunAnalysis()
 {
     
-    // set nicer style for drawing than the ROOT default
-    BCAux::SetStyle();
-    
-    
-    BCLog::OpenLog(fOutPutNames["Log"].c_str());
-    BCLog::SetLogLevel(BCLog::detail);
-    fConfiguration->PrintToBCLog();
-    
-    
-    
-    
-    // ----------------------------------------------------
-    /// Set Model M0
-    // ----------------------------------------------------
-    //OneGaussModel* M0 = new OneGaussModel(fConfiguration);
-    fM0 = new OneGaussModel(fConfiguration);
-    fM0->SetMyDataSet(fDataSet);
-    SetM0Prior();
-    SetModelOption(fM0,fConfiguration);
     BCSummaryTool * summaryM0 = new BCSummaryTool(fM0);
-    BCLog::OutSummary("Model M0 created");
-    
-    // ----------------------------------------------------
-    /// Set Model M1
-    // ----------------------------------------------------
-    //TwoGaussModel* M1 = new TwoGaussModel(fConfiguration);
-    fM1 = new TwoGaussModel(fConfiguration);
-    fM1->SetMyDataSet(fDataSet);
-    SetM1Prior();    
-    SetModelOption(fM1,fConfiguration);
-    
     BCSummaryTool * summaryM1 = new BCSummaryTool(fM1);
-    BCLog::OutSummary("Model M1 created");
     
     bool MarginalizeDirectlyM0M1=false;
     if(MarginalizeDirectlyM0M1)
@@ -233,15 +231,15 @@ int IsomerAnalysis::InitField()
     
     fvalfield.push_back("weight0min");
     fvalfield.push_back("weight0max");
-    //fvalfield.push_back("weight1min");
-    //fvalfield.push_back("weight1max");
+    fvalfield.push_back("weight1min");
+    fvalfield.push_back("weight1max");
     
     fvalfield.push_back("BinMu0");
     fvalfield.push_back("BinMu1");
     fvalfield.push_back("BinSigma0");
     fvalfield.push_back("BinSigma1");
     fvalfield.push_back("BinWeight0");
-    //fvalfield.push_back("BinWeight1");
+    fvalfield.push_back("BinWeight1");
     
     
     // parameter outputs
@@ -251,4 +249,5 @@ int IsomerAnalysis::InitField()
     fcharfield.push_back("OutputSummaryM1");
     
     fConfiguration = new SidsParameters(fvalfield,fcharfield);
+    return 0;
 }

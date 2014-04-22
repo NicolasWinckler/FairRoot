@@ -60,7 +60,16 @@ double ExpModel::LogLikelihood(const std::vector<double> &parameters)
     double part0=TMath::Exp(-lambda*fxmin )-TMath::Exp(-lambda*fxmax);
     double AnalyticIntegral=part0/lambda;
     
-    logprob -= GetNDataPoints()*(log(AnalyticIntegral)+lambda*fSampleMean);
+    //logprob -= GetNDataPoints()*(log(AnalyticIntegral)+lambda*fSampleMean);
+    
+    for (int i = 0; i < GetNDataPoints(); ++i)
+    {
+        // get data
+        double x = GetDataPoint(i)->GetValue(0);
+        Double_t exp0=TMath::Exp(-lambda*x);
+    
+        logprob+=log(exp0/AnalyticIntegral);
+    }
     
     return logprob;
 }

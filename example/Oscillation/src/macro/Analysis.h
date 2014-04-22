@@ -25,6 +25,7 @@
 #include "SidsParameters.h"
 #include "SidsDataSet.h"
 
+#include "CountingExp.h"
 
 
 /**
@@ -39,11 +40,11 @@ public:
     Analysis();
     virtual ~Analysis();
     string get_date();
-    string get_prefix(SidsParameters Sidspar);
+    //string get_prefix(SidsParameters Sidspar);
     string get_prefix(SidsParameters* Sidspar);
-    void SetModelOption(BCModel* model, SidsParameters Sidspar);
+    //void SetModelOption(BCModel* model, SidsParameters Sidspar);
     void SetModelOption(BCModel* model, SidsParameters* Sidspar);
-    
+    void RunTuto1();
     
 protected:
     
