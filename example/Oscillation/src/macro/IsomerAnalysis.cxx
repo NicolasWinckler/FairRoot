@@ -40,9 +40,12 @@ IsomerAnalysis::IsomerAnalysis(string filename) : Analysis()
     fOutPutNames["Log"]=file_log;
     fOutPutNames["ModelSelection"]=file_summaryModelSelection;
 
+    fOutPutNames["OutputCorrelationM1"]=prefixOutputName+fConfiguration->GetName("OutputCorrelationM1");
+    fOutPutNames["OutputResultsM1"]=prefixOutputName+fConfiguration->GetName("OutputResultsM1");
+    fOutPutNames["OutputParameterScaledM1"]=prefixOutputName+fConfiguration->GetName("OutputParameterScaledM1");
+    
     // set nicer style for drawing than the ROOT default
     BCAux::SetStyle();
-    
     
     BCLog::OpenLog(fOutPutNames["Log"].c_str());
     BCLog::SetLogLevel(BCLog::detail);
@@ -155,7 +158,7 @@ void IsomerAnalysis::RunAnalysis()
    
    modelman->PrintModelComparisonSummary(fOutPutNames["ModelSelection"].c_str());
    
-   bool printmarginalizedPdf=false;
+   bool printmarginalizedPdf=true;
    if(printmarginalizedPdf)
    {
         BCLog::OutSummary("******************* Write output (marginalized pdf) *******************");
@@ -165,7 +168,37 @@ void IsomerAnalysis::RunAnalysis()
 
         fM0->PrintAllMarginalized(fOutPutNames["MargeM0"].c_str());
         fM1->PrintAllMarginalized(fOutPutNames["MargeM1"].c_str());
+            /// run mode finding; by default using Minuit
+         //   m->SetOptimizationMethod(BCIntegrate::kOptDefault);
+         //   m->SetOptimizationMethod(BCIntegrate::kOptMinuit);
+         //   m->SetOptimizationMethod(BCIntegrate::kOptSimAnn);
+         //   m->SetOptimizationMethod(BCIntegrate::kOptMetropolis);
+        fM1->FindMode();
 
+            /// if MCMC was run before (MarginalizeAll()) it is
+            /// possible to use the mode found by MCMC as
+            /// starting point of Minuit minimization
+        fM1->FindMode(fM1->GetBestFitParameters());
+
+            /// draw all marginalized distributions into a PostScript file
+         //   m->PrintAllMarginalized("testMy_plots.pdf");
+
+            /// print individual histograms
+         //   m->GetMarginalized("x")->Print("x.pdf");
+         //   m->GetMarginalized("y")->Print("y.pdf");
+         //   m->GetMarginalized("x", "y")->Print("xy.pdf");
+
+            /// print all summary plots
+         summaryM1->PrintParameterPlot(fOutPutNames["OutputParameterScaledM1"].c_str());
+         summaryM1->PrintCorrelationPlot(fOutPutNames["OutputCorrelationM1"].c_str());
+         //   summary->PrintKnowledgeUpdatePlots("testMy_update.pdf");
+
+            /// calculate p-value
+        fM1->CalculatePValue( fM1->GetBestFitParameters() );
+
+            /// print results of the analysis into a text file
+        fM1->PrintResults(fOutPutNames["OutputResultsM1"].c_str());
+        
         summaryM0->PrintKnowledgeUpdatePlots(fOutPutNames["SummaryM0"].c_str());
         summaryM1->PrintKnowledgeUpdatePlots(fOutPutNames["SummaryM1"].c_str());
    }
@@ -218,6 +251,7 @@ int IsomerAnalysis::InitField()
     fvalfield.push_back("xmin");
     fvalfield.push_back("xmax");
     fvalfield.push_back("xunit");
+    fvalfield.push_back("xoffset");
     
     fvalfield.push_back("mu0min");
     fvalfield.push_back("mu0max");
@@ -247,6 +281,10 @@ int IsomerAnalysis::InitField()
     fcharfield.push_back("OutputPostpdfsM1");
     fcharfield.push_back("OutputSummaryM0");
     fcharfield.push_back("OutputSummaryM1");
+    fcharfield.push_back("OutputCorrelationM1");
+    fcharfield.push_back("OutputResultsM1");
+    fcharfield.push_back("OutputParameterScaledM1");
+    
     
     fConfiguration = new SidsParameters(fvalfield,fcharfield);
     return 0;

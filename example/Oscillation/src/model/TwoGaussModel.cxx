@@ -40,10 +40,10 @@ void TwoGaussModel::DefineParameters(SidsParameters* Sidspar)
     
     fxmin=Sidspar->GetValue("xmin");
     fxmax=Sidspar->GetValue("xmax");
-    AddParameter("mu0", Sidspar->GetValue("mu0min"), Sidspar->GetValue("mu0max"),"#mu_{0}");
-    AddParameter("mu1", Sidspar->GetValue("mu1min"), Sidspar->GetValue("mu1max"),"#mu_{1}");
-    AddParameter("sigma0", Sidspar->GetValue("sigma0min"), Sidspar->GetValue("sigma0max"),"#sigma_{0}");
-    AddParameter("sigma1", Sidspar->GetValue("sigma1min"), Sidspar->GetValue("sigma1max"),"#sigma_{1}");
+    AddParameter("mu0", Sidspar->GetValue("mu0min"), Sidspar->GetValue("mu0max"),"#mu_{0} (ps)");
+    AddParameter("mu1", Sidspar->GetValue("mu1min"), Sidspar->GetValue("mu1max"),"#mu_{1} (ps)");
+    AddParameter("sigma0", Sidspar->GetValue("sigma0min"), Sidspar->GetValue("sigma0max"),"#sigma_{0} (ps)");
+    AddParameter("sigma1", Sidspar->GetValue("sigma1min"), Sidspar->GetValue("sigma1max"),"#sigma_{1} (ps)");
     AddParameter("weight0", Sidspar->GetValue("weight0min"), Sidspar->GetValue("weight0max"),"w_{0}");
     //AddParameter("weight1", Sidspar->GetValue("weight1min"), Sidspar->GetValue("weight1max"),"w_{1}");
     

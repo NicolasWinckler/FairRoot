@@ -97,8 +97,8 @@ int SidsDataSet::ReadDataFromFileTxt(SidsParameters* Sidspar)
     string filename=Sidspar->GetName("DataPathName");
 	double x0=Sidspar->GetValue("xmin");
 	double xf=Sidspar->GetValue("xmax");
-	double xunit=Sidspar->GetValue("xunit");             // minimum difference between 2 events
-	double XvarOffset=Sidspar->GetValue("xoffset");      //0.5*xunit;// to center in the middle of a bin
+	double xunit=Sidspar->GetValue("xunit");             
+	double XvarOffset=Sidspar->GetValue("xoffset");
 	double Xvar;                                        //random variable
     /////////////////////////////////////////////////////////////////////////
 	/// Tokenize file content and convert string cells into double cells
@@ -130,20 +130,20 @@ int SidsDataSet::ReadDataFromFileTxt(SidsParameters* Sidspar)
         BCLog::OutError("Raw data array has zero row");
         return -1;
     }
-    
     fTree->Branch("x",&Xvar);
     for(unsigned int i(0); i<fRawData.size();++i)
         for(unsigned int j(0); j<fRawData[i].size();++j)
         {
             
             
-            Xvar=xunit*fRawData[i][j]-XvarOffset;
+            Xvar=xunit*(fRawData[i][j]-XvarOffset);
             
-            if(Xvar>=x0-XvarOffset && Xvar<=xf-XvarOffset)
+            if(Xvar>=x0 && Xvar<=xf)
             {
                 std::vector<double> data;//to comply to the standard BAT dataset
                 data.push_back(Xvar);// put other pushback if other variables e.g. (x,y,z,t)
                 // add data point to this data set.
+                //cout<<"Data = "<<Xvar<<endl;
                 AddDataPoint(new BCDataPoint(data));
                 
                 fTree->Fill();		// fill Tree if Xvar is in defined range
