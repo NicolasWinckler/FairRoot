@@ -47,6 +47,9 @@ void OscModel::DefineParameters(SidsParameters* Sidspar)
     GetParameter(1)->SetNbins((int)Sidspar->GetValue("BinAmp"));//a
     GetParameter(2)->SetNbins((int)Sidspar->GetValue("BinOmega"));//omega
     GetParameter(3)->SetNbins((int)Sidspar->GetValue("BinPhi"));//phi
+
+    MaxLogL = -1e99;
+    use_maxLogL = false;
 }
 
 
@@ -68,6 +71,8 @@ void OscModel::DefineParameters()
     GetParameter(1)->SetNbins(200);//a
     GetParameter(2)->SetNbins(200);//omega
     GetParameter(3)->SetNbins(200);//phi
+    MaxLogL = -1e99;
+    use_maxLogL = false;
 }
 
 // ---------------------------------------------------------
@@ -106,6 +111,15 @@ double OscModel::LogLikelihood(const std::vector<double> &parameters)
     }
     // update likelihood
     logprob -= GetNDataPoints()*(log(AnalyticIntegral)+lambda*fSampleMean);
+    
+    
+     if(MaxLogL<logprob && use_maxLogL== false)
+        MaxLogL = logprob;
+    
+    if(use_maxLogL==true)
+        logprob += -MaxLogL;
+   
+    
     
     return logprob;
 }

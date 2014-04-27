@@ -7,8 +7,8 @@ int main()
     string filename=wkspDir+"configfile52Co_isomer.txt";
     IsomerAnalysis* myAnalysis = new IsomerAnalysis(filename);
     
-    myAnalysis->RunAnalysis();
-    
+    //myAnalysis->RunAnalysis();
+    myAnalysis->FitOtherPeaks();
     
     
     delete myAnalysis;

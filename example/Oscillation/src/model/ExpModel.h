@@ -23,8 +23,10 @@
 
 class ExpModel : public BCModel
 {
-public:
     
+    double MaxLogL;
+public:
+    bool use_maxLogL;
     ExpModel();
     ExpModel(SidsParameters* Sidspar);
     ~ExpModel ( );

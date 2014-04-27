@@ -102,14 +102,7 @@ void OscillationAnalysis::RunAnalysis()
     bool MarginalizeDirectlyM0M1=true;
     if(MarginalizeDirectlyM0M1)
     {
-        // ----------------------------------------------------
-        /// Normalize M0 and M1
-        // ----------------------------------------------------
 
-        BCLog::OutSummary("******************* Normalize M0 *******************");
-        fM0->Normalize();
-        BCLog::OutSummary("******************* Normalize M1 *******************");
-        fM1->Normalize();
 
         // ----------------------------------------------------
         /// Normalize M0 and M1
@@ -122,6 +115,23 @@ void OscillationAnalysis::RunAnalysis()
         BCLog::OutSummary("******************* Marginalize M1 *******************");
         fM1->MarginalizeAll();
 
+                // ----------------------------------------------------
+        /// Normalize M0 and M1
+        // ----------------------------------------------------
+        BCLog::OutSummary("******************* Normalize M0 *******************");
+        fM0->use_maxLogL=false;
+        fM0->Normalize();
+        BCLog::OutSummary("******************* Normalize M0 MAXLOGL *******************");
+        fM0->use_maxLogL=true;
+        fM0->Normalize();
+        BCLog::OutSummary("******************* Normalize M1 *******************");
+        fM1->use_maxLogL=false;
+        fM1->Normalize();
+        BCLog::OutSummary("******************* Normalize M1 MAXLOGL *******************");
+        fM1->use_maxLogL=true;
+        fM1->Normalize();
+
+        
     }
 
    /////////////////////////////////////////////////////////////////////////////////

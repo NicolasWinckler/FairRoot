@@ -85,6 +85,7 @@ IsomerAnalysis::~IsomerAnalysis()
     delete fM1;
     delete fConfiguration;
     delete fDataSet;
+    
 }
 
 
@@ -92,6 +93,7 @@ IsomerAnalysis::~IsomerAnalysis()
 void IsomerAnalysis::RunAnalysis()
 {
     
+    //*
     BCSummaryTool * summaryM0 = new BCSummaryTool(fM0);
     BCSummaryTool * summaryM1 = new BCSummaryTool(fM1);
     
@@ -242,6 +244,25 @@ void IsomerAnalysis::SaveDataHistogram( string filename, BCDataSet* Data)
     h1.Write();
     fileHisto.Close();
 }
+
+
+
+void IsomerAnalysis::FitOtherPeaks()
+{
+    NGaussModel* fgN = new NGaussModel(fConfiguration,2);
+    // 40sc,42ti,44v,46cr,48mn,50fe,52co,54ni,56cu (9+1 peaks))
+    
+    
+    
+    
+    
+    
+    delete fgN;
+    
+}
+
+
+
 
 
 int IsomerAnalysis::InitField()

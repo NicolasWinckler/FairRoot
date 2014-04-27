@@ -23,8 +23,9 @@
 
 class OscModel : public BCModel
 {
+    double MaxLogL;
     public:
-    
+        bool use_maxLogL;
     OscModel();
     OscModel(SidsParameters* Sidspar);
     ~OscModel();
