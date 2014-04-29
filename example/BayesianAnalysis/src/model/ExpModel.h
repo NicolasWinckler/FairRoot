@@ -24,8 +24,9 @@
 class ExpModel : public BCModel
 {
     
-    double MaxLogL;
+    
 public:
+    double fMaxLogL0;
     bool use_maxLogL;
     ExpModel();
     ExpModel(SidsParameters* Sidspar);

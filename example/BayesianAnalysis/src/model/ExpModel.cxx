@@ -42,7 +42,7 @@ void ExpModel::DefineParameters()
     // Allowed range for R_B is [0, 2]
     AddParameter("lambda0", 0.008, 0.020,"#lambda_{0}");
     GetParameter(0)->SetNbins(400);
-    MaxLogL = -1e99;
+    fMaxLogL0 = -1e99;
     use_maxLogL = false;
 }
 
@@ -72,11 +72,11 @@ double ExpModel::LogLikelihood(const std::vector<double> &parameters)
         logprob+=log(exp0/AnalyticIntegral);
     }
     
-    if(MaxLogL<logprob && use_maxLogL== false)
-        MaxLogL = logprob;
+    if(fMaxLogL0<logprob && use_maxLogL== false)
+        fMaxLogL0 = logprob;
     
     if(use_maxLogL==true)
-        logprob += -MaxLogL;
+        logprob += -fMaxLogL0;
     
     return logprob;
 }

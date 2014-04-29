@@ -1,10 +1,14 @@
 
 #include "OscillationAnalysis.h"
-
+//todo : make script
 int main()
 {
-    string wkspDir("/Users/winckler/fair/FairRoot/example/Oscillation/workspace/");
+    char* pPath;
+    pPath = getenv ("ANAWSPDIR");
+    string wkspDir(pPath);
+    wkspDir+="/Oscillation/config/";
     string filename=wkspDir+"configfile142Pm60_4k_PBEC_2010.txt";
+    
     OscillationAnalysis* myAnalysis = new OscillationAnalysis(filename);
     myAnalysis->RunAnalysis();
     

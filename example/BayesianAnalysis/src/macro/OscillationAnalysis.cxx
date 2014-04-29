@@ -132,6 +132,7 @@ void OscillationAnalysis::RunAnalysis()
         fM1->Normalize();
 
         
+        
     }
 
    /////////////////////////////////////////////////////////////////////////////////
@@ -158,6 +159,22 @@ void OscillationAnalysis::RunAnalysis()
    modelman->Integrate();
    modelman->MarginalizeAll();
    // compare models
+   
+   
+        double L0=fM0->fMaxLogL0;
+        double L1=fM1->fMaxLogL1;
+        
+        std::ostringstream str0;
+        str0<<"Max Log(L0) = "<<L0;
+        BCLog::OutSummary(str0.str().c_str());
+        
+        std::ostringstream str1;
+        str1<<"Max Log(L1) = "<<L1;
+        BCLog::OutSummary(str1.str().c_str());
+        
+        std::ostringstream strdiff;
+        str1<<"Max Log(L1/L0) = "<<L1-L0;
+        BCLog::OutSummary(str1.str().c_str());
    
    double bayesFact01 = modelman->BayesFactor(0,1);
    std::ostringstream buffer;
