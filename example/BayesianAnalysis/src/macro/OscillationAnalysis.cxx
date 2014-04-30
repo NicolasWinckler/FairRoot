@@ -182,6 +182,7 @@ void OscillationAnalysis::RunAnalysis()
    BCLog::OutSummary(buffer.str().c_str());
 
    
+   
    // ----------------------------------------------------
    // write output
    // ----------------------------------------------------
