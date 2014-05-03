@@ -26,24 +26,26 @@ class ExpModel : public BCModel
     
     
 public:
-    double fMaxLogL0;
-    bool use_maxLogL;
+    
     ExpModel();
     ExpModel(SidsParameters* Sidspar);
     ~ExpModel ( );
-    
+    bool use_maxLogL;
     // Methods to overload
     void DefineParameters();
     double LogLikelihood(const std::vector<double> &parameters);
     // void MCMCIterationInterface();
     
     void SetMyDataSet(BCDataSet* dataset, double unit=1);
+    double GetMaximumLogLikelihood(){return fMaxLogL;}
     
     private :
     
     double fxmin;
     double fxmax;
     double fSampleMean;
+    
+    double fMaxLogL;
     
 };
 

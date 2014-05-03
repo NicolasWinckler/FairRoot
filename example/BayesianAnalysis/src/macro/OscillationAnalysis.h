@@ -35,6 +35,11 @@ private:
     SidsParameters* fConfiguration;
     SidsDataSet* fDataSet;
     map<string, string> fOutPutNames;
+    
+    double fMaxLogL0;
+    double fMaxLogL1;
+    double fLogLRatio;// Log(L0/L1))
+    
 };
 
 

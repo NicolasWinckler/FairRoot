@@ -47,6 +47,8 @@ void OneGaussModel::DefineParameters(SidsParameters* Sidspar)
     GetParameter(0)->SetNbins((int)Sidspar->GetValue("BinMu0"));
     GetParameter(1)->SetNbins((int)Sidspar->GetValue("BinSigma0"));
     //GetParameter(5)->SetNbins((int)Sidspar->GetValue("BinWeight1"));
+    fMaxLogL = -1e99;
+    use_maxLogL = false;
 }
 
 
@@ -76,6 +78,13 @@ double OneGaussModel::LogLikelihood(const std::vector<double> &parameters)
     }
     
     
+    
+    
+    if(fMaxLogL<logprob && use_maxLogL== false)
+        fMaxLogL = logprob;
+    
+    if(use_maxLogL==true)
+        logprob += -fMaxLogL;
     
     return logprob;
 }

@@ -47,6 +47,8 @@ void TwoGaussModel::DefineParameters(SidsParameters* Sidspar)
     AddParameter("weight0", Sidspar->GetValue("weight0min"), Sidspar->GetValue("weight0max"),"w_{0}");
     //AddParameter("weight1", Sidspar->GetValue("weight1min"), Sidspar->GetValue("weight1max"),"w_{1}");
     
+    fMaxLogL = -1e99;
+    use_maxLogL = false;
     
     GetParameter(0)->SetNbins((int)Sidspar->GetValue("BinMu0"));
     GetParameter(1)->SetNbins((int)Sidspar->GetValue("BinMu1"));
@@ -86,7 +88,11 @@ double TwoGaussModel::LogLikelihood(const std::vector<double> &parameters)
         logprob+=log(w0*gauss0+(1-w0)*gauss1);
     }
     
+    if(fMaxLogL<logprob && use_maxLogL== false)
+        fMaxLogL = logprob;
     
+    if(use_maxLogL==true)
+        logprob += -fMaxLogL;
     
     return logprob;
 }

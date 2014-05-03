@@ -25,8 +25,8 @@ class OscModel : public BCModel
 {
     
     public:
-        double fMaxLogL1;
-        bool use_maxLogL;
+        
+    bool use_maxLogL;
     OscModel();
     OscModel(SidsParameters* Sidspar);
     ~OscModel();
@@ -38,12 +38,14 @@ class OscModel : public BCModel
     // void MCMCIterationInterface();
     
     void SetMyDataSet(BCDataSet* dataset, double unit=1);
+    double GetMaximumLogLikelihood(){return fMaxLogL;}
     
     private :
     
     double fxmin;
     double fxmax;
     double fSampleMean;
+    double fMaxLogL;
 //    ClassDef(OscModel,1);
 };
 

@@ -29,6 +29,7 @@ public:
     
     void FitOtherPeaks();
 
+    void TempTest();
     
 private:
     int InitField();
@@ -37,6 +38,12 @@ private:
     SidsParameters* fConfiguration;
     SidsDataSet* fDataSet;
     
+    double fMaxLogL0;
+    double fMaxLogL1;
+    double fLogLRatio;// Log(L0/L1))
+    double fB01;
+    
+    map<string,string> fResultsToPrint;
     map<string, string> fOutPutNames;
 };
 

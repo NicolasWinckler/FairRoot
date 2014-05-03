@@ -25,6 +25,7 @@ class TwoGaussModel : public BCModel
 {
 public:
     
+    bool use_maxLogL;
     TwoGaussModel();
     TwoGaussModel(SidsParameters* Sidspar);
     virtual ~TwoGaussModel ( );
@@ -36,9 +37,11 @@ public:
     // void MCMCIterationInterface();
     
     void SetMyDataSet(BCDataSet* dataset, double unit=1);
+    double GetMaximumLogLikelihood(){return fMaxLogL;}
     
     private :
     
+    double fMaxLogL;
     double fxmin;
     double fxmax;
     double fSampleMean;

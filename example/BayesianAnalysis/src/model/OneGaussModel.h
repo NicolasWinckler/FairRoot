@@ -24,6 +24,8 @@
 class OneGaussModel : public BCModel
 {
 public:
+    
+    bool use_maxLogL;
     OneGaussModel();
     OneGaussModel(SidsParameters* Sidspar);
     virtual ~OneGaussModel();
@@ -35,9 +37,12 @@ public:
     // void MCMCIterationInterface();
     
     void SetMyDataSet(BCDataSet* dataset, double unit=1);
+    double GetMaximumLogLikelihood(){return fMaxLogL;}
+    
     
     private :
     
+    double fMaxLogL;
     double fxmin;
     double fxmax;
     double fSampleMean;
