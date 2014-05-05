@@ -29,6 +29,7 @@ public:
     
     void FitOtherPeaks();
 
+    void LikelihoodAnalysis();
     void TempTest();
     
 private:

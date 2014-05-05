@@ -23,7 +23,7 @@ NGaussModel::NGaussModel(SidsParameters* Sidspar, int N) : BCModel("NGaussModel"
     std::ostringstream meanName0;
         meanName0<<"mu0"<<iii+1;
     
-        fXvar = new RooRealVar("x","x",-10,10);
+    fXvar = new RooRealVar("x","x",-10,10);
     //RooRealVar x("x","x",-10,10) ;
     
     RooRealVar mean1(meanName0.str().c_str(),meanName0.str().c_str(),0) ;

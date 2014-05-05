@@ -119,48 +119,7 @@ void IsomerAnalysis::RunAnalysis()
         BCLog::OutSummary("******************* Marginalize M1 *******************");
         fM1->MarginalizeAll();
 
-        ////////////// TEST1 /////////////////////
-        bool testNormalization=true;
-        if(testNormalization)
-        {
-            BCModelManager * modelman0 = new BCModelManager();
-            modelman0->SetDataSet(fDataSet);
-            modelman0->AddModel(fM0,0.5);
-            modelman0->AddModel(fM1,0.5);
-
-
-            modelman0->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
-            modelman0->SetIntegrationMethod(BCIntegrate::kIntCuba);
-
-            // Calculates the normalization of the likelihood for each model
-            //modelman->GetModel(0)->Integrate();
-            //modelman->GetModel(1)->Integrate();
-            modelman0->Integrate();
-            modelman0->MarginalizeAll();
-
-            double bayesFact01bis = modelman0->BayesFactor(0,1);
-             std::ostringstream buffer0;
-             buffer0<<"1st Bayes Factor B01 = P(D|M0)/P(D|M1) = " << bayesFact01bis;
-             BCLog::OutSummary(buffer0.str().c_str());
-
-             modelman0->PrintModelComparisonSummary();
-             
-             //delete modelman0;
-        }
-        ////////////// TEST1 END /////////////////////
         
-        BCLog::OutSummary("******************* Normalize M0 *******************");
-        fM0->use_maxLogL=false;
-        fM0->Normalize();
-        BCLog::OutSummary("******************* Normalize M0 MAXLOGL *******************");
-        fM0->use_maxLogL=true;
-        fM0->Normalize();
-        BCLog::OutSummary("******************* Normalize M1 *******************");
-        fM1->use_maxLogL=false;
-        fM1->Normalize();
-        BCLog::OutSummary("******************* Normalize M1 MAXLOGL *******************");
-        fM1->use_maxLogL=true;
-        fM1->Normalize();
         
     }
 
@@ -220,21 +179,27 @@ void IsomerAnalysis::RunAnalysis()
     bufferCorrBayes<<"Corrected Bayes Factor B01 = P(D|M0)/P(D|M1) = "<< CorrectedbayesFact01;
     BCLog::OutSummary(bufferCorrBayes.str().c_str());
    
-   
-   
+    // calculate p-value
+    fM1->CalculatePValue( fM1->GetBestFitParameters() );
+    fM0->CalculatePValue( fM0->GetBestFitParameters() );
+       
    
     // ----------------------------------------------------
     // write output
     // ----------------------------------------------------
+    
     modelman->PrintModelComparisonSummary();
    
-    modelman->PrintModelComparisonSummary(fOutPutNames["ModelSelection"].c_str());
    
     bool printmarginalizedPdf=true;
     if(printmarginalizedPdf)
     {
         BCLog::OutSummary("******************* Write output (marginalized pdf) *******************");
 
+        
+        
+        modelman->PrintModelComparisonSummary(fOutPutNames["ModelSelection"].c_str());
+        
         //modelman->PrintResults();//"testMy_results.txt");
         //modelman->PrintSummary("testresult.txt");
 
@@ -321,8 +286,10 @@ void IsomerAnalysis::FitOtherPeaks()
 {
     NGaussModel* fgN = new NGaussModel(fConfiguration,2);
     // 40sc,42ti,44v,46cr,48mn,50fe,52co,54ni,56cu (9+1 peaks))
+    //(low statistics)
     
     
+    //higher statistics -> 19Ne, 21Na, 23Mg, 25Al, 27Si, 29P, 31S
     
     
     
