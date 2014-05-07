@@ -95,8 +95,8 @@ void IsomerAnalysis::RunAnalysis()
     //*
     BCSummaryTool * summaryM0 = new BCSummaryTool(fM0);
     BCSummaryTool * summaryM1 = new BCSummaryTool(fM1);
-    
-    bool MarginalizeDirectlyM0M1=true;
+    BCModelManager * modelman = new BCModelManager();
+    bool MarginalizeDirectlyM0M1=false;
     if(MarginalizeDirectlyM0M1)
     {
         // ----------------------------------------------------
@@ -119,76 +119,58 @@ void IsomerAnalysis::RunAnalysis()
         BCLog::OutSummary("******************* Marginalize M1 *******************");
         fM1->MarginalizeAll();
 
+       
         
         
     }
-
-   /////////////////////////////////////////////////////////////////////////////////
-   // ----------------------------------------------------
-   // set up model manager
-   // ----------------------------------------------------
-
-   //M0->Integrate();
-   //M1->Integrate();
-   
-
-   BCModelManager * modelman = new BCModelManager();
-   modelman->SetDataSet(fDataSet);
-   modelman->AddModel(fM0,0.5);
-   modelman->AddModel(fM1,0.5);
-
-   
-   modelman->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
-   modelman->SetIntegrationMethod(BCIntegrate::kIntCuba);
-   
-   // Calculates the normalization of the likelihood for each model
-   //modelman->GetModel(0)->Integrate();
-   //modelman->GetModel(1)->Integrate();
-   modelman->Integrate();
-   modelman->MarginalizeAll();
-   // compare models
-   
-   
-   
-   
-    fMaxLogL0=fM0->GetMaximumLogLikelihood();
-    fMaxLogL1=fM1->GetMaximumLogLikelihood();
-
-    std::ostringstream str0;
-    str0<<"Max Log(L0) = "<<fMaxLogL0;
-    BCLog::OutSummary(str0.str().c_str());
-
-    std::ostringstream str1;
-    str1<<"Max Log(L1) = "<<fMaxLogL1;
-    BCLog::OutSummary(str1.str().c_str());
-
-    std::ostringstream strdiff;
-    str1<<"Max Log(L1/L0) = "<<fMaxLogL1-fMaxLogL0;
-    BCLog::OutSummary(str1.str().c_str());
-   
-   
-    fB01 = modelman->BayesFactor(0,1);
-    std::ostringstream buffer;
-    buffer<<"Bayes Factor B01 = P(D|M0)/P(D|M1) = " << fB01;
-    BCLog::OutSummary(buffer.str().c_str());
-
-   
-    double CorrectedbayesFact01=fB01*TMath::Exp(-fMaxLogL0/fMaxLogL1);
-   
-    std::ostringstream bufferCorrBayes;
-    bufferCorrBayes<<"Corrected Bayes Factor B01 = P(D|M0)/P(D|M1) = "<< CorrectedbayesFact01;
-    BCLog::OutSummary(bufferCorrBayes.str().c_str());
-   
-    // calculate p-value
-    fM1->CalculatePValue( fM1->GetBestFitParameters() );
-    fM0->CalculatePValue( fM0->GetBestFitParameters() );
-       
-   
-    // ----------------------------------------------------
-    // write output
-    // ----------------------------------------------------
     
-    modelman->PrintModelComparisonSummary();
+    
+    bool modelmantrue=true;
+    if(modelmantrue)
+    {
+        
+        /////////////////////////////////////////////////////////////////////////////////
+        // ----------------------------------------------------
+        // set up model manager
+        // ----------------------------------------------------
+
+        //M0->Integrate();
+        //M1->Integrate();
+
+
+
+        modelman->SetDataSet(fDataSet);
+        modelman->AddModel(fM0,0.5);
+        modelman->AddModel(fM1,0.5);
+
+
+        modelman->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
+        modelman->SetIntegrationMethod(BCIntegrate::kIntCuba);
+
+        // Calculates the normalization of the likelihood for each model
+        //modelman->GetModel(0)->Integrate();
+        //modelman->GetModel(1)->Integrate();
+        modelman->Integrate();
+        modelman->MarginalizeAll();
+        // compare models
+
+
+         // calculate p-value
+         fM1->CalculatePValue( fM1->GetBestFitParameters() );
+         fM0->CalculatePValue( fM0->GetBestFitParameters() );
+
+
+         // ----------------------------------------------------
+         // write output
+         // ----------------------------------------------------
+
+         modelman->PrintModelComparisonSummary();
+        
+        
+    }
+   
+    
+   
    
    
     bool printmarginalizedPdf=true;
@@ -196,7 +178,18 @@ void IsomerAnalysis::RunAnalysis()
     {
         BCLog::OutSummary("******************* Write output (marginalized pdf) *******************");
 
-        
+         
+         
+         fMaxLogL0=fM0->GetMaximumLogLikelihood();
+         fMaxLogL1=fM1->GetMaximumLogLikelihood();
+
+         std::ostringstream str0;
+         str0<<"Max Log(L0) = "<<fMaxLogL0;
+         BCLog::OutSummary(str0.str().c_str());
+
+         std::ostringstream str1;
+         str1<<"Max Log(L1) = "<<fMaxLogL1;
+         BCLog::OutSummary(str1.str().c_str());
         
         modelman->PrintModelComparisonSummary(fOutPutNames["ModelSelection"].c_str());
         
@@ -412,6 +405,17 @@ void IsomerAnalysis::TempTest()
         }
         ////////////// TEST1 END /////////////////////
         
+   
+        fMaxLogL0=fM0->GetMaximumLogLikelihood();
+        fMaxLogL1=fM1->GetMaximumLogLikelihood();
+
+        std::ostringstream str00;
+        str00<<"Max Log(L0) = "<<fMaxLogL0;
+        BCLog::OutSummary(str00.str().c_str());
+
+        std::ostringstream str01;
+        str01<<"Max Log(L1) = "<<fMaxLogL1;
+        BCLog::OutSummary(str01.str().c_str());
         BCLog::OutSummary("******************* Normalize M0 *******************");
         fM0->use_maxLogL=false;
         fM0->Normalize();
@@ -483,6 +487,11 @@ void IsomerAnalysis::TempTest()
     bufferCorrBayes<<"Corrected Bayes Factor B01 = P(D|M0)/P(D|M1) = "<< CorrectedbayesFact01;
     BCLog::OutSummary(bufferCorrBayes.str().c_str());
    
+   double invCorrectedbayesFact01=fB01*TMath::Exp(fMaxLogL0/fMaxLogL1);
+   
+    std::ostringstream bufferCorrBayesinv;
+    bufferCorrBayesinv<<"Inversed corr Bayes Factor B01 = P(D|M0)/P(D|M1) = "<< invCorrectedbayesFact01;
+    BCLog::OutSummary(bufferCorrBayesinv.str().c_str());
    
    
    

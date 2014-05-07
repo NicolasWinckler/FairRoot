@@ -103,7 +103,7 @@ void OscillationAnalysis::RunAnalysis()
     if(MarginalizeDirectlyM0M1)
     {
 
-
+        fM0->Normalize();
         // ----------------------------------------------------
         /// Normalize M0 and M1
         // ----------------------------------------------------

@@ -37,11 +37,40 @@ Analysis::~Analysis ( )
 
 void Analysis::SetModelOption(BCModel* model, SidsParameters* Sidspar)
 {
+    
+    double relprecision=1e-2;
+    double absprecision=5*1e-20;
+    double niterationsmin=1000;
+    double niterationsmax=100000000;
+    
+    //model->SetNIterationsPrecisionCheck (int niterations)
+    //model->SetNIterationsOutput (int niterations)
+
+    model->SetNIterationsMin(niterationsmin);
+    model->SetNIterationsMax(niterationsmax);
+    
+    model->SetRelativePrecision(relprecision);
+    model->SetAbsolutePrecision(absprecision);
+    
+    
+    
     string IntegrationMethod=Sidspar->GetName("IntegrationMethod");
     if(IntegrationMethod=="Default")    model->SetIntegrationMethod(BCIntegrate::kIntDefault); 
     if(IntegrationMethod=="Cuba")       model->SetIntegrationMethod(BCIntegrate::kIntCuba); 
     if(IntegrationMethod=="MonteCarlo") model->SetIntegrationMethod(BCIntegrate::kIntMonteCarlo); 
     if(IntegrationMethod=="Grid")       model->SetIntegrationMethod(BCIntegrate::kIntGrid); 
+    
+    if(IntegrationMethod=="CubaVegas")
+    {
+        
+        BCCubaOptions::Vegas VegasOption = model->GetCubaVegasOptions(); 
+        
+        model->SetCubaOptions(VegasOption); 
+        //model->IntegrateCuba(BCIntegrate::kCubaVegas);
+        
+        
+    }
+    
     
     string MarginalizationMethod=Sidspar->GetName("MarginalizationMethod");
     if(IntegrationMethod=="Default") model->SetMarginalizationMethod(BCIntegrate::kMargDefault);
