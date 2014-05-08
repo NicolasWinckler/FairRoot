@@ -43,7 +43,8 @@ private:
     double fMaxLogL1;
     double fLogLRatio;// Log(L0/L1))
     double fB01;
-    
+    string fM0prior;
+    string fM1prior;
     map<string,string> fResultsToPrint;
     map<string, string> fOutPutNames;
 };

@@ -51,6 +51,11 @@ IsomerAnalysis::IsomerAnalysis(string filename) : Analysis(), fMaxLogL0(0.0), fM
     BCLog::SetLogLevel(BCLog::detail);
     fConfiguration->PrintToBCLog();
     
+    
+    fM0prior=fConfiguration->GetName("M0PriorSet");
+    fM1prior=fConfiguration->GetName("M1PriorSet");
+    fM0prior="Constant";
+    fM1prior="Constant";
     // ----------------------------------------------------
     /// Load Data and other variables
     // ----------------------------------------------------
@@ -72,7 +77,7 @@ IsomerAnalysis::IsomerAnalysis(string filename) : Analysis(), fMaxLogL0(0.0), fM
     // ----------------------------------------------------
     fM1 = new TwoGaussModel(fConfiguration);
     fM1->SetMyDataSet(fDataSet);
-    SetM1Prior();    
+    SetM1Prior();
     SetModelOption(fM1,fConfiguration);
     
     BCLog::OutSummary("Model M1 created");
@@ -244,18 +249,53 @@ void IsomerAnalysis::RunAnalysis()
 
 void IsomerAnalysis::SetM0Prior()
 {
-    fM0->SetPriorConstant(0);
-    fM0->SetPriorConstant(1);
+    
+    if(fM0prior=="Constant")
+    {
+        fM0->SetPriorConstant(0);
+        fM0->SetPriorConstant(1);
+    }
+    
+    
+    if(fM0prior=="Gauss")
+    {
+        double mean=fConfiguration->GetValue("M0SigmaPriorGMeanVal");
+        double sigma=fConfiguration->GetValue("M0SigmaPriorGSigmaVal");
+        fM0->SetPriorConstant(0);
+        fM0->SetPriorGauss(1, mean, sigma);
+    }
+    
 }
 
 
 void IsomerAnalysis::SetM1Prior()
 {
-    fM1->SetPriorConstant(0);
-    fM1->SetPriorConstant(1);
-    fM1->SetPriorConstant(2);
-    fM1->SetPriorConstant(3);
-    fM1->SetPriorConstant(4);
+    
+    if(fM1prior=="Constant")
+    {
+        fM1->SetPriorConstant(0);// mu0
+        fM1->SetPriorConstant(1);// mu1
+        fM1->SetPriorConstant(2);// sigma0
+        fM1->SetPriorConstant(3);// sigma1
+        fM1->SetPriorConstant(4);// weight0
+    }
+    
+    if(fM1prior=="Gauss")
+    {
+        double mean1=fConfiguration->GetValue("M1Sigma1PriorGMeanVal");
+        double sigma1=fConfiguration->GetValue("M1Sigma1PriorGSigmaVal");
+        
+        double mean2=fConfiguration->GetValue("M1Sigma2PriorGMeanVal");
+        double sigma2=fConfiguration->GetValue("M1Sigma2PriorGSigmaVal");
+        
+        fM1->SetPriorConstant(0);
+        fM1->SetPriorConstant(1);
+        fM1->SetPriorGauss(2, mean1, sigma1);
+        fM1->SetPriorGauss(3, mean2, sigma2);
+        fM1->SetPriorConstant(4);
+    }
+    
+    
 }
 
 void IsomerAnalysis::SaveDataHistogram( string filename, BCDataSet* Data)
@@ -326,6 +366,12 @@ int IsomerAnalysis::InitField()
     fvalfield.push_back("BinWeight0");
     fvalfield.push_back("BinWeight1");
     
+    fvalfield.push_back("M0SigmaPriorGMeanVal");
+    fvalfield.push_back("M0SigmaPriorGSigmaVal");
+    fvalfield.push_back("M1Sigma1PriorGMeanVal");
+    fvalfield.push_back("M1Sigma1PriorGSigmaVal");
+    fvalfield.push_back("M1Sigma2PriorGMeanVal");
+    fvalfield.push_back("M1Sigma2PriorGSigmaVal");
     
     // parameter outputs
     fcharfield.push_back("OutputPostpdfsM0");
@@ -336,6 +382,8 @@ int IsomerAnalysis::InitField()
     fcharfield.push_back("OutputResultsM1");
     fcharfield.push_back("OutputParameterScaledM1");
     
+    fcharfield.push_back("M0PriorSet");
+    fcharfield.push_back("M1PriorSet");
     
     fConfiguration = new SidsParameters(fvalfield,fcharfield);
     return 0;

@@ -49,16 +49,21 @@ int SidsParameters::SetExperimentalParameter(string filename, bool print)
             for(unsigned int i(0);i<fFileContent.size();++i)
                 if(fKeyValues[k]==fFileContent[i][0])
                 {
-                    fParameterValues[fKeyValues[k]]=lexical_cast<double>(fFileContent[i][1]);
-                    break;
+                    if(fFileContent[i].size()>1)
+                    {
+                        fParameterValues[fKeyValues[k]]=lexical_cast<double>(fFileContent[i][1]);
+                        break;
+                    }
+                    
                 }
                 else
                     if(i==fFileContent.size()-1)
                     {
                         stringstream logmsg;
-                        logmsg<<"Parameter field '"<<fKeyValues[k]<<"' is not defined in configfile";
+                        logmsg<<"Parameter field '"<<fKeyValues[k]<<"' is not defined in configfile. Value set to zero.";
                         BCLog::OutError(logmsg.str().c_str());
-                        return -1;
+                        fParameterValues[fKeyValues[k]]=0.0;
+                        //return -1;
                     }
         }
         
@@ -68,16 +73,20 @@ int SidsParameters::SetExperimentalParameter(string filename, bool print)
             for(unsigned int i(0);i<fFileContent.size();++i)
                 if(fKeyNames[k]==fFileContent[i][0])
                 {
-                    fParameterNames[fKeyNames[k]]=fFileContent[i][1];
-                    break;
+                    if(fFileContent[i].size()>1)
+                    {
+                        fParameterNames[fKeyNames[k]]=fFileContent[i][1];
+                        break;
+                    }
                 }
                 else
                     if(i==fFileContent.size()-1)
                     {
                         stringstream logmsg;
-                        logmsg<<"Parameter field '"<<fKeyNames[k]<<"' is not defined in configfile";
+                        logmsg<<"Parameter field '"<<fKeyNames[k]<<"' is not defined in configfile. Value Set to Undefined";
                         BCLog::OutError(logmsg.str().c_str());
-                        return -1;
+                        fParameterNames[fKeyNames[k]]="Undefined";
+                        //return -1;
                     }
         }
         
