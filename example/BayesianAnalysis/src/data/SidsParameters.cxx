@@ -13,10 +13,10 @@
 
 SidsParameters::SidsParameters()
 {
-    fKeyValues.push_back("tmin");
-    fKeyValues.push_back("tmax");
-    fKeyValues.push_back("toffset");
-    fKeyValues.push_back("tunit");
+    fKeyValues.push_back("xmin");
+    fKeyValues.push_back("xmax");
+    fKeyValues.push_back("xoffset");
+    fKeyValues.push_back("xunit");
     
     fKeyNames.push_back("DataName");
     fKeyNames.push_back("DataFileName");
@@ -123,6 +123,18 @@ string SidsParameters::GetName(string key)
     string name=fParameterNames[key];
     
     return name;
+}
+
+
+void SidsParameters::SetValue(string key, double Value)
+{
+    fParameterValues[key]=Value;
+}
+
+
+void SidsParameters::SetName(string key, string Value)
+{
+    fParameterNames[key]=Value;
 }
 
 

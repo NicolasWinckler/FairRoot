@@ -25,6 +25,12 @@ OneGaussModel::OneGaussModel(SidsParameters* Sidspar) : BCModel("OneGaussModel")
 OneGaussModel::~OneGaussModel()
 // default destructor
 {
+    delete fx;
+    delete fmean;
+    delete fsigma;
+    delete fRooModel;
+    delete frooData;
+    delete ftree;
 }
 
 // ---------------------------------------------------------
@@ -38,10 +44,30 @@ void OneGaussModel::DefineParameters(SidsParameters* Sidspar)
     // of the parameter. The indices increase from 0 according to the
     // order of adding the parameters.
     
+    string dataname=Sidspar->GetName("DataName");
+    string meanName("mu00_");
+    meanName+=dataname;
+    string sigmaName("sigma00_");
+    sigmaName+=dataname;
+    string ModelName("Gauss0_");
+    ModelName+=dataname;
+    
     fxmin=Sidspar->GetValue("xmin");
     fxmax=Sidspar->GetValue("xmax");
-    AddParameter("mu00", Sidspar->GetValue("mu0min"), Sidspar->GetValue("mu0max"),"#mu_{0}");
-    AddParameter("sigma00", Sidspar->GetValue("sigma0min"), Sidspar->GetValue("sigma0max"),"#sigma_{0}");
+    
+    fx = new RooRealVar("x","x",fxmin,fxmax);
+    double mu_min=Sidspar->GetValue("mu0min");
+    double mu_max=Sidspar->GetValue("mu0max");
+    double mu_ = (mu_max-mu_min)/2.0;
+    
+    double sigma_min=Sidspar->GetValue("sigma0min");
+    double sigma_max=Sidspar->GetValue("sigma0max");
+    double sigma_ = (sigma_max-sigma_min)/2.0;
+    
+    
+    // BAT par
+    AddParameter("mu00", mu_min, mu_max,"#mu_{0}");
+    AddParameter("sigma00", sigma_min, sigma_max,"#sigma_{0}");
     
     
     GetParameter(0)->SetNbins((int)Sidspar->GetValue("BinMu0"));
@@ -49,6 +75,18 @@ void OneGaussModel::DefineParameters(SidsParameters* Sidspar)
     //GetParameter(5)->SetNbins((int)Sidspar->GetValue("BinWeight1"));
     fMaxLogL = -1e99;
     use_maxLogL = false;
+    
+    
+    
+    
+    
+    // RooFit par
+    fmean = new RooRealVar("mean","mean value",mu_,mu_min,mu_max) ;
+    fsigma = new RooRealVar("sigma","width",sigma_,sigma_min,sigma_max) ;
+    fRooModel = new RooGaussian("gauss","gaussian PDF",*fx,*fmean,*fsigma) ;
+    
+    std::cout<<"ok1"<<std::endl;
+    
 }
 
 
@@ -102,6 +140,38 @@ void OneGaussModel::SetMyDataSet(BCDataSet* dataset, double unit)
 }
 
 
+void OneGaussModel::SetMyDataSet(SidsDataSet* dataset, double unit)
+{
+    BCModel::SetDataSet(dataset);std::cout<<"ok2"<<std::endl;
+    ftree=dataset->GetTree();
+    
+    double sum=0.0;
+    for (int i = 0; i < GetNDataPoints(); ++i)
+        sum+=GetDataPoint(i)->GetValue(0);
+    fSampleMean=unit*sum/((double)GetNDataPoints());
+    //frooData = new RooDataSet("frooData","dataset with x",ftree,*fx);
+    std::cout<<"ok2b"<<std::endl;
+    frooData = fRooModel->generate(*fx,1000);
+    std::cout<<"ok3"<<std::endl;
+}
 
 
+void OneGaussModel::RooFitToData(bool print)
+{
+    fRooModel->fitTo(*frooData);
+    std::cout<<"ok4"<<std::endl;
+    /*
+    if(print) fRooModel->fitTo(*frooData);
+    else fRooModel->fitTo(*frooData,RooFit::PrintLevel(-1));
+    */bool draw=true;
+    if(draw)
+    {
+            RooPlot* xframe = fx->frame();
+            frooData->plotOn(xframe,RooFit::Binning(100)) ;
+            fRooModel->plotOn(xframe,RooFit::LineColor(kRed));
+            TCanvas *cmodel = new TCanvas();
+            xframe->Draw();
+    }std::cout<<"ok5"<<std::endl;
+    // */
+}
 

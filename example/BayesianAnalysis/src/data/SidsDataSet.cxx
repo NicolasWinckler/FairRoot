@@ -13,6 +13,8 @@
 SidsDataSet::SidsDataSet() : BCDataSet(), FileReader()
 {
     // default constructor
+    fxobsmin=1e99;
+    fxobsmax=1e-99;
 }
 
 
@@ -30,54 +32,17 @@ SidsDataSet::~SidsDataSet()
 
 ////////////////////// My dedicated stuff/////////////////////////////////
 
+double SidsDataSet::GetRangeLength()
+{
+    double range=fxobsmax-fxobsmin;
+    return range;
+}
 
 // ---------------------------------------------------------
 int SidsDataSet::FillTreeFromFileTxt(SidsParameters *Sidspar)
 {
 	
     
-    /////////////////////////////////////////////////////////////////////////
-	/// Get experimental parameter
-    /////////////////////////////////////////////////////////////////////////
-
-    string DataName=Sidspar->GetName("DataName");
-    string filename=Sidspar->GetName("DataPathName");
-	double x0=Sidspar->GetValue("xmin");
-	double xf=Sidspar->GetValue("xmax");
-	double xunit=Sidspar->GetValue("xunit");             // minimum difference between 2 events
-	double XvarOffset=Sidspar->GetValue("xoffset");      //0.5*xunit;// to center in the middle of a bin
-	double Xvar;                                        //random variable
-    /////////////////////////////////////////////////////////////////////////
-	/// Tokenize file content and convert string cells into double cells
-    /////////////////////////////////////////////////////////////////////////
-    
-    if(FileReader::TokenizeFileTxt(filename)==0)
-        FileReader::ConvertStrToDouble();
-	
-	
-	/////////////////////////////////////////////////////////////////////////
-	/// fill TTree
-	/////////////////////////////////////////////////////////////////////////
-	
-    fTree = new TTree(DataName.c_str(),DataName.c_str());
-    
-    if(fRawData.size()==0)
-    {
-        BCLog::OutError("Raw data array has zero row");
-        return -1;
-    }
-    
-    fTree->Branch("x",&Xvar);
-    for(unsigned int i(0); i<fRawData.size();++i)
-        for(unsigned int j(0); j<fRawData[i].size();++j)
-        {
-            Xvar=xunit*fRawData[i][j]-XvarOffset;
-            if(Xvar>=x0-XvarOffset && Xvar<=xf-XvarOffset)
-                fTree->Fill();		// fill Tree if Xvar is in defined range
-        }
-    //fTree->StartViewer();
-    fTree->ResetBranchAddresses();
-	
     return 0;
 }
 
@@ -88,18 +53,20 @@ int SidsDataSet::FillTreeFromFileTxt(SidsParameters *Sidspar)
 int SidsDataSet::ReadDataFromFileTxt(SidsParameters* Sidspar)
 {
 	
-    
+    fXRangeAuto=false;
     /////////////////////////////////////////////////////////////////////////
 	/// Get experimental parameter
     /////////////////////////////////////////////////////////////////////////
     
+    if(Sidspar->GetName("XRangeOption")=="XRangeAuto") 
+        fXRangeAuto=true;
     string DataName=Sidspar->GetName("DataName");
     string filename=Sidspar->GetName("DataPathName");
-	double x0=Sidspar->GetValue("xmin");
-	double xf=Sidspar->GetValue("xmax");
-	double xunit=Sidspar->GetValue("xunit");             
-	double XvarOffset=Sidspar->GetValue("xoffset");
-	double Xvar;                                        //random variable
+    double x0=Sidspar->GetValue("xmin");
+    double xf=Sidspar->GetValue("xmax");
+    double xunit=Sidspar->GetValue("xunit");             
+    double XvarOffset=Sidspar->GetValue("xoffset");
+    double Xvar;                                        //random variable
     /////////////////////////////////////////////////////////////////////////
 	/// Tokenize file content and convert string cells into double cells
     /////////////////////////////////////////////////////////////////////////
@@ -130,13 +97,39 @@ int SidsDataSet::ReadDataFromFileTxt(SidsParameters* Sidspar)
         BCLog::OutError("Raw data array has zero row");
         return -1;
     }
+    
+    
+    for(unsigned int i(0); i<fRawData.size();++i)
+        for(unsigned int j(0); j<fRawData[i].size();++j)
+        {
+
+            Xvar=xunit*(fRawData[i][j]-XvarOffset);
+            //get min and max
+            if(Xvar<fxobsmin) 
+                    fxobsmin=Xvar;
+            if(Xvar>fxobsmax) 
+                fxobsmax=Xvar;
+        }
+    
+    
+    if(fXRangeAuto)
+    {
+        double delta=(fxobsmax-fxobsmin)*0.05;// 5% on each side
+        x0=fxobsmin-delta;
+        xf=fxobsmax+delta;
+        Sidspar->SetValue("xmin",x0);
+        Sidspar->SetValue("xmax",xf);
+    }
+    
+    
     fTree->Branch("x",&Xvar);
     for(unsigned int i(0); i<fRawData.size();++i)
         for(unsigned int j(0); j<fRawData[i].size();++j)
         {
             
-            
             Xvar=xunit*(fRawData[i][j]-XvarOffset);
+            
+           
             
             if(Xvar>=x0 && Xvar<=xf)
             {
@@ -152,9 +145,17 @@ int SidsDataSet::ReadDataFromFileTxt(SidsParameters* Sidspar)
         }
     //fTree->StartViewer();
     fTree->ResetBranchAddresses();
+    
+    //fx = new RooRealVar("x","x",x0,xf);
+    //frooData = new RooDataSet("frooData","dataset with x",fTree,*fx);
+    
     return 0;
 }
 
-
+TTree* SidsDataSet::GetTree()
+{
+    
+    return fTree;
+}
 
 //ClassImp(sidsDataSet)

@@ -24,9 +24,12 @@ public:
     
     void RunAnalysis();
     void SaveDataHistogram( string filename, BCDataSet* data);
+    void SaveDataHistogram( string filename);
     void SetM0Prior();
     void SetM1Prior();
     
+    
+    void FitOnePeak();
     void FitOtherPeaks();
 
     void LikelihoodAnalysis();

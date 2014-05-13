@@ -22,9 +22,18 @@ Analysis::Analysis ( )
     fcharfield.push_back("OutPutDirectory");
     fcharfield.push_back("LogFileName");
     
+    fcharfield.push_back("XRangeOption");
+    
     fcharfield.push_back("MCMCPrecision");
     fcharfield.push_back("IntegrationMethod");
     fcharfield.push_back("MarginalizationMethod");
+    
+    
+    fvalfield.push_back("CubaRelPrecision");
+    fvalfield.push_back("CubaAbsPrecision");
+    fvalfield.push_back("CubaNIterationsMin");
+    fvalfield.push_back("CubaNIterationsMax");
+    
 }
 
 
@@ -38,10 +47,10 @@ Analysis::~Analysis ( )
 void Analysis::SetModelOption(BCModel* model, SidsParameters* Sidspar)
 {
     
-    double relprecision=1e-2;
-    double absprecision=5*1e-20;
-    double niterationsmin=1000;
-    double niterationsmax=100000000;
+    double relprecision=Sidspar->GetValue("CubaRelPrecision");
+    double absprecision=Sidspar->GetValue("CubaAbsPrecision");
+    double niterationsmin=Sidspar->GetValue("CubaNIterationsMin");
+    double niterationsmax=Sidspar->GetValue("CubaNIterationsMax");
     
     //model->SetNIterationsPrecisionCheck (int niterations)
     //model->SetNIterationsOutput (int niterations)

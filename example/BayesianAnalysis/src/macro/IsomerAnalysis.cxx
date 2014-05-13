@@ -44,6 +44,7 @@ IsomerAnalysis::IsomerAnalysis(string filename) : Analysis(), fMaxLogL0(0.0), fM
     fOutPutNames["OutputResultsM1"]=prefixOutputName+fConfiguration->GetName("OutputResultsM1");
     fOutPutNames["OutputParameterScaledM1"]=prefixOutputName+fConfiguration->GetName("OutputParameterScaledM1");
     
+    fOutPutNames["OutPutRootHisto"]=prefixOutputName+"histogram.root";
     // set nicer style for drawing than the ROOT default
     BCAux::SetStyle();
     
@@ -54,8 +55,12 @@ IsomerAnalysis::IsomerAnalysis(string filename) : Analysis(), fMaxLogL0(0.0), fM
     
     fM0prior=fConfiguration->GetName("M0PriorSet");
     fM1prior=fConfiguration->GetName("M1PriorSet");
-    fM0prior="Constant";
-    fM1prior="Constant";
+    BCLog::OutSummary("Prior Set for M0 :");
+    BCLog::OutSummary(fM0prior.c_str());
+    BCLog::OutSummary("Prior Set for M1 :");
+    BCLog::OutSummary(fM1prior.c_str());
+    //fM0prior="Constant";
+    //fM1prior="Constant";
     // ----------------------------------------------------
     /// Load Data and other variables
     // ----------------------------------------------------
@@ -92,6 +97,18 @@ IsomerAnalysis::~IsomerAnalysis()
     delete fDataSet;
     
 }
+
+
+
+
+void IsomerAnalysis::FitOnePeak()
+{
+    fM0->RooFitToData(false);
+    //string filename=fOutPutNames["OutPutRootHisto"];
+    //SaveDataHistogram(filename);
+    
+}
+
 
 
 void IsomerAnalysis::RunAnalysis()
@@ -314,6 +331,20 @@ void IsomerAnalysis::SaveDataHistogram( string filename, BCDataSet* Data)
 }
 
 
+void IsomerAnalysis::SaveDataHistogram( string filename)
+{
+    TFile fileHisto(filename.c_str(), "new");
+    TH1D h1(filename.c_str(), filename.c_str(), 100, fConfiguration->GetValue("xmin"),fConfiguration->GetValue("xmax"));
+    
+    for(unsigned int i=0; i < fDataSet->GetNDataPoints(); ++i)
+    {
+        double xi = fDataSet->GetDataPoint(i)->GetValue(0);
+        std::cout<<"xi="<<xi<<std::endl;
+        h1.Fill(xi);
+    }
+    h1.Write();
+    fileHisto.Close();
+}
 
 void IsomerAnalysis::FitOtherPeaks()
 {

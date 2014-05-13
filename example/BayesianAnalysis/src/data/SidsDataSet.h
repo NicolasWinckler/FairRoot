@@ -26,6 +26,8 @@
 #include <boost/lexical_cast.hpp>
 
 # include "TTree.h"
+#include "RooRealVar.h" 
+#include "RooDataSet.h"
 
 
 
@@ -47,11 +49,17 @@ class SidsDataSet : public BCDataSet, public FileReader
     
     int FillTreeFromFileTxt(SidsParameters* Sidspar);//my stuff
     int ReadDataFromFileTxt(SidsParameters* Sidspar);//my stuff
+    double GetRangeLength();
+    TTree* GetTree();
     
+    protected :
     
-    private :
-    
+    RooDataSet* frooData;
+    RooRealVar* fx;
+    double fxobsmin;
+    double fxobsmax;
     TTree* fTree;
+    bool fXRangeAuto;
     
 //    ClassDef(sidsDataSet,1);
 };

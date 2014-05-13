@@ -26,6 +26,9 @@ class SidsParameters : public FileReader
     int SetExperimentalParameter(string filename, bool print=false);
     double GetValue(string key);
     string GetName(string key);
+    
+    void SetValue(string key, double Value);
+    void SetName(string key, string Value);
     int PrintToBCLog();
     
     private :
