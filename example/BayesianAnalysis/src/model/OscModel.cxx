@@ -14,12 +14,23 @@ OscModel::OscModel() : BCModel("OscModel"), fxmin(0.0), fxmax(0.0), fSampleMean(
 {
     // default constructor
     DefineParameters();
+    fsimulation_on=false;
+    fMLE_lambda=0.0;
+    fMLE_amp=0.0;
+    fMLE_omega=0.0;
+    fMLE_phi=0.0;
 }
 
 
 OscModel::OscModel(SidsParameters* Sidspar) : BCModel("OscModel"), fSampleMean(0.0)
 {
     DefineParameters(Sidspar);
+    fsimulation_on=false;
+    fMLE_lambda=0.0;
+    fMLE_amp=0.0;
+    fMLE_omega=0.0;
+    fMLE_phi=0.0;
+    
 }
 
 // ---------------------------------------------------------
@@ -112,8 +123,19 @@ double OscModel::LogLikelihood(const std::vector<double> &parameters)
     // update likelihood
     logprob -= GetNDataPoints()*(log(AnalyticIntegral)+lambda*fSampleMean);
     
-    
-     if(fMaxLogL<logprob && use_maxLogL== false)
+    // find MLE via MCMC (dedicated for simulation and bias study)
+    if(fsimulation_on)
+    {
+        if(fMaxLogL<logprob)
+        {
+            fMaxLogL = logprob;
+            fMLE_lambda=lambda;
+            fMLE_amp=amp;
+            fMLE_omega=omega;
+            fMLE_phi=phi;
+        }
+    }
+    if(fMaxLogL<logprob && use_maxLogL== false)
         fMaxLogL = logprob;
     
     if(use_maxLogL==true)

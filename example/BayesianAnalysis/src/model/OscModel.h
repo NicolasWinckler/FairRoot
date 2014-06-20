@@ -27,6 +27,7 @@ class OscModel : public BCModel
     public:
         
     bool use_maxLogL;
+    bool fsimulation_on;
     OscModel();
     OscModel(SidsParameters* Sidspar);
     ~OscModel();
@@ -46,6 +47,12 @@ class OscModel : public BCModel
     double fxmax;
     double fSampleMean;
     double fMaxLogL;
+    
+    double fMLE_lambda;
+    double fMLE_amp;
+    double fMLE_omega;
+    double fMLE_phi;
+    
 //    ClassDef(OscModel,1);
 };
 

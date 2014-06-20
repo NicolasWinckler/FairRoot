@@ -35,9 +35,11 @@ Set(NO_DICT_SRCS
   src/model/OneGaussModel.cxx
   src/model/TwoGaussModel.cxx
   src/model/NGaussModel.cxx
+  src/model/RooMyAnalyticalPdf.cxx
   src/macro/Analysis.cxx
   src/macro/OscillationAnalysis.cxx
   src/macro/IsomerAnalysis.cxx
+  src/macro/OscRooSimulation.cxx
 )
 
 
