@@ -81,10 +81,11 @@ public:
     int GenerateData(string DataName, double NumSimEvt, double PullStats=10000);
     int LoadDataFromFile(string DataName);
     int CutData(int indexmin, int indexmax);
-    int SaveSimData(string OutputDir);
-    vector< vector<double> > GetSetOfMLE();
-    int GetPullDistribution();
-    
+    int SaveSimData();
+    vector< vector<double> > GetSetOfMLE(RooDataSet* roodataset);
+    int GetPullDistribution(int SampleSize);
+    void SetOutputDirectory(string ouptdir)
+        {foutputdir=ouptdir;}
     
 private:
 
@@ -101,6 +102,8 @@ private:
     double fphimin;
     double fphimax;
 
+    string foutputdir;
+    
     double m_lambdatot;
     double m_phi;
     double m_omega;

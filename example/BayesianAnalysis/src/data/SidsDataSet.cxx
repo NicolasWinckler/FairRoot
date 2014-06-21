@@ -155,13 +155,9 @@ int SidsDataSet::ReadDataFromFileTxt(SidsParameters* Sidspar)
 
 int SidsDataSet::ReadRooDataSet(RooDataSet* dataset)
 {
-    //*
     double Xvar;
     for(unsigned int i(0); i<dataset->numEntries();++i)
         {
-            
-            
-            
             const RooArgSet* event = dataset->get(i) ; 
             Xvar=event->getRealValue("x");
             std::vector<double> data;//to comply to the standard BAT dataset
@@ -170,7 +166,6 @@ int SidsDataSet::ReadRooDataSet(RooDataSet* dataset)
             //cout<<"Data = "<<Xvar<<endl;
             AddDataPoint(new BCDataPoint(data));                
         }
-    // */
 }
 
 
