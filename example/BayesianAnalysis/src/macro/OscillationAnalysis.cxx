@@ -161,8 +161,8 @@ void OscillationAnalysis::RunAnalysis()
    // compare models
    
 
-    double fMaxLogL0=fM0->GetMaximumLogLikelihood();
-    double fMaxLogL1=fM1->GetMaximumLogLikelihood();
+    fMaxLogL0=fM0->GetMaximumLogLikelihood();
+    fMaxLogL1=fM1->GetMaximumLogLikelihood();
 
     std::ostringstream str0;
     str0<<"Max Log(L0) = "<<fMaxLogL0;

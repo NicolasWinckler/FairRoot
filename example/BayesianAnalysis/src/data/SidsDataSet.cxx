@@ -152,6 +152,28 @@ int SidsDataSet::ReadDataFromFileTxt(SidsParameters* Sidspar)
     return 0;
 }
 
+
+int SidsDataSet::ReadRooDataSet(RooDataSet* dataset)
+{
+    //*
+    double Xvar;
+    for(unsigned int i(0); i<dataset->numEntries();++i)
+        {
+            
+            
+            
+            const RooArgSet* event = dataset->get(i) ; 
+            Xvar=event->getRealValue("x");
+            std::vector<double> data;//to comply to the standard BAT dataset
+            data.push_back(Xvar);// put other pushback if other variables e.g. (x,y,z,t)
+            // add data point to this data set.
+            //cout<<"Data = "<<Xvar<<endl;
+            AddDataPoint(new BCDataPoint(data));                
+        }
+    // */
+}
+
+
 TTree* SidsDataSet::GetTree()
 {
     

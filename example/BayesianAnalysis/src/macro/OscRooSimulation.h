@@ -57,7 +57,11 @@
 #include "TMath.h"
 #include <cmath>
 #include "SidsParameters.h"
-#include "RooMyAnalyticalPdf.h"
+//#include "RooMyAnalyticalPdf.h"
+#include "RooMyPdfDict.h"
+#include "OscModel.h"
+
+#include "Analysis.h"
 
 using namespace RooFit;
 using namespace RooStats;
@@ -66,64 +70,75 @@ class RooMyAnalyticalPdf;
 
 
 
-class OscRooSimulation 
+class OscRooSimulation : public Analysis
 {
 public:
-    OscRooSimulation(SidsParameters* Sidspar, double NumSimEvt);
+    OscRooSimulation(string filename);
     virtual ~OscRooSimulation();
     
+    int FitToH1();
+    int FitToH0();
+    int GenerateData(string DataName, double NumSimEvt, double PullStats=10000);
+    int LoadDataFromFile(string DataName);
+    int CutData(int indexmin, int indexmax);
+    int SaveSimData(string OutputDir);
+    vector< vector<double> > GetSetOfMLE();
+    int GetPullDistribution();
     
-void FitToH1();
-vector< vector<double> > GetMLEofM1( );
     
 private:
 
+    bool fMCMCdone;
+    SidsParameters* fConfiguration;
+    double fxmin;
+    double fxmax;
+    double flambdamin;
+    double flambdamax;
+    double famin;
+    double famax;
+    double fomegamin;
+    double fomegamax;
+    double fphimin;
+    double fphimax;
 
-        double fxmin;
-        double fxmax;
-        double flambdamin;
-        double flambdamax;
-        double famin;
-        double famax;
-        double fomegamin;
-        double fomegamax;
-        double fphimin;
-        double fphimax;
-        
-        double m_lambdatot;
-        double m_phi;
-        double m_omega;
-        double m_amp;
-        
-        RooRealVar* m_x;
-        RooDataSet* m_dataSim;
-        
-        //RooDataSet* m_DataSimH0;
-        //RooDataSet* m_DataSimH1;
-	
-	RooRealVar* m_lambda0;// model 0 (null)
-	
-        RooRealVar* m_lambda1;// model 1 (alt)
-	RooRealVar* m_amp1;
-	RooRealVar* m_omega1;
-	RooRealVar* m_phi1;
-        
-        double m_AIC0;
-        double m_AIC1;
-        double m_AIC2;
-        double m_AIC3;
-        
-        double m_BIC0;
-        double m_BIC1;
-        double m_BIC2;
-        double m_BIC3;
-	
-	
-        // define pdfs
-        RooGenericPdf* m_pdf_H0;
-        RooMyAnalyticalPdf* m_pdf_H1s;
-        
-        void initAttributes(SidsParameters* Sidspar);
+    double m_lambdatot;
+    double m_phi;
+    double m_omega;
+    double m_amp;
+
+    RooRealVar* m_x;
+    RooDataSet* m_dataSim;
+    RooDataSet* fReducedDataSet;
+
+    //RooDataSet* m_DataSimH0;
+    //RooDataSet* m_DataSimH1;
+
+    RooRealVar* m_lambda0;// model 0 (null)
+
+    RooRealVar* m_lambda1;// model 1 (alt)
+    RooRealVar* m_amp1;
+    RooRealVar* m_omega1;
+    RooRealVar* m_phi1;
+
+    double m_AIC0;
+    double m_AIC1;
+    double m_AIC2;
+    double m_AIC3;
+
+    double m_BIC0;
+    double m_BIC1;
+    double m_BIC2;
+    double m_BIC3;
+
+
+    // define pdfs
+    RooGenericPdf* m_pdf_H0;
+    RooMyAnalyticalPdf* m_pdf_H1s;
+
+    int InitField();
+    void initAttributes(SidsParameters* Sidspar);
+    int UpdateRooParameterFromMCMC();
+    int RunMCMC(RooDataSet* roodataset);
         
 };
 

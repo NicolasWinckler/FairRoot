@@ -49,6 +49,7 @@ class SidsDataSet : public BCDataSet, public FileReader
     
     int FillTreeFromFileTxt(SidsParameters* Sidspar);//my stuff
     int ReadDataFromFileTxt(SidsParameters* Sidspar);//my stuff
+    int ReadRooDataSet(RooDataSet* dataset);
     double GetRangeLength();
     TTree* GetTree();
     

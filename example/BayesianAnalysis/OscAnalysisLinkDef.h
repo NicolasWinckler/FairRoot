@@ -4,6 +4,8 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+
+//#pragma link C++ class RooMyAnalyticalPdf;
 //#pragma link C++ class FileReader;
 //#pragma link C++ class SidsDataSet;
 //#pragma link C++ class SidsParameters;

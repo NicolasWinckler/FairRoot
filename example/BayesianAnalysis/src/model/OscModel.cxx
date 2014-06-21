@@ -159,7 +159,17 @@ void OscModel::SetMyDataSet(BCDataSet* dataset, double unit)
     std::cout << " Sample mean = " << fSampleMean << std::endl;
 }
 
-
+vector<double> OscModel::GetMCMCMLEValue()
+{
+    
+    vector<double> MLE;
+    MLE.push_back(fMLE_lambda);
+    MLE.push_back(fMLE_amp);
+    MLE.push_back(fMLE_omega);
+    MLE.push_back(fMLE_phi);
+    
+    return MLE;
+}
 
 //ClassImp(OscModel)
 

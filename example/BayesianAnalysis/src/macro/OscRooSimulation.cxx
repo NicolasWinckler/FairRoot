@@ -7,16 +7,41 @@
 
 #include "OscRooSimulation.h"
 
-OscRooSimulation::OscRooSimulation(SidsParameters* Sidspar, double NumSimEvt) 
+OscRooSimulation::OscRooSimulation(string filename) 
 {
-        gROOT->Reset();
-	// silence and init attributes
-	RooMsgService::instance().setGlobalKillBelow(ERROR);
-	initAttributes(Sidspar);
-	m_pdf_H0->verboseEval(-1);
-	m_pdf_H1s->verboseEval(-1);
+    RooDataSet::setDefaultStorageType(RooAbsData::Tree);
+    InitField();
+    fConfiguration->SetExperimentalParameter(filename);
+    gROOT->Reset();
+    // silence and init attributes
+    RooMsgService::instance().setGlobalKillBelow(ERROR);
+    initAttributes(fConfiguration);
+    m_pdf_H0->verboseEval(-1);
+    m_pdf_H1s->verboseEval(-1);
 	
-	/// simulation
+	
+        
+}
+
+
+OscRooSimulation::~OscRooSimulation() 
+{
+    delete m_x;
+    delete m_lambda0;
+    delete m_lambda1;
+    delete m_amp1;
+    delete m_omega1;
+    delete m_phi1;
+    delete m_pdf_H0;
+    delete m_pdf_H1s;
+    
+}
+
+
+
+int OscRooSimulation::GenerateData(string DataName, double NumSimEvt, double PullStats)
+{
+        /// simulation
         // prepare random seed
 	TDatime* time = new TDatime();
 	int temptime=time->GetTime();
@@ -27,39 +52,156 @@ OscRooSimulation::OscRooSimulation(SidsParameters* Sidspar, double NumSimEvt)
 	seed+=randnumber2;
 	
 	RooRandom::randomGenerator()->SetSeed(seed);
+        double TotSimEvt=NumSimEvt*PullStats;
+	m_dataSim = m_pdf_H0->generate(*m_x,TotSimEvt,Name(DataName.c_str()));// simu under H0
+	//m_DataSim = m_pdf_H1s->generate(*m_x,NumSimEvt);// simu under H1
         
-	m_dataSim = m_pdf_H0->generate(*m_x,NumSimEvt);
-	//m_DataSim = m_pdf_H1s->generate(*m_x,NumSimEvt);
         
+        
+        return 0;
 }
 
 
-OscRooSimulation::~OscRooSimulation() 
+int OscRooSimulation::SaveSimData(string OutputDir)
+{
+        
+        // save data
+        string filename=OutputDir+(string)m_dataSim->GetName();
+        filename+=".root";
+        TFile rootfile(filename.c_str(),"RECREATE");
+        m_dataSim->Write();
+        
+        
+        rootfile.Close();
+        
+        return 0;
+}
+
+
+
+int OscRooSimulation::LoadDataFromFile(string DataName)
 {
     
+    char* pPath;
+    pPath = getenv ("ANAWSPDIR");
+    string wkspDir(pPath);
+    string outputdir=wkspDir+"/Oscillation/OscSimuData/";
+    string filename=outputdir+DataName;
+    filename+=".root";
+    TFile* rootfile = new TFile(filename.c_str());
+    //RooWorkspace* w = (RooWorkspace*) f->Get("w") ;
+    m_dataSim= (RooDataSet*) rootfile->Get(DataName.c_str());
+    
+    rootfile->Close();
+    delete rootfile;
+    return 0;
 }
 
-
-void OscRooSimulation::FitToH1()
+int OscRooSimulation::CutData(int indexmin, int indexmax)
 {
-	m_pdf_H1s->fitTo(*m_dataSim,PrintLevel(-1));
+    fReducedDataSet = (RooDataSet*) m_dataSim->reduce(EventRange(indexmin,indexmax));
+    return 0;
 }
 
 
 
-vector< vector<double> > OscRooSimulation::GetMLEofM1( )
+int OscRooSimulation::RunMCMC(RooDataSet* roodataset)
+{
+    // set nicer style for drawing than the ROOT default
+    BCAux::SetStyle();
+    
+    BCLog::SetLogLevel(BCLog::error);
+    fMCMCdone=false;
+    
+    // ----------------------------------------------------
+    /// Load Data and other variables
+    // ----------------------------------------------------
+    SidsDataSet* DataSet = new SidsDataSet();
+    DataSet->ReadRooDataSet(roodataset);
+    
+    // ----------------------------------------------------
+    /// Set Model M1
+    // ----------------------------------------------------
+    OscModel* fM1 = new OscModel(fConfiguration);
+    fM1->SetSimulation(true);
+    fM1->SetMyDataSet(DataSet);
+    //prior
+    fM1->SetPriorConstant(0);
+    fM1->SetPriorConstant(1);
+    fM1->SetPriorConstant(2);
+    fM1->SetPriorConstant(3);
+    SetModelOption(fM1,fConfiguration);
+    
+    //BCLog::OutSummary("Model M1 created");
+    fM1->MarginalizeAll();
+    
+    vector<double> MLE_Values=fM1->GetMCMCMLEValue();
+    
+    if(MLE_Values.size()==4)
+    {
+        m_lambdatot=MLE_Values[0];
+        m_amp=MLE_Values[1];
+        m_omega=MLE_Values[2];
+        m_phi=MLE_Values[3];
+        fMCMCdone=true;
+    }
+    else
+    {
+        BCLog::OutSummary("ERROR : MCMC MLE values not obtained from current run");
+        
+    }
+    
+    
+    delete DataSet;
+    delete fM1;
+    
+    return 0;
+}
+
+
+
+int OscRooSimulation::UpdateRooParameterFromMCMC()
+{
+    if(fMCMCdone)
+    {
+        m_amp1->setVal(m_amp);
+        m_omega1->setVal(m_omega);
+        m_phi1->setVal(m_phi);
+        m_lambda1->setVal(m_lambdatot);
+    }
+    return 0;
+}
+
+
+int OscRooSimulation::FitToH1()
+{
+	
+    
+    m_pdf_H1s->fitTo(*fReducedDataSet,PrintLevel(-1));    
+    return 0;
+}
+
+
+int OscRooSimulation::FitToH0()
+{
+	m_pdf_H0->fitTo(*m_dataSim);
+        
+        return 0;
+}
+
+vector< vector<double> > OscRooSimulation::GetSetOfMLE()
 {
 	vector<double> Vector;
 	vector<double> Vectorerr;
 	vector< vector<double> > V;
 	
-	m_pdf_H0->fitTo(*m_dataSim,PrintLevel(-1));
-	RooAbsReal* NLL0= m_pdf_H0->createNLL(*m_dataSim);
+	m_pdf_H0->fitTo(*fReducedDataSet,PrintLevel(-1));
+	RooAbsReal* NLL0= m_pdf_H0->createNLL(*fReducedDataSet);
 	
-	m_pdf_H1s->fitTo(*m_dataSim,PrintLevel(-1));
-	RooAbsReal* NLL1= m_pdf_H1s->createNLL(*m_dataSim);
+	m_pdf_H1s->fitTo(*fReducedDataSet,PrintLevel(-1));
+	RooAbsReal* NLL1= m_pdf_H1s->createNLL(*fReducedDataSet);
 	
-	Vector.push_back(m_dataSim->sumEntries());	//   [0]
+	Vector.push_back(fReducedDataSet->numEntries());	//   [0]
 	
 	Vector.push_back(NLL0->getValV());		//   [1]
 	Vector.push_back(m_lambda0->getValV());		//   [2]
@@ -71,7 +213,7 @@ vector< vector<double> > OscRooSimulation::GetMLEofM1( )
 	Vector.push_back(m_phi1->getValV());		//   [7]
 	
 							//   [0]
-	Vectorerr.push_back(TMath::Sqrt(m_dataSim->sumEntries()));
+	Vectorerr.push_back(TMath::Sqrt(fReducedDataSet->numEntries()));
 	
 	Vectorerr.push_back(0.0);			//   [1]
 	Vectorerr.push_back(m_lambda0->getError());	//   [2]
@@ -89,12 +231,69 @@ vector< vector<double> > OscRooSimulation::GetMLEofM1( )
 
 
 
+int OscRooSimulation::GetPullDistribution()
+{
+    
+    int indexmin=0;
+    int indexmax=10;
+    CutData(indexmin, indexmax);
+    RunMCMC(fReducedDataSet);
+    UpdateRooParameterFromMCMC();
+    GetSetOfMLE();
+    
+    return 0;
+}
+
+
+int OscRooSimulation::InitField()
+{
+    // define field value names that are in configfile
+    
+    // analysis range
+    fvalfield.push_back("xmin");
+    fvalfield.push_back("xmax");
+    fvalfield.push_back("xoffset");
+    fvalfield.push_back("xunit");
+    
+    // parameter ranges
+    fvalfield.push_back("lambdamin");
+    fvalfield.push_back("lambdamax");
+    fvalfield.push_back("amin");
+    fvalfield.push_back("amax");
+    fvalfield.push_back("omegamin");
+    fvalfield.push_back("omegamax");
+    fvalfield.push_back("phimin");
+    fvalfield.push_back("phimax");
+    
+    // parameter binning
+    fvalfield.push_back("BinLambda");
+    fvalfield.push_back("BinAmp");
+    fvalfield.push_back("BinOmega");
+    fvalfield.push_back("BinPhi");
+    
+    // parameter initialization
+    fvalfield.push_back("lambdaInit");
+    fvalfield.push_back("phiInit");
+    fvalfield.push_back("omegaInit");
+    fvalfield.push_back("ampInit");
+    
+    
+    // parameter outputs
+    fcharfield.push_back("OutputPostpdfsM0");
+    fcharfield.push_back("OutputPostpdfsM1");
+    fcharfield.push_back("OutputSummaryM0");
+    fcharfield.push_back("OutputSummaryM1");
+    
+    fConfiguration = new SidsParameters(fvalfield,fcharfield);
+    return 0;
+}
+
 void OscRooSimulation::initAttributes(SidsParameters* Sidspar)
 {
 	/// Import parameters from configfile
 	// Range of the Analysis
 	
-        
+        fMCMCdone=false;
         fxmin=Sidspar->GetValue("xmin");
         fxmax=Sidspar->GetValue("xmax");
         flambdamin=Sidspar->GetValue("lambdamin");
@@ -136,76 +335,5 @@ void OscRooSimulation::initAttributes(SidsParameters* Sidspar)
 	m_pdf_H1s = new RooMyAnalyticalPdf("H1s","H1s",*m_x,*m_lambda1,*m_amp1,*m_omega1,*m_phi1);
 	
 	
-	
-	
 }
-
-
-/*
-/// ////////////////////////////////////////////////////////////////////////////////////
-/// /////////////////////   RooFit Analytical PDF //////////////////////////////////////
-/// ////////////////////////////////////////////////////////////////////////////////////
-
-
-ClassImp(RooMyAnalyticalPdf)
-// Constructor
-RooMyAnalyticalPdf::RooMyAnalyticalPdf(const char *name,const char *title,RooAbsReal& _x,
-	RooAbsReal& _lambda, RooAbsReal& _amp, RooAbsReal& _omega, RooAbsReal& _phi) : 
-		 RooAbsPdf(name,title),
-		x("x","Dependent",this,_x),
-		lambda("lambda","Lambda",this,_lambda),
-		amp("amp","Amp",this,_amp),
-		omega("omega","Omega",this,_omega),
-		phi("phi","Phi",this,_phi)
-{
-}
-// Copy constructor
-RooMyAnalyticalPdf::RooMyAnalyticalPdf(const RooMyAnalyticalPdf& other, const char* name) : RooAbsPdf(other,name),
-		x("x",this,other.x),lambda("lambda",this,other.lambda),
-		amp("amp",this,other.amp),omega("omega",this,other.omega),
-		phi("phi",this,other.phi)
-{
-}
-// Implementation of value calculation
-//Double_t RooMyAnalyticalPdf::evaluate(const RooDataSet* dset) const
-Double_t RooMyAnalyticalPdf::evaluate() const
-{
-	Double_t exp=TMath::Exp(-lambda*x);
-	Double_t cos=1+amp*TMath::Cos(omega*x+phi);
-	
-	return cos*exp;
-}
-
-
-
-//////////////
-Int_t RooMyAnalyticalPdf::getAnalyticalIntegral(RooArgSet& allVars,RooArgSet& analVars,const char* ) const 
-{
-	
-	//if (matchArgs(allVars, analVars, x,amp,omega,phi)) return 4;
-	//if (matchArgs(allVars, analVars, x,amp,omega)) return 3;
-	//if (matchArgs(allVars, analVars, x,amp)) return 2;
-	
-	if (matchArgs(allVars, analVars, x)) return 1;
-	return 0;
-}
-
-Double_t RooMyAnalyticalPdf::analyticalIntegral(Int_t code, const char* rangeName) const 
-{
-	//assert(code==1 || code==2) ;
-	Double_t valueOfIntegral;
-	if(code == 1)
-	{
-	//calculation of integral for variables from code 1
-		Double_t part0=TMath::Exp(-lambda*x.min())-TMath::Exp(-lambda*x.max());
-		Double_t factor=lambda*amp/(omega*omega+lambda*lambda);
-		Double_t part1a=(omega*TMath::Sin(omega*x.max()+phi)-lambda*TMath::Cos(omega*x.max()+phi))*TMath::Exp(-lambda*x.max());
-		Double_t part1b=(omega*TMath::Sin(omega*x.min()+phi)-lambda*TMath::Cos(omega*x.min()+phi))*TMath::Exp(-lambda*x.min());
-		valueOfIntegral=(part0+factor*(part1a-part1b))/lambda;
-	} 
-	
-	return valueOfIntegral;
-}
-*/
-
 

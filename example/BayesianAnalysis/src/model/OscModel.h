@@ -40,7 +40,8 @@ class OscModel : public BCModel
     
     void SetMyDataSet(BCDataSet* dataset, double unit=1);
     double GetMaximumLogLikelihood(){return fMaxLogL;}
-    
+    void SetSimulation(bool simbool){fsimulation_on=simbool;}
+    vector<double> GetMCMCMLEValue();
     private :
     
     double fxmin;
