@@ -91,7 +91,7 @@ int SidsDataSet::ReadDataFromFileTxt(SidsParameters* Sidspar)
     
     
     fTree = new TTree(DataName.c_str(),DataName.c_str());
-    
+    fHisto= new TH1D("DataHistogram","DataHistogram",100,x0,xf);
     if(fRawData.size()==0)
     {
         BCLog::OutError("Raw data array has zero row");
@@ -121,7 +121,7 @@ int SidsDataSet::ReadDataFromFileTxt(SidsParameters* Sidspar)
         Sidspar->SetValue("xmax",xf);
     }
     
-    
+    fHisto= new TH1D("DataHistogram","DataHistogram",10000,x0,xf);
     fTree->Branch("x",&Xvar);
     for(unsigned int i(0); i<fRawData.size();++i)
         for(unsigned int j(0); j<fRawData[i].size();++j)
@@ -140,7 +140,7 @@ int SidsDataSet::ReadDataFromFileTxt(SidsParameters* Sidspar)
                 AddDataPoint(new BCDataPoint(data));
                 
                 fTree->Fill();		// fill Tree if Xvar is in defined range
-                
+                fHisto->Fill(Xvar);
             }
         }
     //fTree->StartViewer();
@@ -166,13 +166,6 @@ int SidsDataSet::ReadRooDataSet(RooDataSet* dataset)
             //cout<<"Data = "<<Xvar<<endl;
             AddDataPoint(new BCDataPoint(data));                
         }
-}
-
-
-TTree* SidsDataSet::GetTree()
-{
-    
-    return fTree;
 }
 
 //ClassImp(sidsDataSet)

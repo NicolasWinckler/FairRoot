@@ -28,7 +28,7 @@
 # include "TTree.h"
 #include "RooRealVar.h" 
 #include "RooDataSet.h"
-
+#include "TH1D.h"
 
 
 
@@ -51,7 +51,8 @@ class SidsDataSet : public BCDataSet, public FileReader
     int ReadDataFromFileTxt(SidsParameters* Sidspar);//my stuff
     int ReadRooDataSet(RooDataSet* dataset);
     double GetRangeLength();
-    TTree* GetTree();
+    TTree* GetTree(){return fTree;}
+    TH1D* GetHisto(){return fHisto;}
     
     protected :
     
@@ -60,6 +61,7 @@ class SidsDataSet : public BCDataSet, public FileReader
     double fxobsmin;
     double fxobsmax;
     TTree* fTree;
+    TH1D* fHisto;
     bool fXRangeAuto;
     
 //    ClassDef(sidsDataSet,1);

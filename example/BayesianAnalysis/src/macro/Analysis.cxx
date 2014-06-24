@@ -55,12 +55,13 @@ void Analysis::SetModelOption(BCModel* model, SidsParameters* Sidspar)
     //model->SetNIterationsPrecisionCheck (int niterations)
     //model->SetNIterationsOutput (int niterations)
 
+    //*
     model->SetNIterationsMin(niterationsmin);
     model->SetNIterationsMax(niterationsmax);
     
     model->SetRelativePrecision(relprecision);
     model->SetAbsolutePrecision(absprecision);
-    
+    //*/
     
     
     string IntegrationMethod=Sidspar->GetName("IntegrationMethod");

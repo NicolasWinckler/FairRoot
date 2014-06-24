@@ -13,7 +13,7 @@ OscRooSimulation::OscRooSimulation(string filename)
     BCAux::SetStyle();
     BCLog::SetLogLevel(BCLog::error);
     
-    RooDataSet::setDefaultStorageType(RooAbsData::Tree);
+    //RooDataSet::setDefaultStorageType(RooAbsData::Tree);
     InitField();
     fConfiguration->SetExperimentalParameter(filename);
     gROOT->Reset();
@@ -294,6 +294,7 @@ int OscRooSimulation::GetPullDistribution(int SampleSize)
         
         
         int flag=1000;
+        int counter=0;
         for(unsigned int i=0 ; i<Ntot ;i+=SampleSize)
         {
             int indexmin=i;
@@ -332,12 +333,12 @@ int OscRooSimulation::GetPullDistribution(int SampleSize)
 			
 			NLLR=2.0*(vect[0][1]-vect[0][3]);
 			
-			if(i==flag)
+			if(counter==flag)
 			{
-				cout<<"____________________ run i="<<flag<<endl;
+				cout<<"____________________ Number of run so far ="<<flag<<endl;
 				flag+=1000;
 			}
-			
+			counter++;
 			PullTree->Fill();/// fill Tree -> unbinned data
 		}
             }
@@ -358,6 +359,121 @@ int OscRooSimulation::GetPullDistribution(int SampleSize)
     return 0;
 }
 
+
+
+
+int OscRooSimulation::GetPullDistributionBatchFarm(string DataName, int SampleSize, int PullStats)
+{
+    int Ntot=m_dataSim->numEntries();
+
+    int pullstat=(int)(Ntot/SampleSize);
+
+    TString treename="PullDistribution_";
+    treename+="H0_";
+    treename+="N_";
+    treename+=SampleSize;
+    treename+="_stat_";
+    treename+=pullstat;
+
+    TString filename=foutputdir;
+    filename+=treename;
+    filename+=".root";
+
+    TTree* PullTree = new TTree(treename,treename);
+    TFile* PullFile = new TFile(filename,"RECREATE");
+
+    int N;
+    double NLL0=0;
+    double lambda0=0;
+    double NLL1=0;
+    double lambda=0;
+    double amp=0;
+    double omega=0;
+    double phi=0;
+
+    double erN;
+    double erNLL0=0;
+    double erlambda0=0;
+    double erNLL1=0;
+    double erlambda=0;
+    double eramp=0;
+    double eromega=0;
+    double erphi=0;
+
+    double NLLR=0;
+
+    // values
+    PullTree->Branch("N",&N,"N/I");
+    PullTree->Branch("NLL0",&NLL0,"NLL0/D");
+    PullTree->Branch("lambda0",&lambda0,"lambda0/D");
+    PullTree->Branch("NLL1",&NLL1,"NLL1/D");
+    PullTree->Branch("lambda",&lambda,"lambda/D");
+    PullTree->Branch("amp",&amp,"amp/D");
+    PullTree->Branch("omega",&omega,"omega/D");
+    PullTree->Branch("phi",&phi,"phi/D");
+    // errors
+    PullTree->Branch("erN",&erN,"erN/I");	
+    PullTree->Branch("erlambda0",&erlambda0,"erlambda0/D");
+    PullTree->Branch("erlambda",&erlambda,"erlambda/D");
+    PullTree->Branch("eramp",&eramp,"eramp/D");
+    PullTree->Branch("eromega",&eromega,"eromega/D");
+    PullTree->Branch("erphi",&erphi,"erphi/D");
+    PullTree->Branch("NLLR",&NLLR,"NLLR/D");
+
+
+    int flag=1000;
+    int counter=0;
+    for(unsigned int i=0 ; i<PullStats ;i++)
+    {
+        
+        GenerateData(DataName,1.0,SampleSize);
+        RunMCMC(m_dataSim);
+        //cout<<"UpdateRooParameterFromMCMC()"<<endl;
+        UpdateRooParameterFromMCMC();
+        //cout<< "GetSetOfMLE(fReducedDataSet)" <<endl;
+        vector< vector<double> > vect=GetSetOfMLE(m_dataSim);
+        if(vect.size()==2)
+        {
+                N=vect[0][0];
+                NLL0=vect[0][1];
+                lambda0=vect[0][2];
+                NLL1=vect[0][3];
+                lambda=vect[0][4];
+                amp=vect[0][5];
+                omega=vect[0][6];
+                phi=vect[0][7];
+
+                erN=vect[1][0];
+                erNLL0=vect[1][1];
+                erlambda0=vect[1][2];
+                erNLL1=vect[1][3];
+                erlambda=vect[1][4];
+                eramp=vect[1][5];
+                eromega=vect[1][6];
+                erphi=vect[1][7];
+
+                NLLR=2.0*(vect[0][1]-vect[0][3]);
+
+                if(counter==flag)
+                {
+                        cout<<"____________________ Number of run so far ="<<flag<<endl;
+                        flag+=100;
+                }
+                counter++;
+                PullTree->Fill();/// fill Tree -> unbinned data
+        }
+        
+    }
+
+
+    PullTree->ResetBranchAddresses();
+    PullTree->Write();
+
+    PullFile->Close();
+    delete PullFile;
+ 
+    return 0;
+}
 
 int OscRooSimulation::InitField()
 {

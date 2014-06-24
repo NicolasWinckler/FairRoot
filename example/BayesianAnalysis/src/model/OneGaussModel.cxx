@@ -142,6 +142,12 @@ void OneGaussModel::SetMyDataSet(BCDataSet* dataset, double unit)
 
 void OneGaussModel::SetMyDataSet(SidsDataSet* dataset, double unit)
 {
+    BCModel::SetDataSet(dataset);
+    double sum=0.0;
+    for (int i = 0; i < GetNDataPoints(); ++i)
+        sum+=GetDataPoint(i)->GetValue(0);
+    fSampleMean=unit*sum/((double)GetNDataPoints());
+    /*
     BCModel::SetDataSet(dataset);std::cout<<"ok2"<<std::endl;
     ftree=dataset->GetTree();
     
@@ -152,7 +158,7 @@ void OneGaussModel::SetMyDataSet(SidsDataSet* dataset, double unit)
     //frooData = new RooDataSet("frooData","dataset with x",ftree,*fx);
     std::cout<<"ok2b"<<std::endl;
     frooData = fRooModel->generate(*fx,1000);
-    std::cout<<"ok3"<<std::endl;
+    std::cout<<"ok3"<<std::endl;*/
 }
 
 

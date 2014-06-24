@@ -84,6 +84,7 @@ public:
     int SaveSimData();
     vector< vector<double> > GetSetOfMLE(RooDataSet* roodataset);
     int GetPullDistribution(int SampleSize);
+    int GetPullDistributionBatchFarm(string DataName, int SampleSize, int PullStats=1000);
     void SetOutputDirectory(string ouptdir)
         {foutputdir=ouptdir;}
     
