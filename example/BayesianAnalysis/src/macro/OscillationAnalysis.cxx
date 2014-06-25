@@ -113,7 +113,17 @@ OscillationAnalysis::OscillationAnalysis(string filename) : Analysis()
     fhM1->SetPriorDelta(6,fxmax);
     
 
-    
+    // ----------------------------------------------------
+    /// init variable for Bayesian model selection
+    // ----------------------------------------------------
+    fPriorM0=0.5;    // P(M0))
+    fPriorM1=0.5;    // P(M1))
+    fPDM0=0.0;       // P(D|M0))
+    fPDM1=0.0;       // P(D|M1))
+    fPM0D=0.0;       // P(M0|D))
+    fPM1D=0.0;       // P(M1|D))
+    fB01=0.0;
+    fB10=0.0;
 }
 
 OscillationAnalysis::~OscillationAnalysis() 
@@ -211,7 +221,8 @@ void OscillationAnalysis::Run( )
 
 double OscillationAnalysis::RunBayesTest(bool shiftMaxLikelihood )
 {
-    
+    SetM0Prior("Fit2007");
+    SetM1Prior("Fit2007");
     if(shiftMaxLikelihood)
     {
         // ----------------------------------------------------
@@ -247,8 +258,8 @@ double OscillationAnalysis::RunBayesTest(bool shiftMaxLikelihood )
     
     BCModelManager * modelman = new BCModelManager();
     modelman->SetDataSet(fDataSet);
-    modelman->AddModel(fM0,0.5);
-    modelman->AddModel(fM1,0.5);
+    modelman->AddModel(fM0,fPriorM0);
+    modelman->AddModel(fM1,fPriorM1);
     modelman->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
     modelman->SetIntegrationMethod(BCIntegrate::kIntCuba);
     modelman->Integrate();
@@ -282,6 +293,13 @@ double OscillationAnalysis::RunBayesTest(bool shiftMaxLikelihood )
         BCLog::OutSummary(bufferCorrBayes.str().c_str());
     }
     
+    fPDM0=1.0/(fPriorM0+fPriorM1/bayesFact01);
+    fPDM1=1.0/(bayesFact01*fPriorM0+fPriorM1);
+    
+    fPM0D=fPDM0*fPriorM0;
+    fPM1D=fPDM1*fPriorM1;
+    fB01=bayesFact01;
+    fB10=1.0/fB01;
     //modelman->MarginalizeAll();
     
     
@@ -469,18 +487,28 @@ void OscillationAnalysis::RunBinnedAnalysis()
 // */
 
 
-void OscillationAnalysis::SetM0Prior()
+void OscillationAnalysis::SetM0Prior(string priorset)
 {
     fM0->SetPriorConstant(0);
+    if(priorset=="Fit2007") fM0->SetPriorGauss(0, 0.013996, 0.001083);
 }
 
 
-void OscillationAnalysis::SetM1Prior()
+void OscillationAnalysis::SetM1Prior(string priorset)
 {
+    //default
     fM1->SetPriorConstant(0);
     fM1->SetPriorConstant(1);
     fM1->SetPriorConstant(2);
     fM1->SetPriorConstant(3);
+    if(priorset=="Fit2007")
+    {
+        fM1->SetPriorGauss(0, 0.013996, 0.001083);
+        fM1->SetPriorGauss(1, 0.23, 0.04);
+        fM1->SetPriorGauss(2, 0.885, 0.031);
+        fM1->SetPriorGauss(3, -1.6, 0.5);
+    }
+    
 }
 
 
@@ -608,7 +636,6 @@ int OscillationAnalysis::InitField()
 
 unsigned int OscillationAnalysis::GetSampleSize()
 {
-    fDataSet->GetNDataPoints();
+    return fDataSet->GetNDataPoints();
 }
-
 

@@ -18,7 +18,9 @@ int main()
     pPath = getenv ("ANAWSPDIR");
     string wkspDir(pPath);
     wkspDir+="/Oscillation/config/";
-    string filename=wkspDir+"configfile142Pm60_4k_PBEC_2010.txt";
+    //string filename=wkspDir+"configfile142Pm60_4k_PBEC_2010.txt";
+    //string filename=wkspDir+"configfile142PmPBBeta.txt";
+    string filename=wkspDir+"configfile142PmSONY.txt";
     
     string Simfilename=wkspDir+"configfile142Pm60_Simualtion.txt";
     RunOscUnbinnedBayesianAnalysis(filename);
@@ -43,7 +45,20 @@ int RunOscUnbinnedBayesianAnalysis(string filename)
     cout<<"Bayes factor without Max Likelihood shift = "<< fact1 <<endl;
     cout<<"Bayes factor with Max Likelihood shift = "<< fact2 <<endl;
     cout<<"Ratio (without/with) = "<< fact1/fact2 <<endl;
-    cout<<"N = "<< N <<endl;
+    cout<<"------------------------------------------------------"<<endl;
+    cout<<"-----------------------SUMMARY------------------------"<<endl;
+    cout<<"Size N  = "<< N <<endl;
+    cout<<"P(M0)   = "<< myAnalysis->GetPriorM0() <<endl;
+    cout<<"P(M1)   = "<< myAnalysis->GetPriorM1() <<endl;
+    cout<<"-Evidence:"<<endl;
+    cout<<"P(D|M0) = "<< myAnalysis->GetEvidenceM0() <<endl;
+    cout<<"P(D|M1) = "<< myAnalysis->GetEvidenceM1() <<endl;
+    cout<<"-Model probabilities:"<<endl;
+    cout<<"P(M0|D) = "<< myAnalysis->GetProbM0()*100.0<<"%" <<endl;
+    cout<<"P(M1|D) = "<< myAnalysis->GetProbM1()*100.0<<"%" <<endl;
+    cout<<"-Bayes factors:"<<endl;
+    cout<<"B01     = "<< myAnalysis->GetB01() <<endl;
+    cout<<"B10     = "<< myAnalysis->GetB10() <<endl;
     cout<<"------------------------------------------------------"<<endl;
     
     delete myAnalysis;
