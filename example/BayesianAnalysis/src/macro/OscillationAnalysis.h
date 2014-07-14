@@ -25,8 +25,9 @@ public:
     virtual ~OscillationAnalysis();
     void RunAnalysis();
     void RunBinnedAnalysis();
-    void SetM0Prior(string priorset="");
-    void SetM1Prior(string priorset="");
+    void SetM0PriorSet(string priorset="");
+    void SetM1PriorSet(string priorset="");
+    int GetInformationCriteriaFromMCMC();
     static double fitffunction0(double *t,double *par);
     static double fitffunction1(double *t,double *par);
     void SetTF1functions();
@@ -49,6 +50,7 @@ public:
     
     unsigned int GetSampleSize();
     
+    
 private:
     int InitField();
     ExpModel* fM0;
@@ -60,6 +62,9 @@ private:
     SidsParameters* fConfiguration;
     SidsDataSet* fDataSet;
     map<string, string> fOutPutNames;
+    
+    string fM0priorSet;
+    string fM1priorSet;
     
     double fMaxLogL0;
     double fMaxLogL1;

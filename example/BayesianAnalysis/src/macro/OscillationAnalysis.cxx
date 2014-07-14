@@ -50,19 +50,34 @@ OscillationAnalysis::OscillationAnalysis(string filename) : Analysis()
     BCLog::OpenLog(fOutPutNames["Log"].c_str());
     BCLog::SetLogLevel(BCLog::detail);
     fConfiguration->PrintToBCLog();
-    
+    string DataSetType=fConfiguration->GetName("DataSetType");
     // ----------------------------------------------------
     /// Load Data and other variables
     // ----------------------------------------------------
     fDataSet = new SidsDataSet();
-    fDataSet->ReadDataFromFileTxt(fConfiguration); 
+    if(DataSetType=="txt" || DataSetType=="txtfile")
+        fDataSet->ReadDataFromFileTxt(fConfiguration); 
+    
+    if(DataSetType=="RooDataSet")
+    {
+        cout<<"start Load RooDataSet"<<endl;
+        string filename=fConfiguration->GetName("DataPathName");
+        string DataName=fConfiguration->GetName("DataName");
+        TFile* rootfile = new TFile(filename.c_str());
+        RooDataSet* fRooData= (RooDataSet*) rootfile->Get(DataName.c_str());
+        fDataSet->ReadRooDataSet(fRooData);
+        
+        rootfile->Close();
+        
+        delete rootfile;
+    }
     
     // ----------------------------------------------------
     /// Set Model M0
     // ----------------------------------------------------
     fM0 = new ExpModel(fConfiguration);
     fM0->SetMyDataSet(fDataSet);
-    SetM0Prior();
+    SetM0PriorSet();
     SetModelOption(fM0,fConfiguration);
 
     BCLog::OutSummary("Model M0 created");
@@ -72,7 +87,7 @@ OscillationAnalysis::OscillationAnalysis(string filename) : Analysis()
     // ----------------------------------------------------
     fM1 = new OscModel(fConfiguration);
     fM1->SetMyDataSet(fDataSet);
-    SetM1Prior();    
+    SetM1PriorSet();    
     SetModelOption(fM1,fConfiguration);
     
     BCLog::OutSummary("Model M1 created");
@@ -113,6 +128,9 @@ OscillationAnalysis::OscillationAnalysis(string filename) : Analysis()
     fhM1->SetPriorDelta(6,fxmax);
     
 
+    
+    fM0priorSet=fConfiguration->GetName("M0PriorSet");
+    fM1priorSet=fConfiguration->GetName("M1PriorSet");
     // ----------------------------------------------------
     /// init variable for Bayesian model selection
     // ----------------------------------------------------
@@ -215,14 +233,26 @@ void OscillationAnalysis::RunAnalysis()
 
 void OscillationAnalysis::Run( )
 {
+    BCSummaryTool * summaryM0 = new BCSummaryTool(fM0);
+    BCSummaryTool * summaryM1 = new BCSummaryTool(fM1);
+    
+    BCLog::OutSummary("******************* Marginalize M0 *******************");
+    fM0->MarginalizeAll();
+    BCLog::OutSummary("******************* Marginalize M1 *******************");
+    fM1->MarginalizeAll();
+    fM0->PrintAllMarginalized(fOutPutNames["MargeM0"].c_str());
+    fM1->PrintAllMarginalized(fOutPutNames["MargeM1"].c_str());
+
+    summaryM0->PrintKnowledgeUpdatePlots(fOutPutNames["SummaryM0"].c_str());
+    summaryM1->PrintKnowledgeUpdatePlots(fOutPutNames["SummaryM1"].c_str());
     
 }
 
 
 double OscillationAnalysis::RunBayesTest(bool shiftMaxLikelihood )
 {
-    SetM0Prior("Fit2007");
-    SetM1Prior("Fit2007");
+    SetM0PriorSet(fM0priorSet);
+    SetM1PriorSet(fM1priorSet);
     if(shiftMaxLikelihood)
     {
         // ----------------------------------------------------
@@ -306,6 +336,106 @@ double OscillationAnalysis::RunBayesTest(bool shiftMaxLikelihood )
     return bayesFact01;
 }
 
+
+int OscillationAnalysis::GetInformationCriteriaFromMCMC( )
+{
+    
+    BCLog::OutSummary("******************* Marginalize M0 *******************");
+    fM0->MarginalizeAll();
+    BCLog::OutSummary("******************* Marginalize M1 *******************");
+    fM1->MarginalizeAll();
+    
+    fMaxLogL0=fM0->GetMaximumLogLikelihood();
+    fMaxLogL1=fM1->GetMaximumLogLikelihood();
+    
+    double K0=1.0;
+    double K1=4.0;
+    double N=(double)GetSampleSize();
+    
+    double AIC0=-2.0*fMaxLogL0+2.0*K0;
+    double AIC1=-2.0*fMaxLogL1+2.0*K1;
+    
+    double BIC0=-2.0*fMaxLogL0+K0*TMath::Log(N);
+    double BIC1=-2.0*fMaxLogL1+K1*TMath::Log(N);
+    
+    double AICmin=0.0;
+    double BICmin=0.0;
+    
+    if(AIC0>AIC1)
+        AICmin=AIC1;
+    else
+        AICmin=AIC0;
+    
+    if(BIC0>BIC1)
+        BICmin=BIC1;
+    else
+        BICmin=BIC0;
+    
+    
+    double DAIC0=AIC0-AICmin;
+    double DAIC1=AIC1-AICmin;
+    double DBIC0=BIC0-BICmin;
+    double DBIC1=BIC1-BICmin;
+    
+    double ExpAIC0=TMath::Exp(-DAIC0/2.0);
+    double ExpAIC1=TMath::Exp(-DAIC1/2.0);
+    double ExpBIC0=TMath::Exp(-DBIC0/2.0);
+    double ExpBIC1=TMath::Exp(-DBIC1/2.0);
+    
+    double WeightAIC0=ExpAIC0/(ExpAIC0+ExpAIC1);
+    double WeightAIC1=ExpAIC1/(ExpAIC0+ExpAIC1);
+    
+    double WeightBIC0=ExpBIC0/(ExpBIC0+ExpBIC1);
+    double WeightBIC1=ExpBIC1/(ExpBIC0+ExpBIC1);
+    
+    double apprB01=TMath::Exp(-(BIC0-BIC1)/2.0);
+    double apprB10=TMath::Exp(-(BIC1-BIC0)/2.0);
+    
+    cout<<"------------------------------------------------------"<<endl;
+    cout<<"-----------------------SUMMARY------------------------"<<endl;
+    cout<<"Size N  = "<< N <<endl;
+    cout<<"K0 = "<<K0<<endl;
+    cout<<"K1 = "<<K1<<endl;
+    cout<<"NLL0 = "<< -fMaxLogL0 <<endl;
+    cout<<"NLL1 = "<< -fMaxLogL1 <<endl;
+    
+    cout<<"**** AIC stuff ****"<<endl;
+    
+    cout<<"AIC0 = "<< AIC0 <<endl;
+    cout<<"AIC1 = "<< AIC1 <<endl;
+    
+    cout<<"DAIC0 = "<< DAIC0 <<endl;
+    cout<<"DAIC1 = "<< DAIC1 <<endl;
+    
+    cout<<"ExpAIC0 = "<< ExpAIC0 <<endl;
+    cout<<"ExpAIC1 = "<< ExpAIC1 <<endl;
+    
+    cout<<"WeightAIC0 = "<< WeightAIC0 <<endl;
+    cout<<"WeightAIC1 = "<< WeightAIC1 <<endl;
+    
+    cout<<"** BIC stuff :"<<endl;
+    
+    cout<<"BIC0 = "<< BIC0 <<endl;
+    cout<<"BIC1 = "<< BIC1 <<endl;
+    
+    cout<<"DBIC0 = "<< DBIC0 <<endl;
+    cout<<"DBIC1 = "<< DBIC1 <<endl;
+    
+    cout<<"ExpBIC0 = "<< ExpBIC0 <<endl;
+    cout<<"ExpBIC1 = "<< ExpBIC1 <<endl;
+    
+    cout<<"WeightBIC0 = "<< WeightBIC0 <<endl;
+    cout<<"WeightBIC1 = "<< WeightBIC1 <<endl;
+    
+    cout<<"apprB01 = "<< apprB01 <<endl;
+    cout<<"apprB10 = "<< apprB10 <<endl;
+    
+    
+    return 0;
+}
+
+
+
 void OscillationAnalysis::RunTest( )
 {
     
@@ -313,7 +443,7 @@ void OscillationAnalysis::RunTest( )
     BCSummaryTool * summaryM0 = new BCSummaryTool(fM0);
     BCSummaryTool * summaryM1 = new BCSummaryTool(fM1);
     
-    bool MarginalizeDirectlyM0M1=true;
+    bool MarginalizeDirectlyM0M1=false;
     if(MarginalizeDirectlyM0M1)
     {
 
@@ -487,14 +617,14 @@ void OscillationAnalysis::RunBinnedAnalysis()
 // */
 
 
-void OscillationAnalysis::SetM0Prior(string priorset)
+void OscillationAnalysis::SetM0PriorSet(string priorset)
 {
     fM0->SetPriorConstant(0);
     if(priorset=="Fit2007") fM0->SetPriorGauss(0, 0.013996, 0.001083);
 }
 
 
-void OscillationAnalysis::SetM1Prior(string priorset)
+void OscillationAnalysis::SetM1PriorSet(string priorset)
 {
     //default
     fM1->SetPriorConstant(0);
@@ -629,6 +759,9 @@ int OscillationAnalysis::InitField()
     fcharfield.push_back("OutputPostpdfsM1");
     fcharfield.push_back("OutputSummaryM0");
     fcharfield.push_back("OutputSummaryM1");
+    
+    fcharfield.push_back("M0PriorSet");
+    fcharfield.push_back("M1PriorSet");
     
     fConfiguration = new SidsParameters(fvalfield,fcharfield);
     return 0;

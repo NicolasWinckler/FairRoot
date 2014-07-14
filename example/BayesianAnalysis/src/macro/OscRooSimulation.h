@@ -78,12 +78,13 @@ public:
     
     int FitToH1();
     int FitToH0();
-    int GenerateData(string DataName, double NumSimEvt, double PullStats=10000);
+    int GenerateData(string DataName, double NumSimEvt, double PullStats=1);
+    int GeneratePickupData(string DataName, double NumSimEvt);
     int LoadDataFromFile(string DataName);
     int CutData(int indexmin, int indexmax);
     int SaveSimData();
     vector< vector<double> > GetSetOfMLE(RooDataSet* roodataset);
-    int GetPullDistribution(int SampleSize);
+    int GetPullDistribution(int SampleSize, bool MCMC=true);
     int GetPullDistributionBatchFarm(string DataName, int SampleSize, int PullStats=1000);
     void SetOutputDirectory(string ouptdir)
         {foutputdir=ouptdir;}
@@ -111,7 +112,18 @@ private:
     double m_amp;
 
     RooRealVar* m_x;
+    RooRealVar* m_xcool;
+    RooRealVar* m_xerr;
+    
+    
+    RooRealVar* fmeancool;
+    RooRealVar* fsigmacool;
+    RooRealVar* fmeanerr;
+    RooRealVar* fsigmaerr;
+    
     RooDataSet* m_dataSim;
+    RooDataSet* m_dataSimCooling;
+    RooDataSet* m_dataSimError;
     RooDataSet* fReducedDataSet;
 
     //RooDataSet* m_DataSimH0;
@@ -138,6 +150,9 @@ private:
     // define pdfs
     RooGenericPdf* m_pdf_H0;
     RooMyAnalyticalPdf* m_pdf_H1s;
+    RooGenericPdf* m_pdf_H1b;
+    RooGaussian* fCoolingDistribution;
+    RooGaussian* fErrorDistribution;
 
     int InitField();
     void initAttributes(SidsParameters* Sidspar);

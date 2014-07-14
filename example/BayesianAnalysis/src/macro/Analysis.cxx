@@ -27,6 +27,7 @@ Analysis::Analysis ( )
     fcharfield.push_back("MCMCPrecision");
     fcharfield.push_back("IntegrationMethod");
     fcharfield.push_back("MarginalizationMethod");
+    fcharfield.push_back("DataSetType");
     
     
     fvalfield.push_back("CubaRelPrecision");

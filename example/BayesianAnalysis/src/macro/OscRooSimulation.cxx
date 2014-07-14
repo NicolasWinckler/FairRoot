@@ -38,6 +38,9 @@ OscRooSimulation::~OscRooSimulation()
     delete m_phi1;
     delete m_pdf_H0;
     delete m_pdf_H1s;
+    delete fCoolingDistribution;
+    delete fErrorDistribution;
+    
     
 }
 
@@ -58,6 +61,29 @@ int OscRooSimulation::GenerateData(string DataName, double NumSimEvt, double Pul
         double TotSimEvt=NumSimEvt*PullStats;
 	m_dataSim = m_pdf_H0->generate(*m_x,TotSimEvt,Name(DataName.c_str()));// simu under H0
 	//m_DataSim = m_pdf_H1s->generate(*m_x,NumSimEvt);// simu under H1
+        
+        
+        return 0;
+}
+
+
+int OscRooSimulation::GeneratePickupData(string DataName, double NumSimEvt)
+{
+        /// simulation
+        // prepare random seed
+	TDatime* time = new TDatime();
+	int temptime=time->GetTime();
+	int randnumber = rand() % 100 + 1;
+	delete time;
+	int seed = TMath::Abs(randnumber*temptime);
+	int randnumber2 = rand() % 10000 + 1;
+	seed+=randnumber2;
+	
+	RooRandom::randomGenerator()->SetSeed(seed);
+        double TotSimEvt=NumSimEvt;
+	//m_dataSim = m_pdf_H0->generate(*m_x,TotSimEvt,Name(DataName.c_str()));// simu under H0
+	m_dataSim = m_pdf_H1s->generate(*m_x,TotSimEvt,Name(DataName.c_str()));// simu under H1
+        //m_dataSim = m_pdf_H1b->generate(*m_x,TotSimEvt,Name(DataName.c_str()));// simu under H1
         
         
         return 0;
@@ -233,7 +259,7 @@ vector< vector<double> > OscRooSimulation::GetSetOfMLE(RooDataSet* roodataset)
 
 
 
-int OscRooSimulation::GetPullDistribution(int SampleSize)
+int OscRooSimulation::GetPullDistribution(int SampleSize, bool MCMC)
 {
     int Ntot=m_dataSim->numEntries();
     if( Ntot % SampleSize == 0 )
@@ -241,6 +267,11 @@ int OscRooSimulation::GetPullDistribution(int SampleSize)
         int pullstat=(int)(Ntot/SampleSize);
         
         TString treename="PullDistribution_";
+        if(MCMC)
+            treename+="MCMC_";
+        else
+            treename+="Minimization";
+            
         treename+="H0_";
         treename+="N_";
         treename+=SampleSize;
@@ -284,7 +315,7 @@ int OscRooSimulation::GetPullDistribution(int SampleSize)
 	PullTree->Branch("omega",&omega,"omega/D");
 	PullTree->Branch("phi",&phi,"phi/D");
 	// errors
-	PullTree->Branch("erN",&erN,"erN/I");	
+	PullTree->Branch("erN",&erN,"erN/D");	
 	PullTree->Branch("erlambda0",&erlambda0,"erlambda0/D");
 	PullTree->Branch("erlambda",&erlambda,"erlambda/D");
 	PullTree->Branch("eramp",&eramp,"eramp/D");
@@ -306,9 +337,11 @@ int OscRooSimulation::GetPullDistribution(int SampleSize)
                 CutData(indexmin, indexmax);
                 // run first MCMC to be sure that the parameters are around the global minimum
                 //cout<<"RunMCMC(fReducedDataSet)"<<endl;
-                RunMCMC(fReducedDataSet);
+                if(MCMC)
+                        RunMCMC(fReducedDataSet);
                 //cout<<"UpdateRooParameterFromMCMC()"<<endl;
-                UpdateRooParameterFromMCMC();
+                if(MCMC)
+                    UpdateRooParameterFromMCMC();
                 //cout<< "GetSetOfMLE(fReducedDataSet)" <<endl;
                 vector< vector<double> > vect=GetSetOfMLE(fReducedDataSet);
                 if(vect.size()==2)
@@ -426,7 +459,7 @@ int OscRooSimulation::GetPullDistributionBatchFarm(string DataName, int SampleSi
     for(unsigned int i=0 ; i<PullStats ;i++)
     {
         
-        GenerateData(DataName,1.0,SampleSize);
+        GenerateData(DataName,SampleSize,1.0);
         RunMCMC(m_dataSim);
         //cout<<"UpdateRooParameterFromMCMC()"<<endl;
         UpdateRooParameterFromMCMC();
@@ -542,10 +575,17 @@ void OscRooSimulation::initAttributes(SidsParameters* Sidspar)
         m_amp=Sidspar->GetValue("ampInit");
 	
 	
-	
+        
+        
+        
 	/// //////////  Define random variable and parameters ////////////
 	//Define observable (rdv)
 	m_x = new RooRealVar("x","x",fxmin,fxmax);
+        
+        
+        
+        
+        
 	
 	//Define null parameters
 	m_lambda0 = new RooRealVar("#lambda_{0}","#lambda_{0}",m_lambdatot,flambdamin,flambdamax);
@@ -564,6 +604,24 @@ void OscRooSimulation::initAttributes(SidsParameters* Sidspar)
 	// Define alt model with analytical integration over x (time)
 	m_pdf_H1s = new RooMyAnalyticalPdf("H1s","H1s",*m_x,*m_lambda1,*m_amp1,*m_omega1,*m_phi1);
 	
-	
+	m_pdf_H1b = new RooGenericPdf("H1","#lambda_{1}*(#lambda_{1}*#lambda_{1}+#omega_{1}*#omega_{1})/(#lambda_{1}*#lambda_{1}*(1+a_{1})+#omega_{1}*#omega_{1})*(1+a_{1}*cos(#omega_{1}*x+#phi_{1}))*exp(-#lambda_{1}*x)"
+		,RooArgSet(*m_x,*m_amp1,*m_omega1,*m_phi1,*m_lambda1));
+        
+        fmeancool = new RooRealVar("#mu_{cool}","#mu_{cool}",0.565);
+        fsigmacool = new RooRealVar("#sigma_{cool}","#sigma_{cool}",0.174);
+        fmeanerr = new RooRealVar("#mu_{err}","#mu_{err}",0.0);
+        fsigmaerr = new RooRealVar("#sigma_{err}","#sigma_{err}",0.064);
+        
+        
+        
+        m_xcool = new RooRealVar("xcool","xcool",0.0,3.0);
+        m_xerr =new RooRealVar("xerr","xerr",-1,1);
+        
+        
+        //RooGaussian gauss("gauss","gaussian PDF",x,mean,sigma);
+	fCoolingDistribution = new RooGaussian("CoolDist","CoolDist",*m_xcool,*fmeancool,*fsigmacool);
+        fErrorDistribution = new RooGaussian("ErrDist","ErrDist",*m_xerr,*fmeanerr,*fsigmaerr);
+        
+        
 }
 
