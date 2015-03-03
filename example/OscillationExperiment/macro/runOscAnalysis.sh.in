@@ -1,0 +1,4 @@
+RUN_ANALYSIS="runOscAnalysis"
+RUN_ANALYSIS+=" --config @CMAKE_BINARY_DIR@/bin/OscillationAnalysis.cfg"
+RUN_ANALYSIS+=" --input.file Set_1_U+Xe.dat"
+@CMAKE_BINARY_DIR@/bin/$RUN_ANALYSIS

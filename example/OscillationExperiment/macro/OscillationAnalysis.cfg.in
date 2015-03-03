@@ -1,0 +1,95 @@
+
+#######################################
+# Input options
+
+[input.data]
+name                    =   ECData_auto_245MHzRes
+detector                =   245MHzResonator
+preprocess              =   automatic
+file.name               =   ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/workspace/oscillation/input/142Pm_4kPBECdataset.dat
+file.format             =   txt
+file.tree.name          =   OscTree2010
+file.branch.name        =   EC_RSA
+
+
+#######################################
+# Output options
+
+[output]
+directory               =   ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/workspace/Oscillation/output/log/      
+
+[output.data]
+file.name               =   ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/workspace/oscillation/output/output.dat
+file.format             =   txt
+file.tree.name          =   OscTree2010
+file.branch.name        =   EC_RSA
+
+#######################################
+# Observable options
+
+[obs]
+name                    =   Decay-time
+binning                 =   50
+xunit                   =   1.0
+xoffset                 =   0.0
+xmin                    =   6.0
+xmax                    =   60.0
+XRangeOption            =   FALSE
+
+#######################################
+# Model parameters options
+
+[par.lambda]
+init                    =   0.0138
+min                     =   0.0008
+max                     =   0.020
+bin                     =   400
+
+[par.amp]
+init                    =   0.091
+min                     =   -0.25
+max                     =   0.25
+bin                     =   400
+
+[par.omega]
+init                    =   0.88
+min                     =   0.0
+max                     =   3.0
+bin                     =   800
+
+[par.phi]
+init                    =   2.42
+min                     =   -3.14
+max                     =   3.14
+bin                     =   400
+
+#######################################
+# BAT & CUBA specific
+
+[bat]
+MCMCPrecision           =   Low
+IntegrationMethod       =   Cuba
+MarginalizationMethod   =   Metropolis
+CubaRelPrecision        =   1e-3
+CubaAbsPrecision        =   5e-17
+CubaNIterationsMin      =   1000
+CubaNIterationsMax      =   100000000
+M0PriorSet              =   Constant
+M1PriorSet              =   Constant
+
+[bat.output]
+log-file                =   LogOscAnalysis.txt
+PostpdfsM0              =   PostPdfM0.pdf
+PostpdfsM1              =   PostPdfM1.pdf
+SummaryM0               =   SummaryM0.pdf
+SummaryM1               =   SummaryM1.pdf
+
+#######################################
+# Simulation options
+[sim]
+event.number            =   3616
+iteration.number        =   10000
+file.input              =   ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/workspace/Oscillation/output/sim/OscSimInput.root
+file.output             =   ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/workspace/Oscillation/output/sim/OscSimOutput.root
+
+

@@ -24,6 +24,7 @@ Message(STATUS "No C++11 support found. Tutorial7 will not be build.")
 Else()
 Message(STATUS "C++11 support found. Build Tutorial7 library.")
 add_subdirectory(Tutorial7)
+add_subdirectory(OscillationExperiment)
 EndIf()
 EndIf()
 
