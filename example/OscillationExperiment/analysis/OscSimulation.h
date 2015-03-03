@@ -63,7 +63,6 @@ public:
     int ComputeMLEDistribution(const std::string& filename, int SampleSize, int TotStat, bool MCMC=false);
     
     int LoadSimData(const std::string& filename, const std::string& DataName);
-    void SetModelOption(BCModel* model, OscAnaManager* config);
     
     
     OscMCPoint GetOscMCPoint(int indexmin, int indexmax, bool MCMC);

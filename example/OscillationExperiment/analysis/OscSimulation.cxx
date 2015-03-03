@@ -32,10 +32,9 @@ OscSimulation::OscSimulation(OscAnaManager* config) : BatAnalysis(),
     fCoolingDistribution(nullptr),
     fErrorDistribution(nullptr)
 {
-    std::cout<<"OK2-a0\n";
-    fConfig=config;std::cout<<"OK2-a1\n";
+    fConfig=config;
     initAttributes(config);
-    std::cout<<"OK2-a2\n";
+
     // ----------------------------------------------------
     /// Set Model M1
     // ----------------------------------------------------
@@ -47,8 +46,7 @@ OscSimulation::OscSimulation(OscAnaManager* config) : BatAnalysis(),
     fM1->SetPriorConstant(1);
     fM1->SetPriorConstant(2);
     fM1->SetPriorConstant(3);
-    std::cout<<"OK2-a3\n";
-    SetModelOption(fM1,config);std::cout<<"OK2-a4\n";
+    SetModelOption(fM1,config);
 }
 
 
@@ -140,22 +138,23 @@ int OscSimulation::CutData(int indexmin, int indexmax)
 OscMCPoint OscSimulation::GetOscMCPoint(int indexmin, int indexmax, bool MCMC)
 {
     //cout<<"CutData"<<endl;
-    CutData(indexmin, indexmax);
-    fMCpoint.Reset();
+    std::cout<<"LRT::GetOscMCPoint - OK0\n";
+    CutData(indexmin, indexmax);std::cout<<"LRT::GetOscMCPoint - OK1\n";
+    fMCpoint.Reset();std::cout<<"LRT::GetOscMCPoint - OK2\n";
     // run first MCMC to be sure that the parameters are around the global minimum
     //cout<<"RunMCMC(fReducedDataSet)"<<endl;
     if(MCMC)
-        RunMCMC(fReducedDataSet);
+        RunMCMC(fReducedDataSet);std::cout<<"LRT::GetOscMCPoint - OK3\n";
     //cout<<"UpdateRooParameterFromMCMC()"<<endl;
     if(MCMC)
-        UpdateRooParameterFromMCMC();
+        UpdateRooParameterFromMCMC();std::cout<<"LRT::GetOscMCPoint - OK4\n";
 
     return GetOscMCPoint(fReducedDataSet);
 }
 
 
 OscMCPoint OscSimulation::GetOscMCPoint(RooDataSet* roodataset)
-{
+{std::cout<<"LRT::GetOscMCPoint - OK5\n";
     /// perform fit of H0 and H1
     fPdf_H0->fitTo(*roodataset,PrintLevel(-1));
     RooAbsReal* NLL0= fPdf_H0->createNLL(*roodataset);
@@ -191,7 +190,7 @@ OscMCPoint OscSimulation::GetOscMCPoint(RooDataSet* roodataset)
     
     //LRT
     fMCpoint.LRT=2.0*(NLL0->getValV()-NLL1->getValV());
-    
+    std::cout<<"LRT::GetOscMCPoint - OK6\n";
     return fMCpoint;
 }
 
@@ -207,11 +206,12 @@ int OscSimulation::ComputeMLEDistribution(const std::string& filename, int Sampl
         for(unsigned int i=0 ; i<Ntot ;i+=SampleSize)
         {
             int indexmin=i;
-            int indexmax=i+SampleSize-1;
+            int indexmax=i+SampleSize;
             //cout<<"index = "<<i<<endl;
             if(indexmax<Ntot)
             {
-               
+               std::cout<<"LRT::Ok-MCMC run nr "<< i <<"\n";
+
                 OscMCPoint MCpoint=GetOscMCPoint(indexmin, indexmax, MCMC);
                 Distribution.push_back(MCpoint);
                 if(counter==nextprint)
@@ -255,13 +255,19 @@ int OscSimulation::RunMCMC(RooDataSet* roodataset)
 {
     
     //cout<<"start run MCMC"<<endl;
+    std::cout<<"LRT::RunMCMC - OK0\n";
     OscDataSet* DataSet = new OscDataSet(fConfig);
+    std::cout<<"LRT::RunMCMC - OK1\n";
     DataSet->ConvertRooToBCDataset(roodataset);
+    std::cout<<"LRT::RunMCMC - OK2\n";
     fM1->SetMyDataSet(DataSet);
+    std::cout<<"LRT::RunMCMC - OK3\n";
     fM1->MarginalizeAll();
+    std::cout<<"LRT::RunMCMC - OK4\n";
     fM1->GetMCMCMLEValue(fMCpoint);
-    
+    std::cout<<"LRT::RunMCMC - OK5\n";
     delete DataSet;
+    std::cout<<"LRT::RunMCMC - OK6\n";
     return 0;
 }
 
@@ -281,7 +287,7 @@ void OscSimulation::initAttributes(OscAnaManager* config)
 {
     /// Import parameters from configfile
     // Range of the Analysis
-std::cout<<"OK2-a1-1\n";
+
     double fxmin=config->GetPar<double>("obs.xmin");
     double fxmax=config->GetPar<double>("obs.xmax");
     double flambdamin=config->GetPar<double>("par.lambda.min");
@@ -299,7 +305,6 @@ std::cout<<"OK2-a1-1\n";
     double OmegaInit=config->GetPar<double>("par.omega.init");
     double AmpInit=config->GetPar<double>("par.amp.init");
 
-std::cout<<"OK2-a1-2\n";
     /// //////////  Define random variable and parameters ////////////
     //Define observable (rdv)
     fx = new RooRealVar("x","x",fxmin,fxmax);
@@ -339,6 +344,5 @@ std::cout<<"OK2-a1-2\n";
     fCoolingDistribution = new RooGaussian("CoolDist","CoolDist",*fx_cool,*fmeancool,*fsigmacool);
     fErrorDistribution = new RooGaussian("ErrDist","ErrDist",*fx_err,*fmeanerr,*fsigmaerr);
 
-std::cout<<"OK2-a1-3\n";
 }
 

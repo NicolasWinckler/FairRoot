@@ -1,5 +1,5 @@
 RUN_ANALYSIS="runOscAnalysis"
 RUN_ANALYSIS+=" --config @CMAKE_BINARY_DIR@/bin/OscillationAnalysis.cfg"
 RUN_ANALYSIS+=" --input.file test.dat"
-RUN_ANALYSIS+=" --exec sim.generate"
+RUN_ANALYSIS+=" --exec sim.dist.LRT"
 @CMAKE_BINARY_DIR@/bin/$RUN_ANALYSIS
