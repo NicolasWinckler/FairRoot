@@ -55,7 +55,7 @@ void OscModel::DefineParameters(OscAnaManager* config)
     AddParameter("omega", config->GetPar<double>("par.omega.min"), config->GetPar<double>("par.omega.max"),"#omega");
     AddParameter("phi", config->GetPar<double>("par.phi.min"), config->GetPar<double>("par.phi.max"),"#phi");
     GetParameter(0)->SetNbins((int)config->GetPar<int>("par.lambda.bin"));//lambda
-    GetParameter(1)->SetNbins((int)config->GetPar<int>("par.amp.bib"));//a
+    GetParameter(1)->SetNbins((int)config->GetPar<int>("par.amp.bin"));//a
     GetParameter(2)->SetNbins((int)config->GetPar<int>("par.omega.bin"));//omega
     GetParameter(3)->SetNbins((int)config->GetPar<int>("par.phi.bin"));//phi
 
@@ -173,6 +173,15 @@ std::vector<double> OscModel::GetMCMCMLEValue()
     return MLE;
 }
 
+int OscModel::GetMCMCMLEValue(OscMCPoint& MCpoint)
+{
+    MCpoint.MCMClambda1=fMLE_lambda;
+    MCpoint.MCMCamplitude=fMLE_amp;
+    MCpoint.MCMComega=fMLE_omega;
+    MCpoint.MCMCphi=fMLE_phi;
+    MCpoint.MCMCNLL1=fMaxLogL;
+    return 0;
+}
 
 //ClassImp(OscModel)
 

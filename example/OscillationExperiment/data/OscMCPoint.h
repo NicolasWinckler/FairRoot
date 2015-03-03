@@ -21,9 +21,19 @@ class OscMCPoint : public  TObject
 public:
     OscMCPoint();
     virtual ~OscMCPoint();
+    void Reset();
 
     double SampleSize=0.0;
     
+    
+    ///MC MC data
+    double MCMCNLL1=0.0;
+    double MCMClambda1=0.0;
+    double MCMCamplitude=0.0;
+    double MCMComega=0.0;
+    double MCMCphi=0.0;
+    
+    /// Minimization data
     double NLL0=0.0;
     
     double lambda0=0.0;
@@ -59,6 +69,11 @@ public:
             ar& phi;
             ar& phi_err;
             ar& LRT;
+            ar& MCMCNLL1;
+            ar& MCMClambda1;
+            ar& MCMCamplitude;
+            ar& MCMComega;
+            ar& MCMCphi;
 
         }
 

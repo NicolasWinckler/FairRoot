@@ -21,7 +21,7 @@
 #include "OscAnaManager.h"
 #include "BCDataSet.h"
 
-#include "OscPayload.h"
+#include "OscMCPoint.h"
 
 class OscModel : public BCModel
 {
@@ -44,6 +44,7 @@ class OscModel : public BCModel
     double GetMaximumLogLikelihood(){return fMaxLogL;}
     void SetSimulation(bool simbool){fsimulation_on=simbool;}
     std::vector<double> GetMCMCMLEValue();
+    int GetMCMCMLEValue(OscMCPoint& MCpoint);
     private :
     
     double fxmin;

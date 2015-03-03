@@ -7,9 +7,9 @@
 
 #include "OscSimulation.h"
 
-OscSimulation::OscSimulation(OscAnaManager* config) :
-    fConfig(nullptr),
-    fPayload(),
+OscSimulation::OscSimulation(OscAnaManager* config) : BatAnalysis(),
+    fConfig(nullptr),// memory handled outside
+    fMCpoint(),
     fDataSet(nullptr),
     frooData(nullptr),
     fReducedDataSet(nullptr),
@@ -25,19 +25,30 @@ OscSimulation::OscSimulation(OscAnaManager* config) :
     fsigmacool(nullptr),
     fmeanerr(nullptr),
     fsigmaerr(nullptr),
+    fM1(nullptr),
     fPdf_H0(nullptr),
     fPdf_H1s(nullptr),
     fPdf_H1b(nullptr),
     fCoolingDistribution(nullptr),
-    fErrorDistribution(nullptr),
-    fMCMCdone(false),
-    fMCMC_lambda(0.),
-    fMCMC_amp(0.),
-    fMCMC_omega(0.),
-    fMCMC_phi(0.)
+    fErrorDistribution(nullptr)
 {
-    fConfig=config;
+    std::cout<<"OK2-a0\n";
+    fConfig=config;std::cout<<"OK2-a1\n";
     initAttributes(config);
+    std::cout<<"OK2-a2\n";
+    // ----------------------------------------------------
+    /// Set Model M1
+    // ----------------------------------------------------
+    fM1 = new OscModel(config);
+    fM1->SetSimulation(true);
+    
+    //prior
+    fM1->SetPriorConstant(0);
+    fM1->SetPriorConstant(1);
+    fM1->SetPriorConstant(2);
+    fM1->SetPriorConstant(3);
+    std::cout<<"OK2-a3\n";
+    SetModelOption(fM1,config);std::cout<<"OK2-a4\n";
 }
 
 
@@ -56,6 +67,7 @@ OscSimulation::~OscSimulation()
     delete fsigmacool;
     delete fmeanerr;
     delete fsigmaerr;
+    delete fM1;
     delete fPdf_H0;
     delete fPdf_H1s;
     delete fPdf_H1b;
@@ -129,6 +141,7 @@ OscMCPoint OscSimulation::GetOscMCPoint(int indexmin, int indexmax, bool MCMC)
 {
     //cout<<"CutData"<<endl;
     CutData(indexmin, indexmax);
+    fMCpoint.Reset();
     // run first MCMC to be sure that the parameters are around the global minimum
     //cout<<"RunMCMC(fReducedDataSet)"<<endl;
     if(MCMC)
@@ -143,8 +156,6 @@ OscMCPoint OscSimulation::GetOscMCPoint(int indexmin, int indexmax, bool MCMC)
 
 OscMCPoint OscSimulation::GetOscMCPoint(RooDataSet* roodataset)
 {
-    OscMCPoint MCpoint;
-
     /// perform fit of H0 and H1
     fPdf_H0->fitTo(*roodataset,PrintLevel(-1));
     RooAbsReal* NLL0= fPdf_H0->createNLL(*roodataset);
@@ -155,39 +166,39 @@ OscMCPoint OscSimulation::GetOscMCPoint(RooDataSet* roodataset)
     
     /// Fill Payload
     // sample size
-    MCpoint.SampleSize=roodataset->numEntries();
+    fMCpoint.SampleSize=roodataset->numEntries();
     
     // H0 data
-    MCpoint.NLL0=NLL0->getValV();
+    fMCpoint.NLL0=NLL0->getValV();
     
-    MCpoint.lambda0=fLambda0->getValV();
-    MCpoint.lambda0_err=fLambda0->getError();
+    fMCpoint.lambda0=fLambda0->getValV();
+    fMCpoint.lambda0_err=fLambda0->getError();
     
     //H1 data
-    MCpoint.NLL1=NLL1->getValV();
+    fMCpoint.NLL1=NLL1->getValV();
     
-    MCpoint.lambda1=fLambda1->getValV();
-    MCpoint.lambda1_err=fLambda1->getError();
+    fMCpoint.lambda1=fLambda1->getValV();
+    fMCpoint.lambda1_err=fLambda1->getError();
     
-    MCpoint.amplitude=fAmp1->getValV();
-    MCpoint.amplitude_err=fAmp1->getError();
+    fMCpoint.amplitude=fAmp1->getValV();
+    fMCpoint.amplitude_err=fAmp1->getError();
     
-    MCpoint.omega=fOmega1->getValV();
-    MCpoint.omega_err=fOmega1->getError();
+    fMCpoint.omega=fOmega1->getValV();
+    fMCpoint.omega_err=fOmega1->getError();
     
-    MCpoint.phi=fPhi1->getValV();
-    MCpoint.phi_err=fPhi1->getError();
+    fMCpoint.phi=fPhi1->getValV();
+    fMCpoint.phi_err=fPhi1->getError();
     
     //LRT
-    MCpoint.LRT=2.0*(NLL0->getValV()-NLL1->getValV());
+    fMCpoint.LRT=2.0*(NLL0->getValV()-NLL1->getValV());
     
-    return MCpoint;
+    return fMCpoint;
 }
 
 
-int OscSimulation::ComputeMLEDistribution(int SampleSize, int TotStat, bool MCMC)
+int OscSimulation::ComputeMLEDistribution(const std::string& filename, int SampleSize, int TotStat, bool MCMC)
 {
-    
+    std::vector<OscMCPoint> Distribution;
     int Ntot=frooData->numEntries();
     if( Ntot % SampleSize == 0 )
     {        
@@ -196,13 +207,13 @@ int OscSimulation::ComputeMLEDistribution(int SampleSize, int TotStat, bool MCMC
         for(unsigned int i=0 ; i<Ntot ;i+=SampleSize)
         {
             int indexmin=i;
-            int indexmax=i+SampleSize;
+            int indexmax=i+SampleSize-1;
             //cout<<"index = "<<i<<endl;
             if(indexmax<Ntot)
             {
                
                 OscMCPoint MCpoint=GetOscMCPoint(indexmin, indexmax, MCMC);
-                
+                Distribution.push_back(MCpoint);
                 if(counter==nextprint)
                 {
                     std::cout<<"____________________ Number of run so far ="<<nextprint<<std::endl;
@@ -215,10 +226,25 @@ int OscSimulation::ComputeMLEDistribution(int SampleSize, int TotStat, bool MCMC
     }
     else
     {
+        std::cout<<"[ERROR] Total statistics must be a multiple of the given sample size\n";
         return -1;
     }
     
+    
+    
     std::cout<<"Distribution computed\n";
+    
+    
+    // Temp for test
+    std::vector<std::string> treename=fConfig->GetPar< std::vector<std::string> >("sim.file.output.tree");
+    std::vector<std::string> branchname=fConfig->GetPar< std::vector<std::string> >("sim.file.output.name");
+    std::string classname="OscMCPoint";
+    
+    
+    RootOutFileManager<OscMCPoint> OutMan;
+    OutMan.SetFileProperties(filename,treename[0],branchname[0],classname,std::string("RECREATE"),true);
+    OutMan.AddToFile(Distribution);
+    
     
     return 0;
 }
@@ -228,132 +254,34 @@ int OscSimulation::ComputeMLEDistribution(int SampleSize, int TotStat, bool MCMC
 int OscSimulation::RunMCMC(RooDataSet* roodataset)
 {
     
-    fMCMCdone=false;
-    
     //cout<<"start run MCMC"<<endl;
-    // ----------------------------------------------------
-    /// Load Data and other variables
-    // ----------------------------------------------------
     OscDataSet* DataSet = new OscDataSet(fConfig);
     DataSet->ConvertRooToBCDataset(roodataset);
-    
-    // ----------------------------------------------------
-    /// Set Model M1
-    // ----------------------------------------------------
-    OscModel* fM1 = new OscModel(fConfig);
-    fM1->SetSimulation(true);
     fM1->SetMyDataSet(DataSet);
-    //prior
-    fM1->SetPriorConstant(0);
-    fM1->SetPriorConstant(1);
-    fM1->SetPriorConstant(2);
-    fM1->SetPriorConstant(3);
-    SetModelOption(fM1,fConfig);
-    
-    //BCLog::OutSummary("Model M1 created");
     fM1->MarginalizeAll();
-    
-    vector<double> MLE_Values=fM1->GetMCMCMLEValue();
-    
-    if(MLE_Values.size()==4)
-    {
-        
-        fMCMC_lambda=MLE_Values[0];
-        fMCMC_amp=MLE_Values[1];
-        fMCMC_omega=MLE_Values[2];
-        fMCMC_phi=MLE_Values[3];
-        fMCMCdone=true;
-        //cout<<"MCMC done"<<endl;
-    }
-    else
-    {
-        BCLog::OutSummary("ERROR : MCMC MLE values not obtained from current run");
-        
-    }
-    
+    fM1->GetMCMCMLEValue(fMCpoint);
     
     delete DataSet;
-    delete fM1;
-    
     return 0;
 }
 
 
 int OscSimulation::UpdateRooParameterFromMCMC()
 {
-    if(fMCMCdone)
-    {
-        fAmp1->setVal(fMCMC_amp);
-        fOmega1->setVal(fMCMC_omega);
-        fPhi1->setVal(fMCMC_phi);
-        fLambda1->setVal(fMCMC_lambda);
-    }
-    else 
-        return -1;
-    
+    fAmp1->setVal(fMCpoint.MCMCamplitude);
+    fOmega1->setVal(fMCpoint.MCMComega);
+    fPhi1->setVal(fMCpoint.MCMCphi);
+    fLambda1->setVal(fMCpoint.MCMClambda1);
+
     return 0;
 }
-
-
-void OscSimulation::SetModelOption(BCModel* model, OscAnaManager* config)
-{
-    
-    double relprecision=config->GetPar<double>("bat.CubaRelPrecision");
-    double absprecision=config->GetPar<double>("bat.CubaAbsPrecision");
-    double niterationsmin=config->GetPar<double>("bat.CubaNIterationsMin");
-    double niterationsmax=config->GetPar<double>("bat.CubaNIterationsMax");
-    
-    //model->SetNIterationsPrecisionCheck (int niterations)
-    //model->SetNIterationsOutput (int niterations)
-
-    //*
-    model->SetNIterationsMin(niterationsmin);
-    model->SetNIterationsMax(niterationsmax);
-    
-    model->SetRelativePrecision(relprecision);
-    model->SetAbsolutePrecision(absprecision);
-    //*/
-    
-    
-    std::string IntegrationMethod=config->GetPar<std::string>("bat.IntegrationMethod");
-    if(IntegrationMethod=="Default")    model->SetIntegrationMethod(BCIntegrate::kIntDefault); 
-    if(IntegrationMethod=="Cuba")       model->SetIntegrationMethod(BCIntegrate::kIntCuba); 
-    if(IntegrationMethod=="MonteCarlo") model->SetIntegrationMethod(BCIntegrate::kIntMonteCarlo); 
-    if(IntegrationMethod=="Grid")       model->SetIntegrationMethod(BCIntegrate::kIntGrid); 
-    
-    if(IntegrationMethod=="CubaVegas")
-    {
-        
-        BCCubaOptions::Vegas VegasOption = model->GetCubaVegasOptions(); 
-        
-        model->SetCubaOptions(VegasOption); 
-        //model->IntegrateCuba(BCIntegrate::kCubaVegas);
-    }
-    
-    
-    std::string MarginalizationMethod=config->GetPar<std::string>("bat.MarginalizationMethod");
-    if(IntegrationMethod=="Default") model->SetMarginalizationMethod(BCIntegrate::kMargDefault);
-    if(IntegrationMethod=="Metropolis") model->SetMarginalizationMethod(BCIntegrate::kMargMetropolis);
-    if(IntegrationMethod=="MonteCarlo") model->SetMarginalizationMethod(BCIntegrate::kMargMonteCarlo);
-    if(IntegrationMethod=="Grid") model->SetMarginalizationMethod(BCIntegrate::kMargGrid);
-        
-    std::string MCMCPrecision=config->GetPar<std::string>("bat.MCMCPrecision");
-    if(MCMCPrecision=="Low")      model->MCMCSetPrecision(BCEngineMCMC::kLow);
-    if(MCMCPrecision=="Medium")   model->MCMCSetPrecision(BCEngineMCMC::kMedium);
-    if(MCMCPrecision=="High")     model->MCMCSetPrecision(BCEngineMCMC::kHigh);
-    if(MCMCPrecision=="VeryHigh") model->MCMCSetPrecision(BCEngineMCMC::kVeryHigh);
-    
-}
-
-
-
 
 
 void OscSimulation::initAttributes(OscAnaManager* config)
 {
     /// Import parameters from configfile
     // Range of the Analysis
-
+std::cout<<"OK2-a1-1\n";
     double fxmin=config->GetPar<double>("obs.xmin");
     double fxmax=config->GetPar<double>("obs.xmax");
     double flambdamin=config->GetPar<double>("par.lambda.min");
@@ -371,7 +299,7 @@ void OscSimulation::initAttributes(OscAnaManager* config)
     double OmegaInit=config->GetPar<double>("par.omega.init");
     double AmpInit=config->GetPar<double>("par.amp.init");
 
-
+std::cout<<"OK2-a1-2\n";
     /// //////////  Define random variable and parameters ////////////
     //Define observable (rdv)
     fx = new RooRealVar("x","x",fxmin,fxmax);
@@ -411,6 +339,6 @@ void OscSimulation::initAttributes(OscAnaManager* config)
     fCoolingDistribution = new RooGaussian("CoolDist","CoolDist",*fx_cool,*fmeancool,*fsigmacool);
     fErrorDistribution = new RooGaussian("ErrDist","ErrDist",*fx_err,*fmeanerr,*fsigmaerr);
 
-
+std::cout<<"OK2-a1-3\n";
 }
 

@@ -37,7 +37,18 @@ public:
     template<typename T>
         T GetPar(const std::string& key)
         {
-            return fvarmap[key].as<T>();
+            T val;
+            try
+            {
+                val=fvarmap[key].as<T>();
+            }
+            catch(std::exception& e)
+            {
+                std::cout << "[ERROR] Problem in map for key = " << key << "\n";
+                std::cout << e.what() << "\n";
+            }   
+            
+            return val;
         }
     
     
@@ -46,7 +57,11 @@ public:
     int ParseCmdLine(const int argc, char** argv, const po::options_description& desc, po::variables_map& varmap);
     int ParseCfgFile(const std::string& filename, const po::options_description& desc, po::variables_map& varmap);
     
-    
+    int PrintHelp()
+    {
+        std::cout << fVisible_options << "\n";
+        return 0;
+    }
     
     virtual int ParseAll(const int argc, char** argv);
     

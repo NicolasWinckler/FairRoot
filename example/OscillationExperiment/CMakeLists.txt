@@ -22,6 +22,7 @@ ${CMAKE_SOURCE_DIR}/base/MQ/baseMQtools
 ${CMAKE_SOURCE_DIR}/example/OscillationExperiment
 ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/tools
 ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/tools/data
+${CMAKE_SOURCE_DIR}/example/OscillationExperiment/tools/stat
 ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/analysis
 ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/data
 ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/model
@@ -64,6 +65,7 @@ Set(SRCS
 Set(NO_DICT_SRCS
     tools/data/IOManager.cxx
     tools/data/FileReader.cxx
+    tools/stat/BatAnalysis.cxx
     analysis/OscAnaManager.cxx
     analysis/OscSimulation.cxx
     data/OscDataSet.cxx

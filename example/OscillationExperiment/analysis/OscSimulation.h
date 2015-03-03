@@ -39,16 +39,18 @@
 
 // My stuff
 //#include "RooMyPdfDict.h"
+#include "BatAnalysis.h"
 #include "OscModel.h"
 #include "OscMCPoint.h"
 #include "OscAnaManager.h"
 #include "OscDataSet.h"
 #include "RooMyAnalyticalPdf.h"
+#include "RootOutFileManager.h"
 
 using namespace RooFit;
 using namespace RooStats;
 
-class OscSimulation 
+class OscSimulation : public BatAnalysis
 {
 public:
     OscSimulation();
@@ -58,7 +60,7 @@ public:
     int GenerateData(std::string DataName, double NumSimEvt, double PullStats=1);
     int SaveSimData(const std::string& filename, RooDataSet* DataSet);
     int SaveSimData(const std::string& filename);
-    int ComputeMLEDistribution(int SampleSize, int TotStat, bool MCMC);
+    int ComputeMLEDistribution(const std::string& filename, int SampleSize, int TotStat, bool MCMC=false);
     
     int LoadSimData(const std::string& filename, const std::string& DataName);
     void SetModelOption(BCModel* model, OscAnaManager* config);
@@ -74,7 +76,7 @@ private:
     void initAttributes(OscAnaManager* config);
     
     OscAnaManager* fConfig;
-    OscMCPoint fPayload;
+    OscMCPoint fMCpoint;
     OscDataSet* fDataSet;
     RooDataSet* frooData;
     RooDataSet* fReducedDataSet;
@@ -95,17 +97,14 @@ private:
     RooRealVar* fmeanerr;
     RooRealVar* fsigmaerr;
     
+    
+    OscModel* fM1;
     RooGenericPdf* fPdf_H0;
     RooMyAnalyticalPdf* fPdf_H1s;
     RooGenericPdf* fPdf_H1b;
     RooGaussian* fCoolingDistribution;
     RooGaussian* fErrorDistribution;
-    bool fMCMCdone;
     
-    double fMCMC_lambda;
-    double fMCMC_amp;
-    double fMCMC_omega;
-    double fMCMC_phi;
 };
 
 #endif	/* OSCSIMULATION_H */

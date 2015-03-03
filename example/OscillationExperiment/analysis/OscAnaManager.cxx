@@ -65,6 +65,7 @@ void OscAnaManager::InitOptionDescription()
 {
     fGenericDesc.add_options()
     ("version", "Version of the executable")
+    ("exec", po::value<std::string>()->default_value("Hello-World"), "execute task")
     ;
     
     fConfigDesc.add_options()
@@ -140,5 +141,10 @@ void OscAnaManager::InitOptionDescription()
     ("sim.iteration.number", po::value< int >()->default_value(1000), "Number of iteration to compute a distribution (stat sample size )")
     ("sim.file.input", po::value< std::string >()->default_value("SimInput.root"), "name of simulation input file")
     ("sim.file.output", po::value< std::string >()->default_value("SimOutput.root"), "name of simulation output file")
+    ("sim.file.output.dir", po::value< std::string >()->default_value("SimInput.root"), "name of simulation input file")
+    ("sim.file.output.tree", po::value< std::vector<std::string> >()->composing(), "name of simulation output file")
+    ("sim.file.output.branch", po::value< std::vector<std::string> >()->composing(), "name of simulation input file")
+    
+    
     ;
 }

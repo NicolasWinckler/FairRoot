@@ -16,7 +16,6 @@ IOManager::IOManager() : fGenericDesc("Generic options"), fConfigDesc("Configura
     ("help", "produce help")
     ("verbose", po::value<int>(&fVerboseLvl)->default_value(1), "Verbose level")
     ("config,c", po::value<std::string>(&fConfigFile)->default_value("configfile.cfg"), "Path to configuration file")
-    //("config,c", po::value<std::string>(&fConfigFile)->required(), "Path to config")
     ;
     
     // define config options
