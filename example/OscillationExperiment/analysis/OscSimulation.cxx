@@ -35,18 +35,7 @@ OscSimulation::OscSimulation(OscAnaManager* config) : BatAnalysis(),
     fConfig=config;
     initAttributes(config);
 
-    // ----------------------------------------------------
-    /// Set Model M1
-    // ----------------------------------------------------
-    fM1 = new OscModel(config);
-    fM1->SetSimulation(true);
     
-    //prior
-    fM1->SetPriorConstant(0);
-    fM1->SetPriorConstant(1);
-    fM1->SetPriorConstant(2);
-    fM1->SetPriorConstant(3);
-    SetModelOption(fM1,config);
 }
 
 
@@ -138,23 +127,23 @@ int OscSimulation::CutData(int indexmin, int indexmax)
 OscMCPoint OscSimulation::GetOscMCPoint(int indexmin, int indexmax, bool MCMC)
 {
     //cout<<"CutData"<<endl;
-    std::cout<<"LRT::GetOscMCPoint - OK0\n";
-    CutData(indexmin, indexmax);std::cout<<"LRT::GetOscMCPoint - OK1\n";
-    fMCpoint.Reset();std::cout<<"LRT::GetOscMCPoint - OK2\n";
+    
+    CutData(indexmin, indexmax);
+    fMCpoint.Reset();
     // run first MCMC to be sure that the parameters are around the global minimum
     //cout<<"RunMCMC(fReducedDataSet)"<<endl;
     if(MCMC)
-        RunMCMC(fReducedDataSet);std::cout<<"LRT::GetOscMCPoint - OK3\n";
+        RunMCMC(fReducedDataSet);
     //cout<<"UpdateRooParameterFromMCMC()"<<endl;
     if(MCMC)
-        UpdateRooParameterFromMCMC();std::cout<<"LRT::GetOscMCPoint - OK4\n";
+        UpdateRooParameterFromMCMC();
 
     return GetOscMCPoint(fReducedDataSet);
 }
 
 
 OscMCPoint OscSimulation::GetOscMCPoint(RooDataSet* roodataset)
-{std::cout<<"LRT::GetOscMCPoint - OK5\n";
+{
     /// perform fit of H0 and H1
     fPdf_H0->fitTo(*roodataset,PrintLevel(-1));
     RooAbsReal* NLL0= fPdf_H0->createNLL(*roodataset);
@@ -190,28 +179,28 @@ OscMCPoint OscSimulation::GetOscMCPoint(RooDataSet* roodataset)
     
     //LRT
     fMCpoint.LRT=2.0*(NLL0->getValV()-NLL1->getValV());
-    std::cout<<"LRT::GetOscMCPoint - OK6\n";
+    fMCpoint.MCMCLRT=2.0*(NLL0->getValV()-fMCpoint.MCMCNLL1);
     return fMCpoint;
 }
 
 
-int OscSimulation::ComputeMLEDistribution(const std::string& filename, int SampleSize, int TotStat, bool MCMC)
+int OscSimulation::ComputeMLEDistribution(const std::string& filename, int SampleSize, int Iteration, bool MCMC)
 {
     std::vector<OscMCPoint> Distribution;
     int Ntot=frooData->numEntries();
-    if( Ntot % SampleSize == 0 )
+    int NStat=Iteration*SampleSize;
+    
+    if( NStat< Ntot)
     {        
         int nextprint=1000;
         int counter=0;
-        for(unsigned int i=0 ; i<Ntot ;i+=SampleSize)
+        for(unsigned int i=0 ; i<=NStat ;i+=SampleSize)
         {
             int indexmin=i;
             int indexmax=i+SampleSize;
             //cout<<"index = "<<i<<endl;
             if(indexmax<Ntot)
             {
-               std::cout<<"LRT::Ok-MCMC run nr "<< i <<"\n";
-
                 OscMCPoint MCpoint=GetOscMCPoint(indexmin, indexmax, MCMC);
                 Distribution.push_back(MCpoint);
                 if(counter==nextprint)
@@ -232,20 +221,23 @@ int OscSimulation::ComputeMLEDistribution(const std::string& filename, int Sampl
     
     
     
-    std::cout<<"Distribution computed\n";
+    std::cout<<"Distribution computed with "<< Distribution.size()<<" iterations\n";
     
     
     // Temp for test
     std::vector<std::string> treename=fConfig->GetPar< std::vector<std::string> >("sim.file.output.tree");
-    std::vector<std::string> branchname=fConfig->GetPar< std::vector<std::string> >("sim.file.output.name");
+    std::vector<std::string> branchname=fConfig->GetPar< std::vector<std::string> >("sim.file.output.branch");
     std::string classname="OscMCPoint";
     
     
-    RootOutFileManager<OscMCPoint> OutMan;
-    OutMan.SetFileProperties(filename,treename[0],branchname[0],classname,std::string("RECREATE"),true);
-    OutMan.AddToFile(Distribution);
+    std::cout<<"Distribution will be saved to file "<< filename <<"\n";
     
-    
+    RootOutFileManager<OscMCPoint>* OutMan = new RootOutFileManager<OscMCPoint>();
+    OutMan->SetFileProperties(filename,treename[0],branchname[0],classname,std::string("RECREATE"),true);
+    OutMan->InitOutFile();
+    OutMan->AddToFile(Distribution);
+    delete OutMan;
+    std::cout<<"Distribution saved to file "<< filename <<"\n";
     return 0;
 }
 
@@ -256,18 +248,26 @@ int OscSimulation::RunMCMC(RooDataSet* roodataset)
     
     //cout<<"start run MCMC"<<endl;
     std::cout<<"LRT::RunMCMC - OK0\n";
+    
+    // ----------------------------------------------------
+    /// Set Model M1
+    // ----------------------------------------------------
+    OscModel* ModelM1 = new OscModel(fConfig);
+    ModelM1->SetSimulation(true);
+    
+    //prior
+    ModelM1->SetPriorConstant(0);
+    ModelM1->SetPriorConstant(1);
+    ModelM1->SetPriorConstant(2);
+    ModelM1->SetPriorConstant(3);
+    SetModelOption(ModelM1,fConfig);
+    
     OscDataSet* DataSet = new OscDataSet(fConfig);
-    std::cout<<"LRT::RunMCMC - OK1\n";
     DataSet->ConvertRooToBCDataset(roodataset);
-    std::cout<<"LRT::RunMCMC - OK2\n";
-    fM1->SetMyDataSet(DataSet);
-    std::cout<<"LRT::RunMCMC - OK3\n";
-    fM1->MarginalizeAll();
-    std::cout<<"LRT::RunMCMC - OK4\n";
-    fM1->GetMCMCMLEValue(fMCpoint);
-    std::cout<<"LRT::RunMCMC - OK5\n";
+    ModelM1->SetMyDataSet(DataSet);
+    ModelM1->MarginalizeAll();
+    ModelM1->GetMCMCMLEValue(fMCpoint);
     delete DataSet;
-    std::cout<<"LRT::RunMCMC - OK6\n";
     return 0;
 }
 

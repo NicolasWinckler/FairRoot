@@ -20,6 +20,7 @@ class OscMCPoint : public  TObject
 {
 public:
     OscMCPoint();
+    OscMCPoint(const OscMCPoint& orig);
     virtual ~OscMCPoint();
     void Reset();
 
@@ -28,6 +29,7 @@ public:
     
     ///MC MC data
     double MCMCNLL1=0.0;
+    double MCMCLRT=0.0;
     double MCMClambda1=0.0;
     double MCMCamplitude=0.0;
     double MCMComega=0.0;
@@ -70,6 +72,7 @@ public:
             ar& phi_err;
             ar& LRT;
             ar& MCMCNLL1;
+            ar& MCMCLRT;
             ar& MCMClambda1;
             ar& MCMCamplitude;
             ar& MCMComega;
