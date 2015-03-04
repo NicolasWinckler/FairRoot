@@ -7,6 +7,34 @@
 
 #include "OscSimulation.h"
 
+
+OscSimulation::OscSimulation() : BatAnalysis(),
+    fConfig(nullptr),// memory handled outside
+    fMCpoint(),
+    fDataSet(nullptr),
+    frooData(nullptr),
+    fReducedDataSet(nullptr),
+    fx(nullptr),
+    fx_cool(nullptr),
+    fx_err(nullptr),
+    fLambda0(nullptr),
+    fLambda1(nullptr),
+    fAmp1(nullptr),
+    fOmega1(nullptr),
+    fPhi1(nullptr),
+    fmeancool(nullptr),
+    fsigmacool(nullptr),
+    fmeanerr(nullptr),
+    fsigmaerr(nullptr),
+    fM1(nullptr),
+    fPdf_H0(nullptr),
+    fPdf_H1s(nullptr),
+    fPdf_H1b(nullptr),
+    fCoolingDistribution(nullptr),
+    fErrorDistribution(nullptr)
+{
+}
+
 OscSimulation::OscSimulation(OscAnaManager* config) : BatAnalysis(),
     fConfig(nullptr),// memory handled outside
     fMCpoint(),
@@ -103,6 +131,15 @@ int OscSimulation::SaveSimData(const std::string& filename)
 }
 
 
+void OscSimulation::SetFileProperties(OscAnaManager* config, const std::string& filename, const std::string& dataname)
+{
+
+    fConfig=config;
+    initAttributes(config);
+    LoadSimData(filename,dataname);
+    
+}
+
 int OscSimulation::LoadSimData(const std::string& filename,const std::string& DataName)
 {
     std::cout<<"start Load data\n";
@@ -184,6 +221,29 @@ OscMCPoint OscSimulation::GetOscMCPoint(RooDataSet* roodataset)
 }
 
 
+int OscSimulation::GetDataBunchNumber()
+{
+    int TotalEvent=fConfig->GetPar<int>("sim.iteration.number");
+    return TotalEvent;
+}
+
+
+
+//std::vector<OscMCPoint>
+OscMCPoint& OscSimulation::GetDataBranch(const int& EventNr)
+{
+    int Ntot=frooData->numEntries();
+    int SampleSize=fConfig->GetPar<int>("sim.event.number");
+    int indexmin=EventNr;
+    int indexmax=EventNr+SampleSize;
+    if(indexmax<Ntot)
+        GetOscMCPoint(indexmin, indexmax, true);
+    
+        
+    
+    return fMCpoint;
+}
+
 int OscSimulation::ComputeMLEDistribution(const std::string& filename, int SampleSize, int Iteration, bool MCMC)
 {
     std::vector<OscMCPoint> Distribution;
@@ -194,7 +254,7 @@ int OscSimulation::ComputeMLEDistribution(const std::string& filename, int Sampl
     {        
         int nextprint=1000;
         int counter=0;
-        for(unsigned int i=0 ; i<=NStat ;i+=SampleSize)
+        for(unsigned int i=0 ; i<NStat ;i+=SampleSize)
         {
             int indexmin=i;
             int indexmax=i+SampleSize;
@@ -230,7 +290,6 @@ int OscSimulation::ComputeMLEDistribution(const std::string& filename, int Sampl
     std::string classname="OscMCPoint";
     
     
-    std::cout<<"Distribution will be saved to file "<< filename <<"\n";
     
     RootOutFileManager<OscMCPoint>* OutMan = new RootOutFileManager<OscMCPoint>();
     OutMan->SetFileProperties(filename,treename[0],branchname[0],classname,std::string("RECREATE"),true);
@@ -246,9 +305,7 @@ int OscSimulation::ComputeMLEDistribution(const std::string& filename, int Sampl
 int OscSimulation::RunMCMC(RooDataSet* roodataset)
 {
     
-    //cout<<"start run MCMC"<<endl;
-    std::cout<<"LRT::RunMCMC - OK0\n";
-    
+    //cout<<"start run MCMC"<<endl;    
     // ----------------------------------------------------
     /// Set Model M1
     // ----------------------------------------------------

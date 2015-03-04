@@ -60,13 +60,21 @@ public:
     int GenerateData(std::string DataName, double NumSimEvt, double PullStats=1);
     int SaveSimData(const std::string& filename, RooDataSet* DataSet);
     int SaveSimData(const std::string& filename);
-    int ComputeMLEDistribution(const std::string& filename, int SampleSize, int TotStat, bool MCMC=false);
+    int ComputeMLEDistribution(const std::string& filename, int SampleSize, int iteration, bool MCMC=false);
     
     int LoadSimData(const std::string& filename, const std::string& DataName);
     
     
     OscMCPoint GetOscMCPoint(int indexmin, int indexmax, bool MCMC);
     OscMCPoint GetOscMCPoint(RooDataSet* roodataset);
+    
+    
+    /// couple of methods to satisfy the sampler policies
+    void InitSampler(){}
+    int GetDataBunchNumber();
+    OscMCPoint& GetDataBranch(const int &Event);
+    void SetFileProperties(OscAnaManager* config, const std::string& filename, const std::string& dataname);
+    
 private:
     
     int RunMCMC(RooDataSet* roodataset);

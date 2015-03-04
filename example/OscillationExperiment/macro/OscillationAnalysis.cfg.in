@@ -89,6 +89,7 @@ SummaryM1               =   SummaryM1.pdf
 [sim]
 event.number            =   3616
 iteration.number        =   5
+file.input.dataname     =   simH0
 file.input              =   ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/workspace/Oscillation/output/sim/OscSimInput.root
 file.output             =   ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/workspace/Oscillation/output/sim/OscSimOutput.root
 file.output.dir         =   ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/workspace/Oscillation/output/sim/

@@ -149,13 +149,13 @@ double OscModel::LogLikelihood(const std::vector<double> &parameters)
 // ---------------------------------------------------------
 
 void OscModel::SetMyDataSet(BCDataSet* dataset, double unit)
-{std::cout<<"LRT::SetMyDataSet - OK1\n";
+{
     if(GetNDataPoints()>0)
-        GetDataSet()->Reset();std::cout<<"LRT::SetMyDataSet - OK2\n";
+        GetDataSet()->Reset();
     BCModel::SetDataSet(dataset);
-    double sum=0.0;std::cout<<"LRT::SetMyDataSet - OK3\n";
+    double sum=0.0;
     for (int i = 0; i < GetNDataPoints(); ++i)
-        sum+=GetDataPoint(i)->GetValue(0);std::cout<<"LRT::SetMyDataSet - OK4\n";
+        sum+=GetDataPoint(i)->GetValue(0);
     fSampleMean=unit*sum/((double)GetNDataPoints());
     std::cout << " Number of Data Points = " << BCModel::GetNDataPoints() << std::endl;
     std::cout << " Sample mean = " << fSampleMean << std::endl;

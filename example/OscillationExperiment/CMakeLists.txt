@@ -106,6 +106,8 @@ If (Boost_FOUND)
   Set(Exe_Names
     runOscAnalysis
     runtest
+    runOscSampler
+    runOscFileSink
   )
 
 
@@ -114,6 +116,8 @@ If (Boost_FOUND)
     
     run/runOscAnalysis.cxx
     run/test.cxx
+    run/runOscSampler.cxx
+    run/runOscFileSink.cxx
     )
 
   List(LENGTH Exe_Names _length)
