@@ -44,10 +44,13 @@ If (Boost_FOUND)
   configure_file( ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/macro/runOscAnalysis.sh.in ${CMAKE_BINARY_DIR}/bin/runOscAnalysis.sh )
   configure_file( ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/macro/OscillationAnalysis.cfg.in ${CMAKE_BINARY_DIR}/bin/OscillationAnalysis.cfg )
   configure_file( ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/macro/startTest.sh.in ${CMAKE_BINARY_DIR}/bin/startTest.sh )
-  configure_file( ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/macro/multiple_sources.cfg.in ${CMAKE_BINARY_DIR}/bin/multiple_sources.cfg )
+  configure_file( ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/macro/startOscSampler.sh.in ${CMAKE_BINARY_DIR}/bin/startOscSampler.sh )
+  configure_file( ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/macro/startOscSink.sh.in ${CMAKE_BINARY_DIR}/bin/startOscSink.sh )
  
   EXEC_PROGRAM(/bin/chmod ARGS "u+x  ${CMAKE_BINARY_DIR}/bin/runOscAnalysis.sh")
   EXEC_PROGRAM(/bin/chmod ARGS "u+x  ${CMAKE_BINARY_DIR}/bin/startTest.sh")
+  EXEC_PROGRAM(/bin/chmod ARGS "u+x  ${CMAKE_BINARY_DIR}/bin/startOscSampler.sh")
+  EXEC_PROGRAM(/bin/chmod ARGS "u+x  ${CMAKE_BINARY_DIR}/bin/startOscSink.sh")
 EndIf (Boost_FOUND)
 
 set(LINK_DIRECTORIES
@@ -77,9 +80,9 @@ Set(NO_DICT_SRCS
     #model/RooMypdfDict.cpp
     )
 
-message(STATUS "CUBA_LIBRARY_STATIC (2nd call) is = ${CUBA_LIBRARY_STATIC}")
-message(STATUS "CUBA_INCLUDE_DIR (2nd call) is = ${CUBA_INCLUDE_DIR}")
-message(STATUS "BAT_LIBRARIES_SHARED (2nd call) is = ${BAT_LIBRARIES_SHARED}")
+#message(STATUS "CUBA_LIBRARY_STATIC (2nd call) is = ${CUBA_LIBRARY_STATIC}")
+#message(STATUS "CUBA_INCLUDE_DIR (2nd call) is = ${CUBA_INCLUDE_DIR}")
+#message(STATUS "BAT_LIBRARIES_SHARED (2nd call) is = ${BAT_LIBRARIES_SHARED}")
 
 
 Set(LINKDEF OscAnalysisLinkDef.h)

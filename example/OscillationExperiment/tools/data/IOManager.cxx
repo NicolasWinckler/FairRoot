@@ -40,7 +40,7 @@ IOManager::~IOManager()
 }
 
 
-int IOManager::ParseCmdLine(const int argc, char** argv, const po::options_description& desc, po::variables_map& varmap)
+int IOManager::ParseCmdLine(const int argc, char** argv, const po::options_description& desc, po::variables_map& varmap, bool AllowUnregistered)
 {
     // /////////////////////////////////////////////
     //Todo : handle positional option
@@ -53,14 +53,27 @@ int IOManager::ParseCmdLine(const int argc, char** argv, const po::options_descr
     
     
     // get options from cmd line and store in variable map
-    po::store(po::parse_command_line(argc, argv, desc), varmap);
+    // here we use command_line_parser instead of parse_command_line, to allow unregistered and positional options
+    
+    if(AllowUnregistered)
+    {
+        //po::store(po::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), varmap);
+        po::command_line_parser parser{argc, argv};
+        parser.options(desc).allow_unregistered();
+        po::parsed_options parsedOptions = parser.run();
+        po::store(parsedOptions,varmap);
+    }
+    else
+        po::store(po::parse_command_line(argc, argv, desc), varmap);
+    
     // fix options in varmap 
     po::notify(varmap);
     return 0;
 }
 
+    
 
-int IOManager::ParseCfgFile(const std::string& filename, const po::options_description& desc, po::variables_map& varmap)
+int IOManager::ParseCfgFile(const std::string& filename, const po::options_description& desc, po::variables_map& varmap, bool AllowUnregistered)
 {
     std::ifstream ifs(filename.c_str());
     if (!ifs)
@@ -70,18 +83,20 @@ int IOManager::ParseCfgFile(const std::string& filename, const po::options_descr
     }
     else
     {
-        po:store(parse_config_file(ifs, desc), varmap);
+        po:store(parse_config_file(ifs, desc, AllowUnregistered), varmap);
         po::notify(varmap);
     }
     return 0;
+    
+    //parse_config_file(std::basic_istream< charT > &, const options_description &, bool allow_unregistered = false);
 }
 
 
-int IOManager::ParseAll(const int argc, char** argv)
+int IOManager::ParseAll(const int argc, char** argv, bool AllowUnregistered)
 {
     
-    ParseCmdLine(argc,argv,fGenericDesc,fvarmap);
-    ParseCfgFile(fConfigFile,fConfigDesc,fvarmap);
+    ParseCmdLine(argc,argv,fGenericDesc,fvarmap,AllowUnregistered);
+    ParseCfgFile(fConfigFile,fConfigDesc,fvarmap,AllowUnregistered);
     PrintConfig();
     return 0;
 }

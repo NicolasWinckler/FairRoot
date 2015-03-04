@@ -46,7 +46,7 @@ public:
             {
                 std::cout << "[ERROR] Problem in map for key = " << key << "\n";
                 std::cout << e.what() << "\n";
-            }   
+            }
             
             return val;
         }
@@ -54,8 +54,8 @@ public:
     
     int PrintConfig();
     
-    int ParseCmdLine(const int argc, char** argv, const po::options_description& desc, po::variables_map& varmap);
-    int ParseCfgFile(const std::string& filename, const po::options_description& desc, po::variables_map& varmap);
+    int ParseCmdLine(const int argc, char** argv, const po::options_description& desc, po::variables_map& varmap, bool AllowUnregistered=false);
+    int ParseCfgFile(const std::string& filename, const po::options_description& desc, po::variables_map& varmap, bool AllowUnregistered=false);
     
     int PrintHelp()
     {
@@ -63,7 +63,7 @@ public:
         return 0;
     }
     
-    virtual int ParseAll(const int argc, char** argv);
+    virtual int ParseAll(const int argc, char** argv, bool AllowUnregistered=false);
     
     
 protected:

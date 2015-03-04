@@ -8,6 +8,9 @@
 #include "OscSimulation.h"
 
 
+//////////////////////////////////////////////////
+////////////////////// Constructor/destructor
+
 OscSimulation::OscSimulation() : BatAnalysis(),
     fConfig(nullptr),// memory handled outside
     fMCpoint(),
@@ -31,7 +34,10 @@ OscSimulation::OscSimulation() : BatAnalysis(),
     fPdf_H1s(nullptr),
     fPdf_H1b(nullptr),
     fCoolingDistribution(nullptr),
-    fErrorDistribution(nullptr)
+    fErrorDistribution(nullptr),
+    fSampleSize(0),
+    fIterationNumber(0),
+    fIterationIndexOffset(0)
 {
 }
 
@@ -58,7 +64,10 @@ OscSimulation::OscSimulation(OscAnaManager* config) : BatAnalysis(),
     fPdf_H1s(nullptr),
     fPdf_H1b(nullptr),
     fCoolingDistribution(nullptr),
-    fErrorDistribution(nullptr)
+    fErrorDistribution(nullptr),
+    fSampleSize(0),
+    fIterationNumber(0),
+    fIterationIndexOffset(0)
 {
     fConfig=config;
     initAttributes(config);
@@ -92,6 +101,9 @@ OscSimulation::~OscSimulation()
 }
 
 
+
+//////////////////////////////////////////////////
+////////////////////// Generate/save/load/cut data
 
 int OscSimulation::GenerateData(std::string DataName, double NumSimEvt, double PullStats)
 {
@@ -131,22 +143,25 @@ int OscSimulation::SaveSimData(const std::string& filename)
 }
 
 
-void OscSimulation::SetFileProperties(OscAnaManager* config, const std::string& filename, const std::string& dataname)
-{
-
-    fConfig=config;
-    initAttributes(config);
-    LoadSimData(filename,dataname);
-    
-}
-
 int OscSimulation::LoadSimData(const std::string& filename,const std::string& DataName)
 {
-    std::cout<<"start Load data\n";
+    std::cout<<"start Loading data\n";
+    std::cout<<"Load data '"<<DataName<<"' in file "<< filename <<std::endl;
     
     TFile* rootfile = new TFile(filename.c_str());
-    frooData = (RooDataSet*) rootfile->Get(DataName.c_str());
-    
+    if(rootfile->IsOpen())
+        if(rootfile->GetListOfKeys()->Contains(DataName.c_str()))
+            frooData = (RooDataSet*) rootfile->Get(DataName.c_str());
+        else
+        {
+            std::cout<<"Data '"<<DataName<<"' not found in file "<< filename <<std::endl;
+            return -1;
+        }
+    else
+    {
+        std::cout<<"Could not open file "<< filename <<std::endl;
+        return -1;
+    }
     rootfile->Close();
     delete rootfile;
     return 0;
@@ -159,6 +174,48 @@ int OscSimulation::CutData(int indexmin, int indexmax)
     return 0;
 }
 
+
+
+
+
+//////////////////////////////////////////////////
+////////////////////// Simulations part
+int OscSimulation::RunMCMC(RooDataSet* roodataset)
+{
+    
+    //cout<<"start run MCMC"<<endl;    
+    // ----------------------------------------------------
+    /// Set Model M1
+    // ----------------------------------------------------
+    OscModel* ModelM1 = new OscModel(fConfig);
+    ModelM1->SetSimulation(true);
+    
+    //prior
+    ModelM1->SetPriorConstant(0);
+    ModelM1->SetPriorConstant(1);
+    ModelM1->SetPriorConstant(2);
+    ModelM1->SetPriorConstant(3);
+    SetModelOption(ModelM1,fConfig);
+    
+    OscDataSet* DataSet = new OscDataSet(fConfig);
+    DataSet->ConvertRooToBCDataset(roodataset);
+    ModelM1->SetMyDataSet(DataSet);
+    ModelM1->MarginalizeAll();
+    ModelM1->GetMCMCMLEValue(fMCpoint);
+    delete DataSet;
+    return 0;
+}
+
+
+int OscSimulation::UpdateRooParameterFromMCMC()
+{
+    fAmp1->setVal(fMCpoint.MCMCamplitude);
+    fOmega1->setVal(fMCpoint.MCMComega);
+    fPhi1->setVal(fMCpoint.MCMCphi);
+    fLambda1->setVal(fMCpoint.MCMClambda1);
+
+    return 0;
+}
 
 
 OscMCPoint OscSimulation::GetOscMCPoint(int indexmin, int indexmax, bool MCMC)
@@ -221,29 +278,6 @@ OscMCPoint OscSimulation::GetOscMCPoint(RooDataSet* roodataset)
 }
 
 
-int OscSimulation::GetDataBunchNumber()
-{
-    int TotalEvent=fConfig->GetPar<int>("sim.iteration.number");
-    return TotalEvent;
-}
-
-
-
-//std::vector<OscMCPoint>
-OscMCPoint& OscSimulation::GetDataBranch(const int& EventNr)
-{
-    int Ntot=frooData->numEntries();
-    int SampleSize=fConfig->GetPar<int>("sim.event.number");
-    int indexmin=EventNr;
-    int indexmax=EventNr+SampleSize;
-    if(indexmax<Ntot)
-        GetOscMCPoint(indexmin, indexmax, true);
-    
-        
-    
-    return fMCpoint;
-}
-
 int OscSimulation::ComputeMLEDistribution(const std::string& filename, int SampleSize, int Iteration, bool MCMC)
 {
     std::vector<OscMCPoint> Distribution;
@@ -284,13 +318,10 @@ int OscSimulation::ComputeMLEDistribution(const std::string& filename, int Sampl
     std::cout<<"Distribution computed with "<< Distribution.size()<<" iterations\n";
     
     
-    // Temp for test
+    // Temporary test
     std::vector<std::string> treename=fConfig->GetPar< std::vector<std::string> >("sim.file.output.tree");
     std::vector<std::string> branchname=fConfig->GetPar< std::vector<std::string> >("sim.file.output.branch");
     std::string classname="OscMCPoint";
-    
-    
-    
     RootOutFileManager<OscMCPoint>* OutMan = new RootOutFileManager<OscMCPoint>();
     OutMan->SetFileProperties(filename,treename[0],branchname[0],classname,std::string("RECREATE"),true);
     OutMan->InitOutFile();
@@ -302,49 +333,52 @@ int OscSimulation::ComputeMLEDistribution(const std::string& filename, int Sampl
 
 
 
-int OscSimulation::RunMCMC(RooDataSet* roodataset)
+
+
+
+
+//////////////////////////////////////////////////
+////////////////////// MQ part
+
+int OscSimulation::GetDataBunchNumber()
 {
+    return fIterationNumber;
+}
+
+std::vector<OscMCPoint> OscSimulation::GetDataBranch(const int& EventNr)
+{
+    std::vector<OscMCPoint> vecMCpoint;
+    int Ntot=frooData->numEntries();
+    int indexmin=EventNr+fIterationIndexOffset;
+    int indexmax=EventNr+fIterationIndexOffset+fSampleSize;
+    if(indexmax<Ntot)
+        GetOscMCPoint(indexmin, indexmax, true);
+    vecMCpoint.push_back(fMCpoint);
+    return vecMCpoint;
+}
+
+int OscSimulation::LoadRootFile(OscAnaManager* config, const std::string& filename, const std::string& dataname)
+{
+
+    fConfig=config;
+    initAttributes(config);
+    if(LoadSimData(filename,dataname)<0)
+        return -1;
     
-    //cout<<"start run MCMC"<<endl;    
-    // ----------------------------------------------------
-    /// Set Model M1
-    // ----------------------------------------------------
-    OscModel* ModelM1 = new OscModel(fConfig);
-    ModelM1->SetSimulation(true);
-    
-    //prior
-    ModelM1->SetPriorConstant(0);
-    ModelM1->SetPriorConstant(1);
-    ModelM1->SetPriorConstant(2);
-    ModelM1->SetPriorConstant(3);
-    SetModelOption(ModelM1,fConfig);
-    
-    OscDataSet* DataSet = new OscDataSet(fConfig);
-    DataSet->ConvertRooToBCDataset(roodataset);
-    ModelM1->SetMyDataSet(DataSet);
-    ModelM1->MarginalizeAll();
-    ModelM1->GetMCMCMLEValue(fMCpoint);
-    delete DataSet;
     return 0;
 }
 
-
-int OscSimulation::UpdateRooParameterFromMCMC()
-{
-    fAmp1->setVal(fMCpoint.MCMCamplitude);
-    fOmega1->setVal(fMCpoint.MCMComega);
-    fPhi1->setVal(fMCpoint.MCMCphi);
-    fLambda1->setVal(fMCpoint.MCMClambda1);
-
-    return 0;
-}
-
+//////////////////////////////////////////////////
+////////////////////// Init data members
 
 void OscSimulation::initAttributes(OscAnaManager* config)
 {
     /// Import parameters from configfile
     // Range of the Analysis
 
+    fSampleSize=fConfig->GetPar<int>("sim.event.number");
+    fIterationNumber=fConfig->GetPar<int>("sim.iteration.number");
+    fIterationIndexOffset=fConfig->GetPar<int>("sim.iteration.offset");
     double fxmin=config->GetPar<double>("obs.xmin");
     double fxmax=config->GetPar<double>("obs.xmax");
     double flambdamin=config->GetPar<double>("par.lambda.min");
@@ -356,7 +390,7 @@ void OscSimulation::initAttributes(OscAnaManager* config)
     double fphimin=config->GetPar<double>("par.phi.min");
     double fphimax=config->GetPar<double>("par.phi.max");
 
-    // Model parameters for simulation or/and Hypothesis test
+    // Model parameters init
     double LambdaInit=config->GetPar<double>("par.lambda.init");
     double PhiInit=config->GetPar<double>("par.phi.init");
     double OmegaInit=config->GetPar<double>("par.omega.init");

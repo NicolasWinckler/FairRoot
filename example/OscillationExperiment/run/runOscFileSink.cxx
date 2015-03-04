@@ -103,7 +103,7 @@ inline bool parse_cmd_line(int _argc, char* _argv[], DeviceOptions* _options)
         ("input-buff-size", bpo::value<int>()->required(), "Input buffer size in number of messages (ZeroMQ)/bytes(nanomsg)")
         ("input-method", bpo::value<string>()->required(), "Input method: bind/connect")
         ("input-address", bpo::value<string>()->required(), "Input address, e.g.: \"tcp://*:5555\"")
-        ("input-file", bpo::value<string>()->required(), "Prefix of the output file")
+        ("output-file", bpo::value<string>()->required(), "Prefix of the output file")
         ("tree", bpo::value<string>()->required(), "Name of the tree (for root file output)")
         ("branch", bpo::value<string>()->required(), "Name of the branch (for root file output)")
         ("class-name", bpo::value<string>()->required(), "Name of the payload class")
@@ -140,8 +140,8 @@ inline bool parse_cmd_line(int _argc, char* _argv[], DeviceOptions* _options)
     if ( vm.count("input-address") )
         _options->inputAddress = vm["input-address"].as<string>();
     
-    if ( vm.count("input-file") )
-        _options->filename = vm["input-file"].as<string>();
+    if ( vm.count("output-file") )
+        _options->filename = vm["output-file"].as<string>();
     
     if ( vm.count("tree") )
         _options->treename = vm["tree"].as<string>();

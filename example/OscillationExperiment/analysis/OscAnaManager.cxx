@@ -35,10 +35,10 @@ OscAnaManager::~OscAnaManager()
 {
 }
 
-int OscAnaManager::ParseAll(const int argc, char** argv)
+int OscAnaManager::ParseAll(const int argc, char** argv, bool AllowUnregistered)
 {
     
-    IOManager::ParseCmdLine(argc,argv,fCmdline_options,fvarmap);
+    IOManager::ParseCmdLine(argc,argv,fCmdline_options,fvarmap,AllowUnregistered);
     
     if (fvarmap.count("help")) 
     {
@@ -52,7 +52,7 @@ int OscAnaManager::ParseAll(const int argc, char** argv)
         return 0;
     }
     
-    if(IOManager::ParseCfgFile(fConfigFile,fConfig_file_options,fvarmap)<0)
+    if(IOManager::ParseCfgFile(fConfigFile,fConfig_file_options,fvarmap,AllowUnregistered)<0)
         return -1;
     
     
@@ -138,6 +138,7 @@ void OscAnaManager::InitOptionDescription()
     
     fSim_options.add_options()
     ("sim.event.number", po::value< int >()->default_value(1000), "Number of data point for MC simulation (data sample size)")
+    ("sim.iteration.offset", po::value< int >()->default_value(0), "Index offset in data")
     ("sim.iteration.number", po::value< int >()->default_value(1000), "Number of iteration to compute a distribution (stat sample size )")
     ("sim.file.input", po::value< std::string >()->default_value("SimInput.root"), "name of simulation input file")
     ("sim.file.input.dataname", po::value< std::string >()->default_value("SimData"), "name of simulated data simulation input file")
@@ -145,7 +146,5 @@ void OscAnaManager::InitOptionDescription()
     ("sim.file.output.dir", po::value< std::string >()->default_value("SimInput.root"), "name of simulation input file")
     ("sim.file.output.tree", po::value< std::vector<std::string> >()->composing(), "name of simulation output file")
     ("sim.file.output.branch", po::value< std::vector<std::string> >()->composing(), "name of simulation input file")
-    
-    
     ;
 }

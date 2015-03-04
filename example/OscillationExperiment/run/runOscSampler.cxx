@@ -31,6 +31,7 @@
 /// FairRoot - OscAnalysis
 #include "OscMCPoint.h"
 #include "OscSimulation.h"
+#include "OscAnaManager.h"
 
 using namespace std;
 /// ////////////////////////////////////////////////////////////////////////
@@ -109,11 +110,15 @@ inline bool parse_cmd_line(int _argc, char* _argv[], DeviceOptions* _options)
         ("help", "Print help messages");
 
     bpo::variables_map vm;
-    bpo::store(bpo::parse_command_line(_argc, _argv, desc), vm);
+    //bpo::store(bpo::parse_command_line(_argc, _argv, desc), vm);
+    bpo::command_line_parser parser{_argc, _argv};
+    parser.options(desc).allow_unregistered();
+    bpo::parsed_options parsedOptions = parser.run();
+    bpo::store(parsedOptions,vm);
 
     if ( vm.count("help") )
     {
-        LOG(INFO) << "Tutorial 7 - Sampler " << endl << desc;
+        LOG(INFO) << "Oscillation - Sampler Options" << endl << desc;
         return false;
     }
 
@@ -168,6 +173,19 @@ int main(int argc, char** argv)
         return 1;
     }
 
+    
+    OscAnaManager* config = new OscAnaManager();
+    try 
+    {
+        config->ParseAll(argc,argv,true);
+    }
+    catch(std::exception& e)
+    {
+        cout << e.what() << "\n";
+        return 1;
+    }    
+    
+    
     LOG(INFO) << "PID: " << getpid();
     LOG(INFO) << "CONFIG: " << "id: " << options.id << ", event rate: " << options.eventRate << ", I/O threads: " << options.ioThreads;
     LOG(INFO) << "FILES: " << "input file: " << options.filename << ", parameter file: " << options.parameterFile << ", branch: " << options.branchname;
@@ -188,8 +206,12 @@ int main(int argc, char** argv)
     sampler.SetProperty(TSampler::EventRate, options.eventRate);
     sampler.SetProperty(TSampler::NumIoThreads, options.ioThreads);
     string treename("cbmsim");
-    //sampler.SetFileProperties(options.filename,options.treename,options.branchname);
-    
+    if(sampler.LoadRootFile(config,options.filename,options.id)<0)
+    {
+        sampler.ChangeState(TSampler::STOP);
+        sampler.ChangeState(TSampler::END);
+        return 0;
+    }
 
     sampler.SetProperty(TSampler::NumInputs, 0);
     sampler.SetProperty(TSampler::NumOutputs, 1);

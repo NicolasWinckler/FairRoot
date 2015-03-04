@@ -179,7 +179,7 @@ int OscModel::GetMCMCMLEValue(OscMCPoint& MCpoint)
     MCpoint.MCMCamplitude=fMLE_amp;
     MCpoint.MCMComega=fMLE_omega;
     MCpoint.MCMCphi=fMLE_phi;
-    MCpoint.MCMCNLL1=fMaxLogL;
+    MCpoint.MCMCNLL1=-fMaxLogL;
     return 0;
 }
 

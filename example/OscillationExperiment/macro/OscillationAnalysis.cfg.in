@@ -6,7 +6,7 @@
 name                    =   ECData_auto_245MHzRes
 detector                =   245MHzResonator
 preprocess              =   automatic
-file.name               =   ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/workspace/oscillation/input/142Pm_4kPBECdataset.dat
+file.name               =   @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/oscillation/input/142Pm_4kPBECdataset.dat
 file.format             =   txt
 file.tree.name          =   OscTree2010
 file.branch.name        =   EC_RSA
@@ -16,10 +16,10 @@ file.branch.name        =   EC_RSA
 # Output options
 
 [output]
-directory               =   ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/workspace/Oscillation/output/log/      
+directory               =   @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/Oscillation/output/log/      
 
 [output.data]
-file.name               =   ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/workspace/oscillation/output/output.dat
+file.name               =   @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/oscillation/output/output.dat
 file.format             =   txt
 file.tree.name          =   OscTree2010
 file.branch.name        =   EC_RSA
@@ -89,9 +89,10 @@ SummaryM1               =   SummaryM1.pdf
 [sim]
 event.number            =   3616
 iteration.number        =   5
+iteration.offset        =   0
 file.input.dataname     =   simH0
-file.input              =   ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/workspace/Oscillation/output/sim/OscSimInput.root
-file.output             =   ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/workspace/Oscillation/output/sim/OscSimOutput.root
-file.output.dir         =   ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/workspace/Oscillation/output/sim/
+file.input              =   @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/Oscillation/output/sim/OscSimInput.root
+file.output             =   @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/Oscillation/output/sim/OscSimOutput.root
+file.output.dir         =   @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/Oscillation/output/sim/
 file.output.tree        =   MCPoint3616_tot_10
 file.output.branch      =   OscMCPoint

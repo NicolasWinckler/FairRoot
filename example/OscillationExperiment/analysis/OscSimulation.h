@@ -72,8 +72,8 @@ public:
     /// couple of methods to satisfy the sampler policies
     void InitSampler(){}
     int GetDataBunchNumber();
-    OscMCPoint& GetDataBranch(const int &Event);
-    void SetFileProperties(OscAnaManager* config, const std::string& filename, const std::string& dataname);
+    std::vector<OscMCPoint> GetDataBranch(const int &Event);
+    int LoadRootFile(OscAnaManager* config, const std::string& filename, const std::string& dataname);
     
 private:
     
@@ -111,6 +111,10 @@ private:
     RooGenericPdf* fPdf_H1b;
     RooGaussian* fCoolingDistribution;
     RooGaussian* fErrorDistribution;
+    
+    int fSampleSize;
+    int fIterationNumber;
+    int fIterationIndexOffset;
     
 };
 

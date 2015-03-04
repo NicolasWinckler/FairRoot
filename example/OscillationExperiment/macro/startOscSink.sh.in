@@ -1,0 +1,20 @@
+#!/bin/bash
+
+if(@NANOMSG_FOUND@); then
+    buffSize="50000000" # nanomsg buffer size is in bytes
+else
+    buffSize="1000" # zeromq high-water mark is in messages
+fi
+
+
+FILESINK="runOscFileSink"
+FILESINK+=" --id 701"
+FILESINK+=" --output-file @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/Oscillation/output/sim/MQLRTtest3616.root"
+FILESINK+=" --tree OscLRTSimu0-7Range --branch MCPoint --class-name OscMCPoint"
+FILESINK+=" --input-socket-type pull --input-buff-size $buffSize --input-method bind --input-address tcp://*:5566"
+FILESINK+=" --file-option RECREATE"
+FILESINK+=" --use-TClonesArray true"
+#xterm -hold -e @CMAKE_BINARY_DIR@/bin/$FILESINK &
+@CMAKE_BINARY_DIR@/bin/$FILESINK
+
+

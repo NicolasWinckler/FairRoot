@@ -59,11 +59,12 @@ void GenericSampler<SamplerPolicy,OutputPolicy>::Run()
     {
         for ( Long64_t eventNr = 0 ; eventNr < fNumEvents; ++eventNr ) 
         {
+            LOG(INFO) << "OK0";
             //fSamplerTask->SetEventIndex(eventNr);
-            FairMQMessage* msg = fTransportFactory->CreateMessage();
-            OutputPolicy::SetMessage(msg);
+            FairMQMessage* msg = fTransportFactory->CreateMessage();LOG(INFO) << "OK1";
+            OutputPolicy::SetMessage(msg);LOG(INFO) << "OK2";
             fPayloadOutputs->at(0)->Send(OutputPolicy::SerializeMsg(
-                                            SamplerPolicy::GetDataBranch(eventNr)));
+                                            SamplerPolicy::GetDataBranch(eventNr)));LOG(INFO) << "OK3";
             ++sentMsgs;
 
             if(msg)

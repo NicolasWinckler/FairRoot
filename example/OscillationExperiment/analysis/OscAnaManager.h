@@ -19,7 +19,7 @@ public:
     
     
     
-    virtual int ParseAll(const int argc, char** argv);
+    virtual int ParseAll(const int argc, char** argv, bool AllowUnregistered=false);
     
     
 private:
