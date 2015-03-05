@@ -54,7 +54,7 @@ bin                     =   400
 [par.omega]
 init                    =   0.88
 min                     =   0.0
-max                     =   3.0
+max                     =   7.0
 bin                     =   800
 
 [par.phi]
@@ -88,9 +88,9 @@ SummaryM1               =   SummaryM1.pdf
 # Simulation options
 [sim]
 event.number            =   3616
-iteration.number        =   5
+iteration.number        =   20
 iteration.offset        =   0
-file.input.dataname     =   simH0
+file.input.dataname     =   test
 file.input              =   @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/Oscillation/output/sim/OscSimInput.root
 file.output             =   @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/Oscillation/output/sim/OscSimOutput.root
 file.output.dir         =   @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/Oscillation/output/sim/

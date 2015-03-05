@@ -66,7 +66,7 @@ int main(int argc, char** argv)
         sim->LoadSimData(filename,dataname);
         std::string simoutdir=config->GetPar<std::string>("sim.file.output.dir");
         std::string simDistOutFile(simoutdir);
-        simDistOutFile+="DistributionTest.root";
+        simDistOutFile+="DistributionTest2.root";
         sim->ComputeMLEDistribution(simDistOutFile,SampleSize,Iteration,true);
         delete sim;
     }

@@ -203,6 +203,7 @@ int OscSimulation::RunMCMC(RooDataSet* roodataset)
     ModelM1->MarginalizeAll();
     ModelM1->GetMCMCMLEValue(fMCpoint);
     delete DataSet;
+    delete ModelM1;
     return 0;
 }
 
@@ -284,7 +285,12 @@ int OscSimulation::ComputeMLEDistribution(const std::string& filename, int Sampl
     int Ntot=frooData->numEntries();
     int NStat=Iteration*SampleSize;
     
-    if( NStat< Ntot)
+    std::cout<<"Ntot="<<Ntot<<std::endl;
+    std::cout<<"NStat="<<NStat<<std::endl;
+    std::cout<<"Iteration="<<Iteration<<std::endl;
+    std::cout<<"SampleSize="<<SampleSize<<std::endl;
+    
+    if( NStat<=Ntot)
     {        
         int nextprint=1000;
         int counter=0;
@@ -349,8 +355,11 @@ std::vector<OscMCPoint> OscSimulation::GetDataBranch(const int& EventNr)
 {
     std::vector<OscMCPoint> vecMCpoint;
     int Ntot=frooData->numEntries();
-    int indexmin=EventNr+fIterationIndexOffset;
-    int indexmax=EventNr+fIterationIndexOffset+fSampleSize;
+    int offset=fIterationIndexOffset+EventNr*fSampleSize;
+    int indexmin=offset;
+    int indexmax=offset+fSampleSize;
+    
+    //std::cout<<"Event Nr "<<EventNr<<" ["<<indexmin<<", "<<indexmax<<"] \n";
     if(indexmax<Ntot)
         GetOscMCPoint(indexmin, indexmax, true);
     vecMCpoint.push_back(fMCpoint);
