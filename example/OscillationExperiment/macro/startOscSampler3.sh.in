@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if(@NANOMSG_FOUND@); then
+    buffSize="50000000" # nanomsg buffer size is in bytes
+else
+    buffSize="1000" # zeromq high-water mark is in messages
+fi
+
+SAMPLER="runOscSampler"
+SAMPLER+=" --id simH0_3616"
+SAMPLER+=" --input-file @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/Oscillation/output/sim/OscSimInput3.root"
+SAMPLER+=" --output-socket-type push --output-buff-size $buffSize --output-method connect --output-address tcp://localhost:5566"
+SAMPLER+=" --config @CMAKE_BINARY_DIR@/bin/OscillationAnalysis.cfg"
+#xterm -hold -e @CMAKE_BINARY_DIR@/bin/$SAMPLER &
+@CMAKE_BINARY_DIR@/bin/$SAMPLER

@@ -43,13 +43,21 @@ Include_Directories(SYSTEM ${SYSTEM_INCLUDE_DIRECTORIES})
 If (Boost_FOUND)
   configure_file( ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/macro/runOscAnalysis.sh.in ${CMAKE_BINARY_DIR}/bin/runOscAnalysis.sh )
   configure_file( ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/macro/OscillationAnalysis.cfg.in ${CMAKE_BINARY_DIR}/bin/OscillationAnalysis.cfg )
-  configure_file( ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/macro/startTest.sh.in ${CMAKE_BINARY_DIR}/bin/startTest.sh )
+  #configure_file( ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/macro/startTest.sh.in ${CMAKE_BINARY_DIR}/bin/startTest.sh )
   configure_file( ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/macro/startOscSampler.sh.in ${CMAKE_BINARY_DIR}/bin/startOscSampler.sh )
+  configure_file( ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/macro/startOscSampler1.sh.in ${CMAKE_BINARY_DIR}/bin/startOscSampler1.sh )
+  configure_file( ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/macro/startOscSampler2.sh.in ${CMAKE_BINARY_DIR}/bin/startOscSampler2.sh )
+  configure_file( ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/macro/startOscSampler3.sh.in ${CMAKE_BINARY_DIR}/bin/startOscSampler3.sh )
+  configure_file( ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/macro/startOscSampler4.sh.in ${CMAKE_BINARY_DIR}/bin/startOscSampler4.sh )
   configure_file( ${CMAKE_SOURCE_DIR}/example/OscillationExperiment/macro/startOscSink.sh.in ${CMAKE_BINARY_DIR}/bin/startOscSink.sh )
  
   EXEC_PROGRAM(/bin/chmod ARGS "u+x  ${CMAKE_BINARY_DIR}/bin/runOscAnalysis.sh")
-  EXEC_PROGRAM(/bin/chmod ARGS "u+x  ${CMAKE_BINARY_DIR}/bin/startTest.sh")
+  #EXEC_PROGRAM(/bin/chmod ARGS "u+x  ${CMAKE_BINARY_DIR}/bin/startTest.sh")
   EXEC_PROGRAM(/bin/chmod ARGS "u+x  ${CMAKE_BINARY_DIR}/bin/startOscSampler.sh")
+  EXEC_PROGRAM(/bin/chmod ARGS "u+x  ${CMAKE_BINARY_DIR}/bin/startOscSampler1.sh")
+  EXEC_PROGRAM(/bin/chmod ARGS "u+x  ${CMAKE_BINARY_DIR}/bin/startOscSampler2.sh")
+  EXEC_PROGRAM(/bin/chmod ARGS "u+x  ${CMAKE_BINARY_DIR}/bin/startOscSampler3.sh")
+  EXEC_PROGRAM(/bin/chmod ARGS "u+x  ${CMAKE_BINARY_DIR}/bin/startOscSampler4.sh")
   EXEC_PROGRAM(/bin/chmod ARGS "u+x  ${CMAKE_BINARY_DIR}/bin/startOscSink.sh")
 EndIf (Boost_FOUND)
 
@@ -108,7 +116,7 @@ GENERATE_LIBRARY()
 If (Boost_FOUND)
   Set(Exe_Names
     runOscAnalysis
-    runtest
+    #runtest
     runOscSampler
     runOscFileSink
   )
@@ -118,7 +126,7 @@ If (Boost_FOUND)
   set(Exe_Source
     
     run/runOscAnalysis.cxx
-    run/test.cxx
+    #run/test.cxx
     run/runOscSampler.cxx
     run/runOscFileSink.cxx
     )
