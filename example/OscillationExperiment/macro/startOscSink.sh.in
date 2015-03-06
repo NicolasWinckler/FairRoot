@@ -9,7 +9,7 @@ fi
 
 FILESINK="runOscFileSink"
 FILESINK+=" --id 701"
-FILESINK+=" --output-file @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/Oscillation/output/sim/MQLRT_3616.root"
+FILESINK+=" --output-file @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/Oscillation/sim/out/MQLRT_3616.root"
 FILESINK+=" --tree OscLRTSimu0-7Range --branch MCPoint --class-name OscMCPoint"
 FILESINK+=" --input-socket-type pull --input-buff-size $buffSize --input-method bind --input-address tcp://*:5566"
 FILESINK+=" --file-option UPDATE"

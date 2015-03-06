@@ -88,11 +88,11 @@ SummaryM1               =   SummaryM1.pdf
 # Simulation options
 [sim]
 event.number            =   3616
-iteration.number        =   20
+iteration.number        =   1000
 iteration.offset        =   0
 file.input.dataname     =   simH0_3616
-file.input              =   @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/Oscillation/output/sim/OscSimInput.root
-file.output             =   @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/Oscillation/output/sim/OscSimOutput.root
-file.output.dir         =   @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/Oscillation/output/sim/
-file.output.tree        =   MCPoint3616_tot_10
+file.input              =   @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/Oscillation/sim/in/OscSimInput.root
+file.output             =   @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/Oscillation/sim/out/OscSimOutput.root
+file.output.dir         =   @CMAKE_SOURCE_DIR@/example/OscillationExperiment/workspace/Oscillation/sim/out/
+file.output.tree        =   MCPoint3616_tot_5000
 file.output.branch      =   OscMCPoint
