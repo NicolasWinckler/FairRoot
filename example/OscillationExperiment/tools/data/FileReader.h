@@ -20,7 +20,7 @@
 #include <stdlib.h>
 
 
-#include <BAT/BCLog.h>
+#include "BCLog.h"
 
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>

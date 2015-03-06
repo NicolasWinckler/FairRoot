@@ -13,9 +13,9 @@
 #include "FileReader.h"
 #include "SidsParameters.h"
 
-#include "BAT/BCDataSet.h"
-#include "BAT/BCDataPoint.h"
-#include "BAT/BCLog.h"
+#include "BCDataSet.h"
+#include "BCDataPoint.h"
+#include "BCLog.h"
 
 #include <TFile.h>
 #include <TString.h>

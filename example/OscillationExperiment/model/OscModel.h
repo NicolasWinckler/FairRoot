@@ -11,10 +11,10 @@
 
 #include <iostream>
 
-#include <BAT/BCDataPoint.h>
-#include <BAT/BCParameter.h>
-#include <BAT/BCMath.h>
-#include <BAT/BCModel.h>
+#include "BCDataPoint.h"
+#include "BCParameter.h"
+#include "BCMath.h"
+#include "BCModel.h"
 
 #include "TMath.h"
 #include <cmath>
