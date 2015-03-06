@@ -95,7 +95,7 @@ find_path(BAT_INCLUDE_DIR NAMES ${BAT_HEADERS}
   DOC   "Path to BAT include header files."
 )
 
-find_path(BAT_LIBRARY_DIR NAMES libBAT.dylib
+find_path(BAT_LIBRARY_DIR NAMES ${LIBBAT_SHARED}
   PATHS ${SEARCH_DIRS}
   DOC   "Path to BAT lib files."
 )
