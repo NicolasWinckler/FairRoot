@@ -53,10 +53,8 @@ set(LIBBAT_COMPONENT_LIST ${LIBBAT_MODEL} ${LIBBAT_MTF} ${LIBBAT_MVC})
 
 set(SEARCH_DIRS /usr/local/lib /usr/local/include/BAT)
 set(SPECIAL_DIRS 
-    ${SIMPATH}/../../../bat_inst/lib
-    ${SIMPATH}/../../../bat_inst/include/BAT
-    ${SIMPATH}/bat_inst/include/BAT
-    ${SIMPATH}/bat_inst/lib
+    ${SIMPATH}/include/BAT
+    ${SIMPATH}/lib
 )
 
 set(SEARCH_DIRS ${SEARCH_DIRS} ${SPECIAL_DIRS})
