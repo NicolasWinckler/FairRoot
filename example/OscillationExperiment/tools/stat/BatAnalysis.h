@@ -8,7 +8,7 @@
 #ifndef BATANALYSIS_H
 #define	BATANALYSIS_H
 
-#include "BCModel.h"
+#include "BAT/BCModel.h"
 #include "IOManager.h"
 class BatAnalysis 
 {
