@@ -85,13 +85,7 @@ Set(NO_DICT_SRCS
     model/OscModel.cxx
     model/ExpModel.cxx
     
-    #model/RooMypdf.cpp
-    #model/RooMypdfDict.cpp
     )
-
-#message(STATUS "CUBA_LIBRARY_STATIC (2nd call) is = ${CUBA_LIBRARY_STATIC}")
-#message(STATUS "CUBA_INCLUDE_DIR (2nd call) is = ${CUBA_INCLUDE_DIR}")
-#message(STATUS "BAT_LIBRARIES_SHARED (2nd call) is = ${BAT_LIBRARIES_SHARED}")
 
 
 Set(LINKDEF OscAnalysisLinkDef.h)
