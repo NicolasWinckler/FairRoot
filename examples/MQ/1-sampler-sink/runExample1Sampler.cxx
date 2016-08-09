@@ -12,13 +12,22 @@
  * @author D. Klein, A. Rybalchenko
  */
 
-#include "boost/program_options.hpp"
+#include <string>
+
+#include <boost/program_options.hpp>
+#include <boost/thread.hpp>
 
 #include "FairMQLogger.h"
 #include "FairMQProgOptions.h"
-#include "FairMQExample1Sampler.h"
+#include "FairMQDevice.h"
+#include "runSimpleMQStateMachine.h"
 
 using namespace boost::program_options;
+
+void CustomCleanup(void* /*data*/, void* hint)
+{
+    delete static_cast<std::string*>(hint);
+}
 
 int main(int argc, char** argv)
 {
@@ -34,19 +43,24 @@ int main(int argc, char** argv)
         config.AddToCmdLineOptions(samplerOptions);
         config.ParseAll(argc, argv);
 
-        FairMQExample1Sampler sampler;
-        sampler.CatchSignals();
-        sampler.SetConfig(config);
-        sampler.SetProperty(FairMQExample1Sampler::Text, text);
+        FairMQDevice sampler;
 
-        sampler.ChangeState("INIT_DEVICE");
-        sampler.WaitForEndOfState("INIT_DEVICE");
+        sampler.SetRun([&sampler, &text]()
+        {
+            boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
 
-        sampler.ChangeState("INIT_TASK");
-        sampler.WaitForEndOfState("INIT_TASK");
+            std::string* msgText = new std::string(text);
 
-        sampler.ChangeState("RUN");
-        sampler.InteractiveStateLoop();
+            std::unique_ptr<FairMQMessage> msg(sampler.NewMessage(const_cast<char*>(msgText->c_str()), msgText->length(), CustomCleanup, msgText));
+
+            LOG(INFO) << "Sending \"" << text << "\"";
+
+            sampler.Send(msg, "data");
+
+            return true;
+        });
+
+        runStateMachine(sampler, config);
     }
     catch (std::exception& e)
     {

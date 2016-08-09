@@ -80,12 +80,6 @@ Set(SRCS
   "FairMQDevice.cxx"
   "FairMQPoller.cxx"
 
-  "devices/FairMQBenchmarkSampler.cxx"
-  "devices/FairMQSink.cxx"
-  "devices/FairMQProxy.cxx"
-  "devices/FairMQSplitter.cxx"
-  "devices/FairMQMerger.cxx"
-
   "options/FairProgOptions.cxx"
   "options/FairMQProgOptions.cxx"
   "options/FairMQParser.cxx"

@@ -1,24 +1,19 @@
 /********************************************************************************
  *    Copyright (C) 2014 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH    *
  *                                                                              *
- *              This software is distributed under the terms of the             * 
- *         GNU Lesser General Public Licence version 3 (LGPL) version 3,        *  
+ *              This software is distributed under the terms of the             *
+ *         GNU Lesser General Public Licence version 3 (LGPL) version 3,        *
  *                  copied verbatim in the file "LICENSE"                       *
  ********************************************************************************/
-/**
- * runMerger.cxx
- *
- * @since 2012-12-06
- * @author D. Klein, A. Rybalchenko
- */
 
 #include <iostream>
 
-#include "boost/program_options.hpp"
+#include <boost/program_options.hpp>
 
 #include "FairMQLogger.h"
 #include "FairMQProgOptions.h"
-#include "FairMQMerger.h"
+#include "FairMQDevice.h"
+#include "FairMQParts.h"
 #include "runSimpleMQStateMachine.h"
 
 using namespace boost::program_options;
@@ -37,8 +32,84 @@ int main(int argc, char** argv)
         config.AddToCmdLineOptions(mergerOptions);
         config.ParseAll(argc, argv);
 
-        FairMQMerger merger;
-        merger.SetProperty(FairMQMerger::Multipart, multipart);
+        FairMQDevice merger;
+
+        std::unique_ptr<FairMQPoller> poller;
+        int numInputs;
+
+        merger.SetPreRun([&merger, &poller, &numInputs]()
+        {
+            numInputs = merger.fChannels.at("data-in").size();
+            poller = std::unique_ptr<FairMQPoller>(merger.NewPoller({ "data-in" }));
+        });
+
+        if (multipart)
+        {
+            merger.SetRun([&merger, &poller, &numInputs]()
+            {
+                poller->Poll(100);
+
+                // Loop over the data input channels.
+                for (int i = 0; i < numInputs; ++i)
+                {
+                    // Check if the channel has data ready to be received.
+                    if (poller->CheckInput(i))
+                    {
+                        FairMQParts payload;
+
+                        if (merger.Receive(payload, "data-in", i) >= 0)
+                        {
+                            if (merger.Send(payload, "data-out") < 0)
+                            {
+                                LOG(DEBUG) << "Transfer interrupted";
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            LOG(DEBUG) << "Transfer interrupted";
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            });
+        }
+        else
+        {
+            merger.SetRun([&merger, &poller, &numInputs]()
+            {
+                poller->Poll(100);
+
+                // Loop over the data input channels.
+                for (int i = 0; i < numInputs; ++i)
+                {
+                    // Check if the channel has data ready to be received.
+                    if (poller->CheckInput(i))
+                    {
+                        unique_ptr<FairMQMessage> payload(merger.NewMessage());
+
+                        if (merger.Receive(payload, "data-in", i) >= 0)
+                        {
+                            if (merger.Send(payload, "data-out") < 0)
+                            {
+                                LOG(DEBUG) << "Transfer interrupted";
+                                return false;
+                            }
+                        }
+                        else
+                        {
+                            LOG(DEBUG) << "Transfer interrupted";
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            });
+        }
+
         runStateMachine(merger, config);
     }
     catch (std::exception& e)

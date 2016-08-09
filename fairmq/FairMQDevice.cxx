@@ -21,6 +21,7 @@
 #include <termios.h> // for the InteractiveStateLoop
 #include <poll.h>
 
+#include <boost/timer/timer.hpp>
 #include <boost/thread.hpp>
 #include <boost/random/mersenne_twister.hpp> // for choosing random port in range
 #include <boost/random/uniform_int_distribution.hpp> // for choosing random port in range
@@ -37,6 +38,10 @@
 #endif
 
 using namespace std;
+
+bool NullPreRunFunc() { return false; };
+bool NullRunFunc() { return false; };
+bool NullPostRunFunc() { return false; };
 
 // boost::function and a wrapper to catch the signals
 boost::function<void(int)> sigHandler;
@@ -63,6 +68,10 @@ FairMQDevice::FairMQDevice()
     , fCatchingSignals(false)
     , fTerminated(false)
     , fRunning(false)
+    , fRunCallbackEnabled(false)
+    , fPreRunCallback(NullPreRunFunc)
+    , fRunCallback(NullRunFunc)
+    , fPostRunCallback(NullPostRunFunc)
 {
 }
 
@@ -317,58 +326,6 @@ bool FairMQDevice::ConnectChannel(FairMQChannel& ch)
     return true;
 }
 
-// bool FairMQDevice::InitChannel(FairMQChannel& ch)
-// {
-//     LOG(DEBUG) << "Initializing channel " << ch.fChannelName << " (" << ch.fType << ")";
-//     // initialize the socket
-//     ch.fSocket = fTransportFactory->CreateSocket(ch.fType, ch.fChannelName, fNumIoThreads, fId);
-//     // set high water marks
-//     ch.fSocket->SetOption("snd-hwm", &(ch.fSndBufSize), sizeof(ch.fSndBufSize));
-//     ch.fSocket->SetOption("rcv-hwm", &(ch.fRcvBufSize), sizeof(ch.fRcvBufSize));
-
-//     if (ch.fMethod == "bind")
-//     {
-//         // number of attempts when choosing a random port
-//         int maxAttempts = 1000;
-//         int numAttempts = 0;
-
-//         // initialize random generator
-//         boost::random::mt19937 gen(getpid());
-//         boost::random::uniform_int_distribution<> randomPort(fPortRangeMin, fPortRangeMax);
-
-//         LOG(DEBUG) << "Binding channel " << ch.fChannelName << " on " << ch.fAddress;
-
-//         // try to bind to the saved port. In case of failure, try random one.
-//         if (!ch.fSocket->Bind(ch.fAddress))
-//         {
-//             LOG(DEBUG) << "Could not bind to configured port, trying random port in range " << fPortRangeMin << "-" << fPortRangeMax;
-//             do {
-//                 ++numAttempts;
-
-//                 if (numAttempts > maxAttempts)
-//                 {
-//                     LOG(ERROR) << "could not bind to any port in the given range after " << maxAttempts << " attempts";
-//                     return false;
-//                 }
-
-//                 size_t pos = ch.fAddress.rfind(":");
-//                 stringstream newPort;
-//                 newPort << static_cast<int>(randomPort(gen));
-//                 ch.fAddress = ch.fAddress.substr(0, pos + 1) + newPort.str();
-
-//                 LOG(DEBUG) << "Binding channel " << ch.fChannelName << " on " << ch.fAddress;
-//             } while (!ch.fSocket->Bind(ch.fAddress));
-//         }
-//     }
-//     else
-//     {
-//         LOG(DEBUG) << "Connecting channel " << ch.fChannelName << " to " << ch.fAddress;
-//         ch.fSocket->Connect(ch.fAddress);
-//     }
-
-//     return true;
-// }
-
 void FairMQDevice::InitTaskWrapper()
 {
     InitTask();
@@ -434,6 +391,22 @@ void FairMQDevice::PrintChannel(const string& name)
     }
 }
 
+void FairMQDevice::SetPreRun(PreRunCallback callback)
+{
+    fPreRunCallback = callback;
+}
+
+void FairMQDevice::SetRun(RunCallback callback)
+{
+    fRunCallbackEnabled = true;
+    fRunCallback = callback;
+}
+
+void FairMQDevice::SetPostRun(PostRunCallback callback)
+{
+    fPostRunCallback = callback;
+}
+
 void FairMQDevice::RunWrapper()
 {
     LOG(INFO) << "DEVICE: Running...";
@@ -442,7 +415,28 @@ void FairMQDevice::RunWrapper()
 
     try
     {
-        Run();
+        if (fRunCallbackEnabled)
+        {
+            boost::timer::auto_cpu_timer timer;
+
+            fPreRunCallback();
+
+            while (CheckCurrentState(RUNNING))
+            {
+                if (!fRunCallback())
+                {
+                    break;
+                }
+            }
+
+            fPostRunCallback();
+
+            LOG(INFO) << "Finishing Run, elapsed time: ";
+        }
+        else
+        {
+            Run();
+        }
     }
     catch (const out_of_range& oor)
     {

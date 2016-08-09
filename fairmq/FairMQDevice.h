@@ -20,6 +20,7 @@
 #include <string>
 #include <iostream>
 #include <unordered_map>
+#include <functional>
 
 #include <mutex>
 #include <condition_variable>
@@ -32,6 +33,14 @@
 #include "FairMQChannel.h"
 #include "FairMQMessage.h"
 #include "FairMQParts.h"
+
+
+typedef std::unordered_map<std::string, std::vector<FairMQChannel>> FairMQChannelMap;
+
+
+typedef std::function<void()> PreRunCallback;
+typedef std::function<bool()> RunCallback;
+typedef std::function<void()> PostRunCallback;
 
 class FairMQProgOptions;
 
@@ -176,6 +185,13 @@ class FairMQDevice : public FairMQStateMachine, public FairMQConfigurable
         return fChannels.at(chan).at(i).ReceiveAsync(parts.fParts);
     }
 
+    /// @brief Create FairMQPoller
+    /// @return pointer to FairMQPoller
+    inline FairMQPoller* NewPoller(const std::initializer_list<std::string> channelList) const
+    {
+        return fTransportFactory->CreatePoller(fChannels, channelList);
+    }
+
     /// @brief Create empty FairMQMessage
     /// @return pointer to FairMQMessage
     inline FairMQMessage* NewMessage() const
@@ -258,6 +274,10 @@ class FairMQDevice : public FairMQStateMachine, public FairMQConfigurable
     // TODO: make this const?
     std::unordered_map<std::string, std::vector<FairMQChannel>> fChannels; ///< Device channels
 
+    void SetPreRun(PreRunCallback callback);
+    void SetRun(RunCallback callback);
+    void SetPostRun(PostRunCallback callback);
+
   protected:
     std::string fId; ///< Device ID
     std::string fNetworkInterface; ///< Network interface to use for dynamic binding
@@ -333,6 +353,11 @@ class FairMQDevice : public FairMQStateMachine, public FairMQConfigurable
     bool fTerminated;
     // Interactive state loop helper
     std::atomic<bool> fRunning;
+
+    bool fRunCallbackEnabled;
+    PreRunCallback fPreRunCallback;
+    RunCallback fRunCallback;
+    PostRunCallback fPostRunCallback;
 };
 
 #endif /* FAIRMQDEVICE_H_ */

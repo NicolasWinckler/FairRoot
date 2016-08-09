@@ -1,16 +1,10 @@
 /********************************************************************************
  *    Copyright (C) 2014 GSI Helmholtzzentrum fuer Schwerionenforschung GmbH    *
  *                                                                              *
- *              This software is distributed under the terms of the             * 
- *         GNU Lesser General Public Licence version 3 (LGPL) version 3,        *  
+ *              This software is distributed under the terms of the             *
+ *         GNU Lesser General Public Licence version 3 (LGPL) version 3,        *
  *                  copied verbatim in the file "LICENSE"                       *
  ********************************************************************************/
-/**
- * runProxy.cxx
- *
- * @since 2013-10-07
- * @author A. Rybalchenko
- */
 
 #include <iostream>
 
@@ -18,7 +12,8 @@
 
 #include "FairMQLogger.h"
 #include "FairMQProgOptions.h"
-#include "FairMQProxy.h"
+#include "FairMQDevice.h"
+#include "FairMQParts.h"
 #include "runSimpleMQStateMachine.h"
 
 using namespace boost::program_options;
@@ -37,8 +32,55 @@ int main(int argc, char** argv)
         config.AddToCmdLineOptions(proxyOptions);
         config.ParseAll(argc, argv);
 
-        FairMQProxy proxy;
-        proxy.SetProperty(FairMQProxy::Multipart, multipart);
+        FairMQDevice proxy;
+
+        if (multipart)
+        {
+            proxy.SetRun([&proxy]()
+            {
+                FairMQParts payload;
+
+                if (proxy.Receive(payload, "data-in") >= 0)
+                {
+                    if (proxy.Send(payload, "data-out") < 0)
+                    {
+                        LOG(DEBUG) << "Transfer interrupted";
+                        return false;
+                    }
+                }
+                else
+                {
+                    LOG(DEBUG) << "Transfer interrupted";
+                    return false;
+                }
+
+                return true;
+            });
+        }
+        else
+        {
+            proxy.SetRun([&proxy]()
+            {
+                unique_ptr<FairMQMessage> payload(proxy.NewMessage());
+
+                if (proxy.Receive(payload, "data-in") >= 0)
+                {
+                    if (proxy.Send(payload, "data-out") < 0)
+                    {
+                        LOG(DEBUG) << "Transfer interrupted";
+                        return false;
+                    }
+                }
+                else
+                {
+                    LOG(DEBUG) << "Transfer interrupted";
+                    return false;
+                }
+
+                return true;
+            });
+        }
+
         runStateMachine(proxy, config);
     }
     catch (std::exception& e)

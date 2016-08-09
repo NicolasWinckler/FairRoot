@@ -36,20 +36,6 @@ Set(LINK_DIRECTORIES
 
 Link_Directories(${LINK_DIRECTORIES})
 
-Set(SRCS
-  "FairMQExample1Sampler.cxx"
-  "FairMQExample1Sink.cxx"
-)
-
-Set(DEPENDENCIES
-  ${DEPENDENCIES}
-  FairMQ
-)
-
-Set(LIBRARY_NAME FairMQExample1)
-
-GENERATE_LIBRARY()
-
 Set(Exe_Names
   ex1-sampler
   ex1-sink
@@ -71,7 +57,7 @@ ForEach(_file RANGE 0 ${_length})
   list(GET Exe_Source ${_file} _src)
   set(EXE_NAME ${_name})
   set(SRCS ${_src})
-  set(DEPENDENCIES FairMQExample1)
+  set(DEPENDENCIES FairMQ)
   GENERATE_EXECUTABLE()
 EndForEach(_file RANGE 0 ${_length})
 

@@ -16,7 +16,8 @@
 
 #include "FairMQLogger.h"
 #include "FairMQProgOptions.h"
-#include "FairMQExample1Sink.h"
+#include "FairMQDevice.h"
+#include "runSimpleMQStateMachine.h"
 
 int main(int argc, char** argv)
 {
@@ -25,18 +26,23 @@ int main(int argc, char** argv)
         FairMQProgOptions config;
         config.ParseAll(argc, argv);
 
-        FairMQExample1Sink sink;
-        sink.CatchSignals();
-        sink.SetConfig(config);
+        FairMQDevice sink;
 
-        sink.ChangeState("INIT_DEVICE");
-        sink.WaitForEndOfState("INIT_DEVICE");
+        sink.SetRun([&sink]()
+        {
+            std::unique_ptr<FairMQMessage> msg(sink.NewMessage());
 
-        sink.ChangeState("INIT_TASK");
-        sink.WaitForEndOfState("INIT_TASK");
+            if (sink.Receive(msg, "data") >= 0)
+            {
+                LOG(INFO) << "Received message: \""
+                          << std::string(static_cast<char*>(msg->GetData()), msg->GetSize())
+                          << "\"";
+            }
 
-        sink.ChangeState("RUN");
-        sink.InteractiveStateLoop();
+            return true;
+        });
+
+        runStateMachine(sink, config);
     }
     catch (std::exception& e)
     {
