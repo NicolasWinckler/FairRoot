@@ -18,7 +18,7 @@
 using namespace std;
 
 FairMQProgOptions::FairMQProgOptions()
-    : FairProgOptions()
+    : FairProgOptions(), FairMQEventManager()
     , fMQParserOptions("MQ-Device parser options")
     , fMQOptionsInCfg("MQ-Device options")
     , fMQOptionsInCmd("MQ-Device options")
