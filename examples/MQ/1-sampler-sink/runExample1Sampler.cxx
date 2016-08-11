@@ -24,11 +24,6 @@
 
 using namespace boost::program_options;
 
-void CustomCleanup(void* /*data*/, void* hint)
-{
-    delete static_cast<std::string*>(hint);
-}
-
 int main(int argc, char** argv)
 {
     try
@@ -49,9 +44,7 @@ int main(int argc, char** argv)
         {
             boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
 
-            std::string* msgText = new std::string(text);
-
-            std::unique_ptr<FairMQMessage> msg(sampler.NewMessage(const_cast<char*>(msgText->c_str()), msgText->length(), CustomCleanup, msgText));
+            std::unique_ptr<FairMQMessage> msg(sampler.NewSimpleMessage(text));
 
             LOG(INFO) << "Sending \"" << text << "\"";
 

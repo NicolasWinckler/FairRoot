@@ -25,11 +25,6 @@ FairMQExample2Sampler::FairMQExample2Sampler()
 {
 }
 
-void FairMQExample2Sampler::CustomCleanup(void* /*data*/, void *object)
-{
-    delete static_cast<string*>(object);
-}
-
 void FairMQExample2Sampler::Run()
 {
     // Check if we are still in the RUNNING state
@@ -37,9 +32,7 @@ void FairMQExample2Sampler::Run()
     {
         boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
 
-        string* text = new string(fText);
-
-        unique_ptr<FairMQMessage> msg(NewMessage(const_cast<char*>(text->c_str()), text->length(), CustomCleanup, text));
+        unique_ptr<FairMQMessage> msg(NewSimpleMessage(fText));
 
         LOG(INFO) << "Sending \"" << fText << "\"";
 

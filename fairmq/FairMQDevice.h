@@ -34,15 +34,19 @@
 #include "FairMQMessage.h"
 #include "FairMQParts.h"
 
-
 typedef std::unordered_map<std::string, std::vector<FairMQChannel>> FairMQChannelMap;
-
 
 typedef std::function<void()> PreRunCallback;
 typedef std::function<bool()> RunCallback;
 typedef std::function<void()> PostRunCallback;
 
 class FairMQProgOptions;
+
+template<typename T>
+void FairMQSimpleMsgCleanup(void* /*data*/, void* hint)
+{
+    delete static_cast<T*>(hint);
+}
 
 class FairMQDevice : public FairMQStateMachine, public FairMQConfigurable
 {
@@ -216,6 +220,12 @@ class FairMQDevice : public FairMQStateMachine, public FairMQConfigurable
     inline FairMQMessage* NewMessage(void* data, int size, fairmq_free_fn* ffn, void* hint = NULL) const
     {
         return fTransportFactory->CreateMessage(data, size, ffn, hint);
+    }
+
+    inline FairMQMessage* NewSimpleMessage(const std::string& str) const
+    {
+        std::string* msgStr = new std::string(str);
+        return fTransportFactory->CreateMessage(const_cast<char*>(msgStr->c_str()), msgStr->length(), FairMQSimpleMsgCleanup<std::string>, msgStr);
     }
 
     /// Waits for the first initialization run to finish

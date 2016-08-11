@@ -24,20 +24,13 @@ FairMQExample3Sampler::FairMQExample3Sampler()
 {
 }
 
-void FairMQExample3Sampler::CustomCleanup(void *data, void *object)
-{
-    delete static_cast<string*>(object);
-}
-
 void FairMQExample3Sampler::Run()
 {
     while (CheckCurrentState(RUNNING))
     {
         boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
 
-        string* text = new string("Data");
-
-        unique_ptr<FairMQMessage> msg(NewMessage(const_cast<char*>(text->c_str()), text->length(), CustomCleanup, text));
+        unique_ptr<FairMQMessage> msg(NewSimpleMessage("Data"));
 
         LOG(INFO) << "Sending \"Data\"";
 
