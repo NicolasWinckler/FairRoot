@@ -31,7 +31,6 @@ class FairMQProgOptions : public FairProgOptions , public FairMQEventManager
     typedef std::unordered_map<std::string, std::vector<FairMQChannel>> FairMQMap;
 
   public:
-    typedef boost::signals2::signal<void ()>  signal_t;
     FairMQProgOptions();
     virtual ~FairMQProgOptions();
 
@@ -81,53 +80,45 @@ class FairMQProgOptions : public FairProgOptions , public FairMQEventManager
     int UpdateValue(const std::string& key, const T& val)
     {
 
-        UpdateVarMap(key,val);
-
-        if(fMQKeyMap.count(key))
+        if(fVarMap.count(key))
         {
-            std::string channelName;
-            int index = 0;
-            std::string member;
-            std::tie(channelName, index, member) = fMQKeyMap.at(key);
+            // update variable map
+            UpdateVarMap(key,val);
 
+            // update FairMQChannel map, check first if data are int or string
             if(std::is_same<T, int>::value || std::is_same<T, std::string>::value)
-                UpdateChannelMap(channelName, index, member, val);
-        }
+                if(fMQKeyMap.count(key))
+                {
+                    std::string channelName;
+                    int index = 0;
+                    std::string member;
+                    std::tie(channelName, index, member) = fMQKeyMap.at(key);
+                    UpdateChannelMap(channelName, index, member, val);
+                }
 
-        if(std::is_same<T, int>::value || std::is_same<T, std::string>::value)
+            // execute stored function of a given key if exist
+            //if(std::is_same<T, int>::value || std::is_same<T, std::string>::value)//if one wants to restrict type
             if(EventKeyFound(key))
-                EmitUpdate(key,val);
-            
+                EmitUpdate<T>(key,val);
 
+            return 0;
+        }
+        else
+        {
+
+            LOG(ERROR)  <<"UpdatedValue failed because the provided key '"
+                        <<key
+                        <<"' is not found in the variable map";
+        }
         return 0;
     }
 
-    // wrapper to hide explicit template instantiation of base class function
-    template <typename F>
-    void ConnectUpdateParamString(const std::string& key, F&& func) 
-    {
-        FairMQEventManager::Connect<EventId::UpdateParamString>(key,std::forward<F>(func));
-    }
-
-    template <typename F>
-    void ConnectUpdateParamDouble(const std::string& key, F&& func) 
-    {
-        FairMQEventManager::Connect<EventId::UpdateParamDouble>(key,std::forward<F>(func));
-    }
-
-
-
-
-    template <typename F>
-    void ConnectUpdateParamInt(const std::string& key, F&& func) 
-    {
-        FairMQEventManager::Connect<EventId::UpdateParamInt>(key,std::forward<F>(func));
-    }
-
+    
     template <typename T, typename F>
     void ConnectUpdateParam(const std::string& key, F&& func) 
     {
-        FairMQEventManager::Connect2<EventId::UpdateParam,T>(key,std::forward<F>(func));
+        if(fVarMap.count(key))
+            FairMQEventManager::Connect<EventId::UpdateParam,T>(key,std::forward<F>(func));
     }
 
 
@@ -142,12 +133,11 @@ class FairMQProgOptions : public FairProgOptions , public FairMQEventManager
     std::string fHelpTitle;
     std::string fVersion;
 
+
     bool EventKeyFound(const std::string& key)
     {
         if (
-            FairMQEventManager::EventKeyFound<EventId::UpdateParamDouble>(key) || // <- this one temp?
-            FairMQEventManager::EventKeyFound<EventId::UpdateParamString>(key) || 
-            FairMQEventManager::EventKeyFound<EventId::UpdateParamInt>(key) 
+            FairMQEventManager::EventKeyFound<EventId::UpdateParam>(key) 
             )
             return true;
         else
@@ -170,27 +160,12 @@ class FairMQProgOptions : public FairProgOptions , public FairMQEventManager
 
   private:
 
-    // wrapper to hide explicit template instantiation of base class function
-    void EmitUpdate(const std::string& key, const std::string& val)
-    {
-        Emit<EventId::UpdateParamString>(key,key,val);
-    }
-
-    void EmitUpdate(const std::string& key, double val)
-    {
-        Emit<EventId::UpdateParamDouble>(key,key,val);
-    }
-
-    void EmitUpdate(const std::string& key, int val)
-    {
-        Emit<EventId::UpdateParamInt>(key,key,val);
-    }
-
     template<typename T>
     void EmitUpdate(const std::string& key, T val)
     {
-        // dummy function for overloading of other types other types
+        Emit<EventId::UpdateParam,T>(key,key,val);
     }
+
     int UpdateChannelMap(const std::string& channelName, int index, const std::string& member, const std::string& val);
     int UpdateChannelMap(const std::string& channelName, int index, const std::string& member, int val);
     // for cases other than int and string

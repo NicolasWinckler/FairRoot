@@ -95,9 +95,6 @@ int main(int argc, char** argv)
 
         // print values stored in variable map 
         PrintMQParam(map2,config);
-        double number = 6.0;
-        config.UpdateValue<double>("un_nombre",number);
-        LOG(INFO)<<"un_nombre="<<config.GetValue<double>("un_nombre");
 
         Ex1Processor processor;
         processor.CatchSignals();
@@ -105,59 +102,51 @@ int main(int argc, char** argv)
 
         // use the signal slot system to update device
         // first connect slot
-        config.ConnectUpdateParamString("data-out.0.address",[&processor](const std::string& key, const std::string& value) 
-            {
-                LOG(INFO) << "Update parameter " << key << " = " << value; 
-                processor.fChannels.at("data-out").at(0).UpdateAddress(value);
-            });
 
-        config.ConnectUpdateParamString("data-out.0.method",[&processor](const std::string& key, const std::string& value) 
-            {
-                LOG(INFO) << "Update parameter " << key << " = " << value; 
-                processor.fChannels.at("data-out").at(0).UpdateMethod(value);
-            });
-
-        config.ConnectUpdateParamInt("data-out.0.rcvBufSize",[&processor](const std::string& key, int value) 
-            {
-                LOG(INFO) << "Update parameter " << key << " = " << value; 
-                processor.fChannels.at("data-out").at(0).UpdateRcvBufSize(value);
-            });
-
-
+        LOG(INFO)<<"Connect 1";
         config.ConnectUpdateParam<std::string>("data-out.0.address",[&processor](const std::string& key, const std::string& value) 
             {
-                LOG(INFO) << "Update parameter " << key << " = " << value; 
+                LOG(INFO) << "[Lambda] Update parameter " << key << " = " << value; 
                 processor.fChannels.at("data-out").at(0).UpdateAddress(value);
             });
-/*
+
+        LOG(INFO)<<"Connect 2";
         config.ConnectUpdateParam<std::string>("data-out.0.method",[&processor](const std::string& key, const std::string& value) 
             {
-                LOG(INFO) << "Update parameter " << key << " = " << value; 
+                LOG(INFO) << "[Lambda] Update parameter " << key << " = " << value; 
                 processor.fChannels.at("data-out").at(0).UpdateMethod(value);
             });
 
+        LOG(INFO)<<"Connect 3";
         config.ConnectUpdateParam<int>("data-out.0.rcvBufSize",[&processor](const std::string& key, int value) 
             {
-                LOG(INFO) << "Update parameter " << key << " = " << value; 
+                LOG(INFO) << "[Lambda] Update parameter " << key << " = " << value; 
                 processor.fChannels.at("data-out").at(0).UpdateRcvBufSize(value);
             });
+            //*
 
-        config.ConnectUpdateParam<double>("data-out.0.rcvBufSize",[](const std::string& key, int value) 
+        LOG(INFO)<<"Connect 4";
+        config.ConnectUpdateParam<double>("my key",[](const std::string& key, double value) 
             {
-                LOG(INFO) << "Update parameter " << key << " = " << value; 
+                LOG(INFO) << "[Lambda] Update parameter " << key << " = " << value; 
             });
+            // 
             // */
 
+        LOG(INFO)<<"end Connect ";
         // define some key-value pairs to be updated
         std::string key1("data-out.0.address");
         std::string value1("tcp://localhost:4321");
 
         std::string key2("data-out.0.rcvBufSize");
-        int value2(666);
+        int value2(100);
 
         std::string key3("data-out.0.method");
         std::string value3("bind");
         
+
+
+        LOG(INFO)<<"start update";
 
         //config.EmitUpdate(key,value);
         config.UpdateValue<std::string>(key1,value1);
@@ -175,6 +164,7 @@ int main(int argc, char** argv)
         LOG(INFO)<<"processor.fChannels.Method = "<<processor.fChannels.at("data-out").at(0).GetMethod();
         LOG(INFO)<<"config.GetValue = "<<config.GetValue<std::string>(key3);
 
+        LOG(INFO)<<"----------- New test -------------";
 
 
     }
