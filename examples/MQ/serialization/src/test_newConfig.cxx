@@ -104,21 +104,21 @@ int main(int argc, char** argv)
         // first connect slot
 
         LOG(INFO)<<"Connect 1";
-        config.ConnectUpdateParam<std::string>("data-out.0.address",[&processor](const std::string& key, const std::string& value) 
+        config.Subscribe<std::string>("data-out.0.address",[&processor](const std::string& key, const std::string& value) 
             {
                 LOG(INFO) << "[Lambda] Update parameter " << key << " = " << value; 
                 processor.fChannels.at("data-out").at(0).UpdateAddress(value);
             });
 
         LOG(INFO)<<"Connect 2";
-        config.ConnectUpdateParam<std::string>("data-out.0.method",[&processor](const std::string& key, const std::string& value) 
+        config.Subscribe<std::string>("data-out.0.method",[&processor](const std::string& key, const std::string& value) 
             {
                 LOG(INFO) << "[Lambda] Update parameter " << key << " = " << value; 
                 processor.fChannels.at("data-out").at(0).UpdateMethod(value);
             });
 
         LOG(INFO)<<"Connect 3";
-        config.ConnectUpdateParam<int>("data-out.0.rcvBufSize",[&processor](const std::string& key, int value) 
+        config.Subscribe<int>("data-out.0.rcvBufSize",[&processor](const std::string& key, int value) 
             {
                 LOG(INFO) << "[Lambda] Update parameter " << key << " = " << value; 
                 processor.fChannels.at("data-out").at(0).UpdateRcvBufSize(value);
@@ -126,7 +126,7 @@ int main(int argc, char** argv)
             //*
 
         LOG(INFO)<<"Connect 4";
-        config.ConnectUpdateParam<double>("my key",[](const std::string& key, double value) 
+        config.Subscribe<double>("my key",[](const std::string& key, double value) 
             {
                 LOG(INFO) << "[Lambda] Update parameter " << key << " = " << value; 
             });

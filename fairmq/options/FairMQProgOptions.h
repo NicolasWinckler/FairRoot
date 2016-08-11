@@ -115,7 +115,7 @@ class FairMQProgOptions : public FairProgOptions , public FairMQEventManager
 
     
     template <typename T, typename F>
-    void ConnectUpdateParam(const std::string& key, F&& func) 
+    void Subscribe(const std::string& key, F&& func) 
     {
         if(fVarMap.count(key))
             FairMQEventManager::Connect<EventId::UpdateParam,T>(key,std::forward<F>(func));
