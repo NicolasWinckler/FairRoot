@@ -24,12 +24,9 @@ int main(int argc, char** argv)
     {
         int multipart;
 
-        options_description mergerOptions("Proxy options");
-        mergerOptions.add_options()
-            ("multipart", value<int>(&multipart)->default_value(1), "Handle multipart payloads");
-
         FairMQProgOptions config;
-        config.AddToCmdLineOptions(mergerOptions);
+        config.GetCmdLineOptions().add_options()
+            ("multipart", value<int>(&multipart)->default_value(1), "Handle multipart payloads");
         config.ParseAll(argc, argv);
 
         FairMQDevice merger;

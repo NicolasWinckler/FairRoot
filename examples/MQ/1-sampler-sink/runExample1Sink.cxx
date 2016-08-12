@@ -5,12 +5,6 @@
  *         GNU Lesser General Public Licence version 3 (LGPL) version 3,        *  
  *                  copied verbatim in the file "LICENSE"                       *
  ********************************************************************************/
-/**
- * runExample1Sink.cxx
- *
- * @since 2013-04-23
- * @author D. Klein, A. Rybalchenko
- */
 
 #include <iostream>
 
@@ -46,8 +40,7 @@ int main(int argc, char** argv)
     }
     catch (std::exception& e)
     {
-        LOG(ERROR) << "Unhandled Exception reached the top of main: "
-                   << e.what() << ", application will now exit";
+        LOG(ERROR) << "Unhandled Exception reached the top of main: " << e.what() << ", application will now exit";
         return 1;
     }
 

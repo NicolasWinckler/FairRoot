@@ -8,7 +8,7 @@
 
 #include <iostream>
 
-#include "boost/program_options.hpp"
+#include <boost/program_options.hpp>
 
 #include "FairMQLogger.h"
 #include "FairMQProgOptions.h"
@@ -24,12 +24,9 @@ int main(int argc, char** argv)
     {
         int multipart;
 
-        options_description proxyOptions("Proxy options");
-        proxyOptions.add_options()
-            ("multipart", value<int>(&multipart)->default_value(1), "Handle multipart payloads");
-
         FairMQProgOptions config;
-        config.AddToCmdLineOptions(proxyOptions);
+        config.GetCmdLineOptions().add_options()
+            ("multipart", value<int>(&multipart)->default_value(1), "Handle multipart payloads");
         config.ParseAll(argc, argv);
 
         FairMQDevice proxy;

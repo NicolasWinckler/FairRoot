@@ -31,7 +31,7 @@ SAMPLER+=" --msg-size $msgSize"
 # SAMPLER+=" --msg-rate 1000"
 SAMPLER+=" --num-msgs $numMsgs"
 SAMPLER+=" --mq-config @CMAKE_BINARY_DIR@/bin/config/benchmark.json"
-xterm -geometry 80x23+0+0 -hold -e taskset -c 0 @CMAKE_BINARY_DIR@/bin/$SAMPLER &
+xterm -geometry 80x23+0+0 -hold -e @CMAKE_BINARY_DIR@/bin/$SAMPLER &
 
 SINK="sink"
 SINK+=" --id sink1"
@@ -40,4 +40,4 @@ SINK+=" --id sink1"
 #SINK+=" --transport nanomsg"
 SINK+=" --num-msgs $numMsgs"
 SINK+=" --mq-config @CMAKE_BINARY_DIR@/bin/config/benchmark.json"
-xterm -geometry 80x23+500+0 -hold -e taskset -c 1 @CMAKE_BINARY_DIR@/bin/$SINK &
+xterm -geometry 80x23+500+0 -hold -e @CMAKE_BINARY_DIR@/bin/$SINK &

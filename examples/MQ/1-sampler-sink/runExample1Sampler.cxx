@@ -5,12 +5,6 @@
  *         GNU Lesser General Public Licence version 3 (LGPL) version 3,        *  
  *                  copied verbatim in the file "LICENSE"                       *
  ********************************************************************************/
-/**
- * runExample1Sampler.cxx
- *
- * @since 2013-04-23
- * @author D. Klein, A. Rybalchenko
- */
 
 #include <string>
 
@@ -30,12 +24,9 @@ int main(int argc, char** argv)
     {
         std::string text;
 
-        options_description samplerOptions("Sampler options");
-        samplerOptions.add_options()
-            ("text", value<std::string>(&text)->default_value("Hello"), "Text to send out");
-
         FairMQProgOptions config;
-        config.AddToCmdLineOptions(samplerOptions);
+        config.GetCmdLineOptions().add_options()
+            ("text", value<std::string>(&text)->default_value("Hello"), "Text to send out");
         config.ParseAll(argc, argv);
 
         FairMQDevice sampler;
@@ -57,8 +48,7 @@ int main(int argc, char** argv)
     }
     catch (std::exception& e)
     {
-        LOG(ERROR) << "Unhandled Exception reached the top of main: "
-                   << e.what() << ", application will now exit";
+        LOG(ERROR) << "Unhandled Exception reached the top of main: " << e.what() << ", application will now exit";
         return 1;
     }
 

@@ -69,6 +69,11 @@ class FairProgOptions
     int AddToCfgFileOptions(const po::options_description& optDesc, bool visible = true);
     int AddToEnvironmentOptions(const po::options_description& optDesc);
 
+    po::options_description& GetCmdLineOptions()
+    {
+        return fCmdLineOptions;
+    }
+
     void UseConfigFile(const std::string& filename = "");
 
     // get value corresponding to the key

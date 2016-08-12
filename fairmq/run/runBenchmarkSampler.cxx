@@ -24,13 +24,10 @@ int main(int argc, char** argv)
         int msgSize;
         int numMsgs;
 
-        options_description samplerOptions("Sampler options");
-        samplerOptions.add_options()
+        FairMQProgOptions config;
+        config.GetCmdLineOptions().add_options()
             ("msg-size", value<int>(&msgSize)->default_value(1000), "Message size in bytes")
             ("num-msgs", value<int>(&numMsgs)->default_value(0),    "Number of messages to send");
-
-        FairMQProgOptions config;
-        config.AddToCmdLineOptions(samplerOptions);
         config.ParseAll(argc, argv);
 
         FairMQDevice sampler;

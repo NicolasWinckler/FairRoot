@@ -23,12 +23,9 @@ int main(int argc, char** argv)
     {
         int numMsgs;
 
-        options_description sinkOptions("Sink options");
-        sinkOptions.add_options()
-            ("num-msgs", value<int>(&numMsgs)->default_value(0), "Number of messages to receive");
-
         FairMQProgOptions config;
-        config.AddToCmdLineOptions(sinkOptions);
+        config.GetCmdLineOptions().add_options()
+            ("num-msgs", value<int>(&numMsgs)->default_value(0), "Number of messages to receive");
         config.ParseAll(argc, argv);
 
         FairMQDevice sink;
