@@ -22,18 +22,11 @@ int main(int argc, char** argv)
 
         FairMQDevice sink;
 
-        sink.SetRun([&sink]()
+        sink.OnData("data", [](std::unique_ptr<FairMQMessage>& msg)
         {
-            std::unique_ptr<FairMQMessage> msg(sink.NewMessage());
-
-            if (sink.Receive(msg, "data") >= 0)
-            {
-                LOG(INFO) << "Received message: \""
-                          << std::string(static_cast<char*>(msg->GetData()), msg->GetSize())
-                          << "\"";
-            }
-
-            return true;
+            LOG(INFO) << "Received message: \""
+                      << std::string(static_cast<char*>(msg->GetData()), msg->GetSize())
+                      << "\"";
         });
 
         runStateMachine(sink, config);

@@ -40,6 +40,8 @@ typedef std::function<void()> PreRunCallback;
 typedef std::function<bool()> RunCallback;
 typedef std::function<void()> PostRunCallback;
 
+typedef std::function<void(std::unique_ptr<FairMQMessage>&)> InputCallback;
+
 class FairMQProgOptions;
 
 template<typename T>
@@ -284,9 +286,11 @@ class FairMQDevice : public FairMQStateMachine, public FairMQConfigurable
     // TODO: make this const?
     std::unordered_map<std::string, std::vector<FairMQChannel>> fChannels; ///< Device channels
 
-    void SetPreRun(PreRunCallback callback);
-    void SetRun(RunCallback callback);
-    void SetPostRun(PostRunCallback callback);
+    void SetPreRun(PreRunCallback);
+    void SetRun(RunCallback);
+    void SetPostRun(PostRunCallback);
+
+    void OnData(const std::string& channelName, InputCallback);
 
   protected:
     std::string fId; ///< Device ID
@@ -368,6 +372,9 @@ class FairMQDevice : public FairMQStateMachine, public FairMQConfigurable
     PreRunCallback fPreRunCallback;
     RunCallback fRunCallback;
     PostRunCallback fPostRunCallback;
+
+    bool fInputHandlersEnabled;
+    std::unordered_map<std::string, InputCallback> fInputs;
 };
 
 #endif /* FAIRMQDEVICE_H_ */

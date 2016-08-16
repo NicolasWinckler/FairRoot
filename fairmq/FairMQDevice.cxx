@@ -72,6 +72,8 @@ FairMQDevice::FairMQDevice()
     , fPreRunCallback(NullPreRunFunc)
     , fRunCallback(NullRunFunc)
     , fPostRunCallback(NullPostRunFunc)
+    , fInputHandlersEnabled(false)
+    , fInputs()
 {
 }
 
@@ -407,6 +409,12 @@ void FairMQDevice::SetPostRun(PostRunCallback callback)
     fPostRunCallback = callback;
 }
 
+void FairMQDevice::OnData(const std::string& channelName, InputCallback callback)
+{
+    fInputHandlersEnabled = true;
+    fInputs.insert(make_pair(channelName, callback));
+}
+
 void FairMQDevice::RunWrapper()
 {
     LOG(INFO) << "DEVICE: Running...";
@@ -415,7 +423,33 @@ void FairMQDevice::RunWrapper()
 
     try
     {
-        if (fRunCallbackEnabled)
+        if (fInputHandlersEnabled)
+        {
+            boost::timer::auto_cpu_timer timer;
+
+            std::unique_ptr<FairMQPoller> poller(fTransportFactory->CreatePoller(fChannels, { "data-in" }));
+
+            while (CheckCurrentState(RUNNING))
+            {
+                poller->Poll(200);
+
+                for (auto mi = fInputs.begin(); mi != fInputs.end(); ++mi)
+                {
+                    if (poller->CheckInput(mi->first, 0))
+                    {
+                        std::unique_ptr<FairMQMessage> msg(NewMessage());
+
+                        if (Receive(msg, mi->first) >= 0)
+                        {
+                            mi->second(msg);
+                        }
+                    }
+                }
+            }
+
+            LOG(INFO) << "Finishing Run, elapsed time: ";
+        }
+        else if (fRunCallbackEnabled)
         {
             boost::timer::auto_cpu_timer timer;
 
