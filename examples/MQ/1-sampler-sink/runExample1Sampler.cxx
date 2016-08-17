@@ -8,50 +8,39 @@
 
 #include <string>
 
-#include <boost/program_options.hpp>
-#include <boost/thread.hpp>
 
-#include "FairMQLogger.h"
-#include "FairMQProgOptions.h"
 #include "FairMQDevice.h"
-#include "runSimpleMQStateMachine.h"
+//#include "FairMQExample1Sampler.h"
+#include "runFairMQDevice.h"
+#include <iostream>
+#include <future>
+#include <thread>
 
-using namespace boost::program_options;
-using namespace std;
+namespace bpo = boost::program_options;
+typedef FairMQDevice FairMQExample1Sampler;
 
-int main(int argc, char** argv)
+void addCustomOptions(bpo::options_description& options)
 {
-    try
-    {
-        string text;
+    options.add_options()
+        ("text", bpo::value<std::string>()->default_value("Hello"), "Text to send out");
+}
 
-        FairMQProgOptions config;
-        config.GetCmdLineOptions().add_options()
-            ("text", value<string>(&text)->default_value("Hello"), "Text to send out");
-        config.ParseAll(argc, argv);
-
-        FairMQDevice sampler;
-
-        sampler.SetRun([&sampler, &text]()
+void MySetRunner(FairMQExample1Sampler& device)
+{
+  device.SetRun([&device]()
         {
             boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
 
-            unique_ptr<FairMQMessage> msg(sampler.NewSimpleMessage(text));
-
+            std::string text("my text");
             LOG(INFO) << "Sending \"" << text << "\"";
+            std::unique_ptr<FairMQMessage> msg(device.NewSimpleMessage(text));
 
-            sampler.Send(msg, "data");
 
+            device.Send(msg, "data");
             return true;
-        });
-
-        runStateMachine(sampler, config);
-    }
-    catch (exception& e)
-    {
-        LOG(ERROR) << "Unhandled Exception reached the top of main: " << e.what() << ", application will now exit";
-        return 1;
-    }
-
-    return 0;
+      });
 }
+
+//BUILD_MAIN(FairMQExample1Sampler)
+
+BUILD_MAIN_CUSTOM_RUN2(MySetRunner)
