@@ -40,7 +40,7 @@ typedef std::function<void()> PreRunCallback;
 typedef std::function<bool()> RunCallback;
 typedef std::function<void()> PostRunCallback;
 
-typedef std::function<void(std::unique_ptr<FairMQMessage>&)> InputCallback;
+typedef std::function<bool(std::unique_ptr<FairMQMessage>&, int)> InputCallback;
 
 class FairMQProgOptions;
 
@@ -81,6 +81,8 @@ class FairMQDevice : public FairMQStateMachine, public FairMQConfigurable
 
     /// Outputs the socket transfer rates
     virtual void LogSocketRates();
+
+    void RunCallbackWrapper();
 
     /// Sorts a channel by address, with optional reindexing of the sorted values
     /// @param name    Channel name
@@ -366,14 +368,15 @@ class FairMQDevice : public FairMQStateMachine, public FairMQConfigurable
     bool fCatchingSignals;
     bool fTerminated;
     // Interactive state loop helper
-    std::atomic<bool> fRunning;
+    std::atomic<bool> fInteractiveRunning;
+    std::atomic<bool> fExitingRunningCallback;
 
     bool fRunCallbackEnabled;
     PreRunCallback fPreRunCallback;
     RunCallback fRunCallback;
     PostRunCallback fPostRunCallback;
 
-    bool fInputHandlersEnabled;
+    bool fCallbackApproach;
     std::unordered_map<std::string, InputCallback> fInputs;
 };
 

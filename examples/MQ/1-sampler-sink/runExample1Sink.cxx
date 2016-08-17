@@ -13,6 +13,8 @@
 #include "FairMQDevice.h"
 #include "runSimpleMQStateMachine.h"
 
+using namespace std;
+
 int main(int argc, char** argv)
 {
     try
@@ -22,16 +24,18 @@ int main(int argc, char** argv)
 
         FairMQDevice sink;
 
-        sink.OnData("data", [](std::unique_ptr<FairMQMessage>& msg)
+        sink.OnData("data", [](unique_ptr<FairMQMessage>& msg, int index)
         {
             LOG(INFO) << "Received message: \""
-                      << std::string(static_cast<char*>(msg->GetData()), msg->GetSize())
-                      << "\"";
+                      << string(static_cast<char*>(msg->GetData()), msg->GetSize())
+                      << "\" on channel data[" << index << "].";
+
+            return true;
         });
 
         runStateMachine(sink, config);
     }
-    catch (std::exception& e)
+    catch (exception& e)
     {
         LOG(ERROR) << "Unhandled Exception reached the top of main: " << e.what() << ", application will now exit";
         return 1;

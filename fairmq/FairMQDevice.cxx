@@ -67,12 +67,13 @@ FairMQDevice::FairMQDevice()
     , fInitialValidationMutex()
     , fCatchingSignals(false)
     , fTerminated(false)
-    , fRunning(false)
+    , fInteractiveRunning(false)
+    , fExitingRunningCallback(false)
     , fRunCallbackEnabled(false)
     , fPreRunCallback(NullPreRunFunc)
     , fRunCallback(NullRunFunc)
     , fPostRunCallback(NullPostRunFunc)
-    , fInputHandlersEnabled(false)
+    , fCallbackApproach(false)
     , fInputs()
 {
 }
@@ -105,7 +106,7 @@ void FairMQDevice::SignalHandler(int signal)
         ChangeState(END);
 
         // exit(EXIT_FAILURE);
-        fRunning = false;
+        fInteractiveRunning = false;
         fTerminated = true;
         LOG(INFO) << "Exiting.";
     }
@@ -400,6 +401,7 @@ void FairMQDevice::SetPreRun(PreRunCallback callback)
 
 void FairMQDevice::SetRun(RunCallback callback)
 {
+    fCallbackApproach = true;
     fRunCallbackEnabled = true;
     fRunCallback = callback;
 }
@@ -409,10 +411,22 @@ void FairMQDevice::SetPostRun(PostRunCallback callback)
     fPostRunCallback = callback;
 }
 
-void FairMQDevice::OnData(const std::string& channelName, InputCallback callback)
+void FairMQDevice::OnData(const string& channelName, InputCallback callback)
 {
-    fInputHandlersEnabled = true;
+    fCallbackApproach = true;
     fInputs.insert(make_pair(channelName, callback));
+}
+
+void FairMQDevice::RunCallbackWrapper()
+{
+    while (CheckCurrentState(RUNNING) && !fExitingRunningCallback)
+    {
+        if (!fRunCallback())
+        {
+            fExitingRunningCallback = true;
+            break;
+        }
+    }
 }
 
 void FairMQDevice::RunWrapper()
@@ -420,16 +434,32 @@ void FairMQDevice::RunWrapper()
     LOG(INFO) << "DEVICE: Running...";
 
     boost::thread rateLogger(boost::bind(&FairMQDevice::LogSocketRates, this));
+    boost::thread runCallbackWrapper;
 
     try
     {
-        if (fInputHandlersEnabled)
+        if (fCallbackApproach)
         {
             boost::timer::auto_cpu_timer timer;
 
-            std::unique_ptr<FairMQPoller> poller(fTransportFactory->CreatePoller(fChannels, { "data-in" }));
+            fExitingRunningCallback = false;
 
-            while (CheckCurrentState(RUNNING))
+            fPreRunCallback();
+
+            if (fRunCallbackEnabled)
+            {
+                runCallbackWrapper = boost::thread(boost::bind(&FairMQDevice::RunCallbackWrapper, this));
+            }
+
+            vector<string> inputChannelKeys;
+            for (auto i: fInputs)
+            {
+                inputChannelKeys.push_back(i.first);
+            }
+
+            unique_ptr<FairMQPoller> poller(fTransportFactory->CreatePoller(fChannels, inputChannelKeys));
+
+            while (CheckCurrentState(RUNNING) && !fExitingRunningCallback)
             {
                 poller->Poll(200);
 
@@ -437,33 +467,34 @@ void FairMQDevice::RunWrapper()
                 {
                     if (poller->CheckInput(mi->first, 0))
                     {
-                        std::unique_ptr<FairMQMessage> msg(NewMessage());
+                        unique_ptr<FairMQMessage> msg(NewMessage());
 
                         if (Receive(msg, mi->first) >= 0)
                         {
-                            mi->second(msg);
+                            if (mi->second(msg, 0) == false)
+                            {
+                                fExitingRunningCallback = true;
+                                break;
+                            }
                         }
                     }
                 }
             }
 
-            LOG(INFO) << "Finishing Run, elapsed time: ";
-        }
-        else if (fRunCallbackEnabled)
-        {
-            boost::timer::auto_cpu_timer timer;
+            fPostRunCallback();
 
-            fPreRunCallback();
-
-            while (CheckCurrentState(RUNNING))
+            if (fRunCallbackEnabled)
             {
-                if (!fRunCallback())
+                try
                 {
-                    break;
+                    runCallbackWrapper.join();
+                }
+                catch (const boost::thread_resource_error& e)
+                {
+                    LOG(ERROR) << e.what();
+                    exit(EXIT_FAILURE);
                 }
             }
-
-            fPostRunCallback();
 
             LOG(INFO) << "Finishing Run, elapsed time: ";
         }
@@ -779,7 +810,7 @@ void FairMQDevice::LogSocketRates()
 
 void FairMQDevice::InteractiveStateLoop()
 {
-    fRunning = true;
+    fInteractiveRunning = true;
     char c; // hold the user console input
     pollfd cinfd[1];
     cinfd[0].fd = fileno(stdin);
@@ -792,11 +823,11 @@ void FairMQDevice::InteractiveStateLoop()
 
     PrintInteractiveStateLoopHelp();
 
-    while (fRunning)
+    while (fInteractiveRunning)
     {
         if (poll(cinfd, 1, 500))
         {
-            if (!fRunning)
+            if (!fInteractiveRunning)
             {
                 break;
             }
@@ -846,7 +877,7 @@ void FairMQDevice::InteractiveStateLoop()
                     ChangeState(END);
                     if (CheckCurrentState("EXITING"))
                     {
-                        fRunning = false;
+                        fInteractiveRunning = false;
                     }
                     break;
                 default:

@@ -17,16 +17,17 @@
 #include "runSimpleMQStateMachine.h"
 
 using namespace boost::program_options;
+using namespace std;
 
 int main(int argc, char** argv)
 {
     try
     {
-        std::string text;
+        string text;
 
         FairMQProgOptions config;
         config.GetCmdLineOptions().add_options()
-            ("text", value<std::string>(&text)->default_value("Hello"), "Text to send out");
+            ("text", value<string>(&text)->default_value("Hello"), "Text to send out");
         config.ParseAll(argc, argv);
 
         FairMQDevice sampler;
@@ -35,7 +36,7 @@ int main(int argc, char** argv)
         {
             boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
 
-            std::unique_ptr<FairMQMessage> msg(sampler.NewSimpleMessage(text));
+            unique_ptr<FairMQMessage> msg(sampler.NewSimpleMessage(text));
 
             LOG(INFO) << "Sending \"" << text << "\"";
 
@@ -46,7 +47,7 @@ int main(int argc, char** argv)
 
         runStateMachine(sampler, config);
     }
-    catch (std::exception& e)
+    catch (exception& e)
     {
         LOG(ERROR) << "Unhandled Exception reached the top of main: " << e.what() << ", application will now exit";
         return 1;

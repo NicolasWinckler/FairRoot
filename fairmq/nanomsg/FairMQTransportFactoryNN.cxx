@@ -46,7 +46,7 @@ FairMQPoller* FairMQTransportFactoryNN::CreatePoller(const vector<FairMQChannel>
     return new FairMQPollerNN(channels);
 }
 
-FairMQPoller* FairMQTransportFactoryNN::CreatePoller(const std::unordered_map<std::string, std::vector<FairMQChannel>>& channelsMap, const std::initializer_list<std::string> channelList) const
+FairMQPoller* FairMQTransportFactoryNN::CreatePoller(const std::unordered_map<std::string, std::vector<FairMQChannel>>& channelsMap, const std::vector<std::string>& channelList) const
 {
     return new FairMQPollerNN(channelsMap, channelList);
 }

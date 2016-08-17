@@ -37,19 +37,14 @@ int main(int argc, char** argv)
             LOG(INFO) << "Starting the benchmark and expecting to receive " << numMsgs << " messages.";
         });
 
-        sink.SetRun([&sink, &numMsgs, &numReceivedMsgs]()
+        sink.OnData("data-in", [&numMsgs, &numReceivedMsgs](std::unique_ptr<FairMQMessage>& msg, int index)
         {
-            std::unique_ptr<FairMQMessage> msg(sink.NewMessage());
-
-            if (sink.Receive(msg, "data-in") >= 0)
+            ++numReceivedMsgs;
+            if (numMsgs > 0)
             {
-                if (numMsgs > 0)
+                if (numReceivedMsgs >= numMsgs)
                 {
-                    ++numReceivedMsgs;
-                    if (numReceivedMsgs >= numMsgs)
-                    {
-                        return false;
-                    }
+                    return false;
                 }
             }
 
