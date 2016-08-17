@@ -40,7 +40,8 @@ typedef std::function<void()> PreRunCallback;
 typedef std::function<bool()> RunCallback;
 typedef std::function<void()> PostRunCallback;
 
-typedef std::function<bool(std::unique_ptr<FairMQMessage>&, int)> InputCallback;
+typedef std::function<bool(std::unique_ptr<FairMQMessage>&, int)> InputMsgCallback;
+typedef std::function<bool(FairMQParts&, int)> InputMultipartCallback;
 
 class FairMQProgOptions;
 
@@ -292,7 +293,8 @@ class FairMQDevice : public FairMQStateMachine, public FairMQConfigurable
     void SetRun(RunCallback);
     void SetPostRun(PostRunCallback);
 
-    void OnData(const std::string& channelName, InputCallback);
+    void OnData(const std::string& channelName, InputMsgCallback);
+    void OnMultipartData(const std::string& channelName, InputMultipartCallback);
 
   protected:
     std::string fId; ///< Device ID
@@ -377,7 +379,8 @@ class FairMQDevice : public FairMQStateMachine, public FairMQConfigurable
     PostRunCallback fPostRunCallback;
 
     bool fCallbackApproach;
-    std::unordered_map<std::string, InputCallback> fInputs;
+    std::unordered_map<std::string, InputMsgCallback> fMsgInputs;
+    std::unordered_map<std::string, InputMultipartCallback> fMultipartInputs;
 };
 
 #endif /* FAIRMQDEVICE_H_ */

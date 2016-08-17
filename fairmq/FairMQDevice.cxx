@@ -74,7 +74,8 @@ FairMQDevice::FairMQDevice()
     , fRunCallback(NullRunFunc)
     , fPostRunCallback(NullPostRunFunc)
     , fCallbackApproach(false)
-    , fInputs()
+    , fMsgInputs()
+    , fMultipartInputs()
 {
 }
 
@@ -411,10 +412,16 @@ void FairMQDevice::SetPostRun(PostRunCallback callback)
     fPostRunCallback = callback;
 }
 
-void FairMQDevice::OnData(const string& channelName, InputCallback callback)
+void FairMQDevice::OnData(const string& channelName, InputMsgCallback callback)
 {
     fCallbackApproach = true;
-    fInputs.insert(make_pair(channelName, callback));
+    fMsgInputs.insert(make_pair(channelName, callback));
+}
+
+void FairMQDevice::OnMultipartData(const string& channelName, InputMultipartCallback callback)
+{
+    fCallbackApproach = true;
+    fMultipartInputs.insert(make_pair(channelName, callback));
 }
 
 void FairMQDevice::RunCallbackWrapper()
@@ -452,7 +459,11 @@ void FairMQDevice::RunWrapper()
             }
 
             vector<string> inputChannelKeys;
-            for (auto i: fInputs)
+            for (const auto& i: fMsgInputs)
+            {
+                inputChannelKeys.push_back(i.first);
+            }
+            for (const auto& i: fMultipartInputs)
             {
                 inputChannelKeys.push_back(i.first);
             }
@@ -463,18 +474,41 @@ void FairMQDevice::RunWrapper()
             {
                 poller->Poll(200);
 
-                for (auto mi = fInputs.begin(); mi != fInputs.end(); ++mi)
+                for (const auto& mi : fMsgInputs)
                 {
-                    if (poller->CheckInput(mi->first, 0))
+                    for (unsigned int i = 0; i <= fChannels.at(mi.first).size(); ++i)
                     {
-                        unique_ptr<FairMQMessage> msg(NewMessage());
-
-                        if (Receive(msg, mi->first) >= 0)
+                        if (poller->CheckInput(mi.first, i))
                         {
-                            if (mi->second(msg, 0) == false)
+                            unique_ptr<FairMQMessage> msg(NewMessage());
+
+                            if (Receive(msg, mi.first) >= 0)
                             {
-                                fExitingRunningCallback = true;
-                                break;
+                                if (mi.second(msg, i) == false)
+                                {
+                                    fExitingRunningCallback = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                for (const auto& mi : fMultipartInputs)
+                {
+                    for (unsigned int i = 0; i <= fChannels.at(mi.first).size(); ++i)
+                    {
+                        if (poller->CheckInput(mi.first, i))
+                        {
+                            FairMQParts parts;
+
+                            if (Receive(parts, mi.first) >= 0)
+                            {
+                                if (mi.second(parts, i) == false)
+                                {
+                                    fExitingRunningCallback = true;
+                                    break;
+                                }
                             }
                         }
                     }
