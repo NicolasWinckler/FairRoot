@@ -39,9 +39,9 @@
 
 using namespace std;
 
-bool NullPreRunFunc() { return false; };
+void NullPreRunFunc() {  };
 bool NullRunFunc() { return false; };
-bool NullPostRunFunc() { return false; };
+void NullPostRunFunc() {  };
 
 // boost::function and a wrapper to catch the signals
 boost::function<void(int)> sigHandler;
