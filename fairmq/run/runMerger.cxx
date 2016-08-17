@@ -31,43 +31,17 @@ int main(int argc, char** argv)
 
         FairMQDevice merger;
 
-        std::unique_ptr<FairMQPoller> poller;
-        int numInputs;
-
-        merger.SetPreRun([&merger, &poller, &numInputs]()
-        {
-            numInputs = merger.fChannels.at("data-in").size();
-            poller = std::unique_ptr<FairMQPoller>(merger.NewPoller({ "data-in" }));
-        });
+        // std::unique_ptr<FairMQPoller> poller;
+        // int numInputs;
 
         if (multipart)
         {
-            merger.SetRun([&merger, &poller, &numInputs]()
+            merger.OnMultipartData("data-in", [&merger](FairMQParts& payload, int index)
             {
-                poller->Poll(100);
-
-                // Loop over the data input channels.
-                for (int i = 0; i < numInputs; ++i)
+                if (merger.Send(payload, "data-out") < 0)
                 {
-                    // Check if the channel has data ready to be received.
-                    if (poller->CheckInput(i))
-                    {
-                        FairMQParts payload;
-
-                        if (merger.Receive(payload, "data-in", i) >= 0)
-                        {
-                            if (merger.Send(payload, "data-out") < 0)
-                            {
-                                LOG(DEBUG) << "Transfer interrupted";
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            LOG(DEBUG) << "Transfer interrupted";
-                            return false;
-                        }
-                    }
+                    LOG(DEBUG) << "Transfer interrupted";
+                    return false;
                 }
 
                 return true;
@@ -75,37 +49,90 @@ int main(int argc, char** argv)
         }
         else
         {
-            merger.SetRun([&merger, &poller, &numInputs]()
+            merger.OnData("data-in", [&merger](std::unique_ptr<FairMQMessage>& msg, int index)
             {
-                poller->Poll(100);
-
-                // Loop over the data input channels.
-                for (int i = 0; i < numInputs; ++i)
+                if (merger.Send(msg, "data-out") < 0)
                 {
-                    // Check if the channel has data ready to be received.
-                    if (poller->CheckInput(i))
-                    {
-                        unique_ptr<FairMQMessage> payload(merger.NewMessage());
-
-                        if (merger.Receive(payload, "data-in", i) >= 0)
-                        {
-                            if (merger.Send(payload, "data-out") < 0)
-                            {
-                                LOG(DEBUG) << "Transfer interrupted";
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            LOG(DEBUG) << "Transfer interrupted";
-                            return false;
-                        }
-                    }
+                    LOG(DEBUG) << "Transfer interrupted";
+                    return false;
                 }
 
                 return true;
             });
         }
+
+        // merger.SetPreRun([&merger, &poller, &numInputs]()
+        // {
+        //     numInputs = merger.fChannels.at("data-in").size();
+        //     poller = std::unique_ptr<FairMQPoller>(merger.NewPoller({ "data-in" }));
+        // });
+
+        // if (multipart)
+        // {
+        //     merger.SetRun([&merger, &poller, &numInputs]()
+        //     {
+        //         poller->Poll(100);
+
+        //         // Loop over the data input channels.
+        //         for (int i = 0; i < numInputs; ++i)
+        //         {
+        //             // Check if the channel has data ready to be received.
+        //             if (poller->CheckInput(i))
+        //             {
+        //                 FairMQParts payload;
+
+        //                 if (merger.Receive(payload, "data-in", i) >= 0)
+        //                 {
+        //                     if (merger.Send(payload, "data-out") < 0)
+        //                     {
+        //                         LOG(DEBUG) << "Transfer interrupted";
+        //                         return false;
+        //                     }
+        //                 }
+        //                 else
+        //                 {
+        //                     LOG(DEBUG) << "Transfer interrupted";
+        //                     return false;
+        //                 }
+        //             }
+        //         }
+
+        //         return true;
+        //     });
+        // }
+        // else
+        // {
+        //     merger.SetRun([&merger, &poller, &numInputs]()
+        //     {
+        //         poller->Poll(100);
+
+        //         // Loop over the data input channels.
+        //         for (int i = 0; i < numInputs; ++i)
+        //         {
+        //             // Check if the channel has data ready to be received.
+        //             if (poller->CheckInput(i))
+        //             {
+        //                 unique_ptr<FairMQMessage> payload(merger.NewMessage());
+
+        //                 if (merger.Receive(payload, "data-in", i) >= 0)
+        //                 {
+        //                     if (merger.Send(payload, "data-out") < 0)
+        //                     {
+        //                         LOG(DEBUG) << "Transfer interrupted";
+        //                         return false;
+        //                     }
+        //                 }
+        //                 else
+        //                 {
+        //                     LOG(DEBUG) << "Transfer interrupted";
+        //                     return false;
+        //                 }
+        //             }
+        //         }
+
+        //         return true;
+        //     });
+        // }
 
         runStateMachine(merger, config);
     }

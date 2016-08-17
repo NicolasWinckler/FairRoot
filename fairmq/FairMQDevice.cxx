@@ -482,13 +482,18 @@ void FairMQDevice::RunWrapper()
                         {
                             unique_ptr<FairMQMessage> msg(NewMessage());
 
-                            if (Receive(msg, mi.first) >= 0)
+                            if (Receive(msg, mi.first, i) >= 0)
                             {
                                 if (mi.second(msg, i) == false)
                                 {
                                     fExitingRunningCallback = true;
                                     break;
                                 }
+                            }
+                            else
+                            {
+                                fExitingRunningCallback = true;
+                                break;
                             }
                         }
                     }
@@ -502,13 +507,18 @@ void FairMQDevice::RunWrapper()
                         {
                             FairMQParts parts;
 
-                            if (Receive(parts, mi.first) >= 0)
+                            if (Receive(parts, mi.first, i) >= 0)
                             {
                                 if (mi.second(parts, i) == false)
                                 {
                                     fExitingRunningCallback = true;
                                     break;
                                 }
+                            }
+                            else
+                            {
+                                fExitingRunningCallback = true;
+                                break;
                             }
                         }
                     }
