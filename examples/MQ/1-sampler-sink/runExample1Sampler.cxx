@@ -53,9 +53,9 @@ BUILD_MAIN(MyDevice)
 ////////////////////////// the WRITE_RUN_START .. WRITE_RUN_END macro above expands to :
 /*
     template<>
-    std::function<void(FairMQDevice&, FairMQProgOptions&)> DeviceManagerCallback<FairMQDevice>() 
+    std::function<void(MyDevice&, FairMQProgOptions&)> DeviceManagerCallback<MyDevice>() 
     {
-        return [] (FairMQDevice& device, FairMQProgOptions& config) 
+        return [] (MyDevice& device, FairMQProgOptions& config) 
         {
             device.SetRun([&device,&config]()
             {   
