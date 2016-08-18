@@ -13,14 +13,19 @@
 #include "FairMQDevice.h"
 #include "runSimpleMQStateMachine.h"
 
+
+// forward declaration 
 void addCustomOptions(boost::program_options::options_description&);
+
+// forward declaration (friend to FairMQDevice)
+template<typename T>
+std::function<void(T&, FairMQProgOptions&)> DeviceManagerCallback();
 
 
 
 // policy based design - use policy to customize
-
-// 1) main default policy
-template<typename T>
+////////////////////////////////////////////////////
+// 1) config default policy
 struct ConfigDefaultPolicy
 {
     int Init(int argc, char** argv, FairMQProgOptions& config)
@@ -34,10 +39,8 @@ struct ConfigDefaultPolicy
     
 };
 
-// 2) Run default policy
-
-template<typename T>
-std::function<void(T&, FairMQProgOptions&)> DeviceManagerCallback();
+////////////////////////////////////////////////////
+// 2) Device default policy
 template<typename T>
 struct DeviceDefaultPolicy
 {
@@ -52,6 +55,7 @@ struct DeviceDefaultPolicy
     }
 };
 
+// another device policy that take a function name (not friend with FairMQDevice)
 template<typename T>
 struct FuncNameDevicePolicy
 {
@@ -73,11 +77,11 @@ struct FuncNameDevicePolicy
     std::function<void(T&,FairMQProgOptions&)> fCallback;
 };
 
-
-// 3) Host class deriving from policy
+////////////////////////////////////////////////////
+// 3) Device Manager -> Host class deriving from policies
 template<   typename DeviceType, 
             typename DevicePolicy = DeviceDefaultPolicy<DeviceType>,
-            typename ConfigPolicy = ConfigDefaultPolicy<DeviceType> 
+            typename ConfigPolicy = ConfigDefaultPolicy
         >
 struct DeviceManager : protected ConfigPolicy, protected DevicePolicy
 {
@@ -96,7 +100,7 @@ struct DeviceManager : protected ConfigPolicy, protected DevicePolicy
 };
 
 
-
+//////////////////////////////////////////////////// MACRO HELPER FOR OVERLOADING
 #define CAT( A, B ) A ## B
 #define SELECT( NAME, NUM ) CAT( NAME ## _, NUM )
 
@@ -107,7 +111,7 @@ struct DeviceManager : protected ConfigPolicy, protected DevicePolicy
 #define BUILD_MAIN( ... ) VA_SELECT( BUILD_MAIN_IMPL, __VA_ARGS__ )
 
 
-
+//////////////////////////////////////////////////// Default build
 #define BUILD_MAIN_IMPL_1(DeviceType)  \
 int main( int argc, char* argv[] )     \
 {                                      \
@@ -116,6 +120,7 @@ int main( int argc, char* argv[] )     \
     return 0;                          \
 }
 
+//////////////////////////////////////////////////// Build with function name policy
 #define BUILD_MAIN_IMPL_2(DeviceType, FunctionName)                      \
 int main( int argc, char* argv[] )                                       \
     {                                                                    \
@@ -126,7 +131,7 @@ int main( int argc, char* argv[] )                                       \
     }
 
 
-
+//////////////////////////////////////////////////// Hide the function boiler plate
 #define WRITE_RUN_START(DeviceType)                                     \
 template<> \
 std::function<void(DeviceType&, FairMQProgOptions&)> DeviceManagerCallback<DeviceType>()    \
@@ -142,7 +147,7 @@ std::function<void(DeviceType&, FairMQProgOptions&)> DeviceManagerCallback<Devic
 }
 
 
-// for function API
+//////////////////////////////////////////////////// same for function name API
 #define WRITE_RUNFUNCTION_START(DeviceType, FunctionName)         \
 void FunctionName(DeviceType& device, FairMQProgOptions& config)  \
 {\
