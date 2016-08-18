@@ -10,6 +10,10 @@
 #include "FairMQDevice.h"
 #include "runFairMQDevice.h"
 
+// Example using macros, template and lambda to reduce the boiler plate of the main function
+// This example start from the example 1 of Alexey using the set run method.
+
+
 ////////////////////////// DEFINE YOUR CLASS (OPTIONAL)
 class MyDevice : public FairMQDevice
 {
