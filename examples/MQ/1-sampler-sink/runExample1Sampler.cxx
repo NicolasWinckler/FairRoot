@@ -59,9 +59,10 @@ BUILD_MAIN(MyDevice)
         {
             device.SetRun([&device,&config]()
             {   
-                std::string text = config.GetValue<std::string>("text");
                 boost::this_thread::sleep(boost::posix_time::milliseconds(1000));
-                LOG(INFO) << "[" << device.fId << "] Sending \"" << text << "\"";
+                std::string text = config.GetValue<std::string>("text");
+                std::string id = device.fId;  // access to private data member of FairMQDevice parent class
+                device.Print(id,text);        // access to derived class methods
                 std::unique_ptr<FairMQMessage> msg(device.NewSimpleMessage(text));
                 device.Send(msg, "data");
                 return true;
