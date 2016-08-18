@@ -54,7 +54,7 @@ void FairMQSimpleMsgCleanup(void* /*data*/, void* hint)
 class FairMQDevice : public FairMQStateMachine, public FairMQConfigurable
 {
     friend class FairMQChannel;
-
+    
   public:
     enum
     {
@@ -68,6 +68,8 @@ class FairMQDevice : public FairMQStateMachine, public FairMQConfigurable
         Last
     };
 
+    template<typename DeviceType>
+    friend std::function<void(DeviceType&, FairMQProgOptions&)> DeviceManagerCallback();
     /// Default constructor
     FairMQDevice();
     /// Copy constructor (disabled)
