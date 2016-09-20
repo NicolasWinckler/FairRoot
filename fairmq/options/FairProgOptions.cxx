@@ -263,8 +263,7 @@ int FairProgOptions::PrintOptions()
     {
         Max(maxLength1st, m.first.length());
 
-        VarValInfo_t valinfo = GetVariableValueInfo(m.second);
-        mapinfo[m.first] = valinfo;
+        VarValInfo_t valinfo = FillMapVarValInfoImpl(m.first,m.second,mapinfo);
         string valueStr;
         string typeInfoStr;
         string defaultStr;
@@ -361,6 +360,14 @@ int FairProgOptions::NotifySwitchOption()
     }
 
     return 0;
+}
+
+
+FairProgOptions::VarValInfo_t FairProgOptions::FillMapVarValInfoImpl(const std::string& key, const po::variable_value& varValue, MapVarValInfo_t& mapinfo)
+{
+    VarValInfo_t valinfo = GetVariableValueInfo(varValue);
+    mapinfo[key] = valinfo;
+    return valinfo;// RVO should apply here
 }
 
 FairProgOptions::VarValInfo_t FairProgOptions::GetVariableValueInfo(const po::variable_value& varValue)

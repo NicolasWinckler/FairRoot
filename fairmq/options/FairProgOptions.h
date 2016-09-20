@@ -171,10 +171,14 @@ class FairProgOptions
         vm[opt].value() = boost::any(val);
     }
 
-  private:
+
     // Methods below are helper functions used in the PrintOptions method
     typedef std::tuple<std::string, std::string,std::string, std::string> VarValInfo_t;
     typedef std::map<std::string, VarValInfo_t> MapVarValInfo_t;
+    
+    virtual FairProgOptions::VarValInfo_t FillMapVarValInfoImpl(const std::string& key, const po::variable_value& varValue, MapVarValInfo_t& mapinfo);
+  private:
+    
 
     VarValInfo_t GetVariableValueInfo(const po::variable_value& varValue);
 

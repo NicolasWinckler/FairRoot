@@ -125,16 +125,16 @@ void FairMQProgOptions::ParseAll(const int argc, char** argv, bool allowUnregist
         {
             LOG(DEBUG) << "mq-config: Using default XML/JSON parser";
 
-            std::string file = fVarMap["mq-config"].as<std::string>();
+            std::string file = fVarMap.at("mq-config").as<boost::filesystem::path>().string();
             std::string id;
 
             if (fVarMap.count("config-key"))
             {
-                id = fVarMap["config-key"].as<std::string>();
+                id = fVarMap.at("config-key").as<std::string>();
             }
             else
             {
-                id = fVarMap["id"].as<std::string>();
+                id = fVarMap.at("id").as<std::string>();
             }
 
             std::string fileExtension = boost::filesystem::extension(file);
@@ -331,7 +331,7 @@ void FairMQProgOptions::InitOptionDescription()
         // ("config-xml-file",    po::value<string>(),                       "XML input as file.")
         ("config-json-string", po::value<vector<string>>()->multitoken(), "JSON input as command line string.")
         // ("config-json-file",   po::value<string>(),                       "JSON input as file.")
-        ("mq-config",          po::value<string>(),                       "JSON/XML input as file. The configuration object will check xml or json file extention and will call the json or xml parser accordingly")
+        ("mq-config",          po::value<boost::filesystem::path>(),                       "JSON/XML input as file. The configuration object will check xml or json file extention and will call the json or xml parser accordingly")
         ;
 
     AddToCmdLineOptions(fGenericDesc);

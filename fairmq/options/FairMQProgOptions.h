@@ -25,6 +25,31 @@
 #include "FairMQEventManager.h"
 #include "FairMQChannel.h"
 
+namespace fairmq
+{
+    //helper struct for custom printing
+    struct ToCustomVarInfo 
+    {
+        typedef std::tuple<std::string, std::string,std::string, std::string> returned_type;
+        
+        template<typename T>
+        returned_type Value(const po::variable_value& varValue,const  std::string& type, const std::string& defaulted, const std::string& empty)
+        {
+            auto& value = varValue.value();
+            std::string valueStr;
+            if (auto q = boost::any_cast<boost::filesystem::path>(&value))
+            {
+                valueStr = (*q).filename().string();
+            }
+            return make_tuple(valueStr, type, defaulted, empty);
+        }
+
+        returned_type DefaultValue(const std::string& defaulted, const std::string& empty)
+        {
+            return make_tuple(std::string("Unknown value"), std::string("  <Unknown>"), defaulted, empty);
+        }
+    };
+}
 
 
 class FairMQProgOptions : public FairProgOptions , public FairMQEventManager
@@ -263,6 +288,21 @@ class FairMQProgOptions : public FairProgOptions , public FairMQEventManager
     // create key for variable map as follow : channelName.index.memberName
     void UpdateMQValues();
     int Store(const FairMQMap& channels);
+
+    FairProgOptions::VarValInfo_t FillMapVarValInfoImpl(const std::string& key, const po::variable_value& varValue, MapVarValInfo_t& mapinfo)
+    {
+        if(key=="mq-config" && fairmq::is_this_type<boost::filesystem::path>(varValue))
+        {
+            VarValInfo_t valinfo = fairmq::ConvertVariableValue<fairmq::ToCustomVarInfo>().Run(varValue);
+            mapinfo[key] = valinfo;
+            return valinfo;
+        }
+
+        // otherwise do :
+        VarValInfo_t valinfo = fairmq::ConvertVariableValue<fairmq::ToVarInfo>().Run(varValue);
+        mapinfo[key] = valinfo;
+        return valinfo;// RVO should apply here
+    }
 
 
   private:
